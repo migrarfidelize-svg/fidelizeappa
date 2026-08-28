@@ -9,209 +9,155 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as BaixarMigratorRouteImport } from './routes/baixar-migrator'
-import { Route as CriativosRouteImport } from './routes/criativos'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as PrecosRouteImport } from './routes/precos'
-import { Route as PreviewDockRouteImport } from './routes/preview-dock'
-import { Route as PreviewHeroRouteImport } from './routes/preview-hero'
-import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as TermosRouteImport } from './routes/termos'
 import { Route as VideosRouteImport } from './routes/videos'
-import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
-import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
-import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
-import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PreviewHeroRouteImport } from './routes/preview-hero'
+import { Route as PreviewDockRouteImport } from './routes/preview-dock'
+import { Route as PrecosRouteImport } from './routes/precos'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as CriativosRouteImport } from './routes/criativos'
+import { Route as BaixarMigratorRouteImport } from './routes/baixar-migrator'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
-import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
-import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
-import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
-import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
-import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
-import { Route as CTokenRouteImport } from './routes/c.$token'
-import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
-import { Route as CartaoSlugRouteImport } from './routes/cartao.$slug'
-import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
-import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
-import { Route as ESlugRouteImport } from './routes/e.$slug'
-import { Route as InviteTokenRouteImport } from './routes/invite.$token'
-import { Route as LSlugRouteImport } from './routes/l.$slug'
-import { Route as LinksSlugRouteImport } from './routes/links.$slug'
-import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
-import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
-import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
-import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
-import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
-import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
-import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
-import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenticated/app.catalogo'
-import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
-import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
-import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
-import { Route as AuthenticatedAppLinktreeRouteImport } from './routes/_authenticated/app.linktree'
-import { Route as AuthenticatedAppMensagensRouteImport } from './routes/_authenticated/app.mensagens'
-import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app.notificacoes'
-import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
-import { Route as AuthenticatedAppPedidosRouteImport } from './routes/_authenticated/app.pedidos'
-import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
-import { Route as AuthenticatedAppPromocoesRouteImport } from './routes/_authenticated/app.promocoes'
-import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
-import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
-import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
-import { Route as AuthenticatedAppStudioRouteImport } from './routes/_authenticated/app.studio'
-import { Route as AuthenticatedAppWalletRouteImport } from './routes/_authenticated/app.wallet'
-import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
-import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
-import { Route as AuthenticatedCarteiraAjudaRouteImport } from './routes/_authenticated/carteira.ajuda'
-import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
-import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
-import { Route as AuthenticatedCarteiraFavoritosRouteImport } from './routes/_authenticated/carteira.favoritos'
-import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
-import { Route as AuthenticatedCarteiraMensagensRouteImport } from './routes/_authenticated/carteira.mensagens'
-import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
-import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
-import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
-import { Route as AuthenticatedCarteiraScannerRouteImport } from './routes/_authenticated/carteira.scanner'
-import { Route as AuthenticatedHashIndexRouteImport } from './routes/_authenticated/hash.index'
-import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
-import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
-import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
-import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
-import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
-import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
-import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
-import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authenticated/hash.config'
-import { Route as AuthenticatedHashEmailFilaRouteImport } from './routes/_authenticated/hash.email-fila'
-import { Route as AuthenticatedHashEmailTemplatesRouteImport } from './routes/_authenticated/hash.email-templates'
-import { Route as AuthenticatedHashEmailsRouteImport } from './routes/_authenticated/hash.emails'
-import { Route as AuthenticatedHashEmpresasRouteImport } from './routes/_authenticated/hash.empresas'
-import { Route as AuthenticatedHashEquipeRouteImport } from './routes/_authenticated/hash.equipe'
-import { Route as AuthenticatedHashFinanceiroRouteImport } from './routes/_authenticated/hash.financeiro'
-import { Route as AuthenticatedHashIntegracoesRouteImport } from './routes/_authenticated/hash.integracoes'
-import { Route as AuthenticatedHashLandingRouteImport } from './routes/_authenticated/hash.landing'
-import { Route as AuthenticatedHashLiberacoesRouteImport } from './routes/_authenticated/hash.liberacoes'
-import { Route as AuthenticatedHashMigracaoRouteImport } from './routes/_authenticated/hash.migracao'
-import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
-import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
-import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
-import { Route as AuthenticatedHashSeoRouteImport } from './routes/_authenticated/hash.seo'
-import { Route as AuthenticatedHashStudioRouteImport } from './routes/_authenticated/hash.studio'
-import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
-import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
-import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
-import { Route as ApiPublicManifestRouteImport } from './routes/api/public/manifest'
+import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as LinksSlugRouteImport } from './routes/links.$slug'
+import { Route as LSlugRouteImport } from './routes/l.$slug'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as ESlugRouteImport } from './routes/e.$slug'
+import { Route as DevQrDesignNameRouteImport } from './routes/dev.qr-design-name'
+import { Route as CatalogoSlugRouteImport } from './routes/catalogo.$slug'
+import { Route as CartaoSlugRouteImport } from './routes/cartao.$slug'
+import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
+import { Route as CTokenRouteImport } from './routes/c.$token'
+import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
+import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
+import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
+import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
+import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
+import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
+import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
+import { Route as AuthenticatedCarteiraRouteImport } from './routes/_authenticated/carteira'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as SuporteSlugIndexRouteImport } from './routes/suporte.$slug.index'
-import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
+import { Route as AjudaCategoryIndexRouteImport } from './routes/ajuda.$category.index'
+import { Route as AuthenticatedHashIndexRouteImport } from './routes/_authenticated/hash.index'
+import { Route as AuthenticatedCarteiraIndexRouteImport } from './routes/_authenticated/carteira.index'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as SuporteChamadoIdRouteImport } from './routes/suporte.chamado.$id'
-import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
-import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
-import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
-import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
-import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
-import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
-import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
-import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_authenticated/app.catalogo.index'
-import { Route as AuthenticatedAppCatalogoAparenciaRouteImport } from './routes/_authenticated/app.catalogo.aparencia'
-import { Route as AuthenticatedAppCatalogoColecoesRouteImport } from './routes/_authenticated/app.catalogo.colecoes'
-import { Route as AuthenticatedAppCatalogoProdutosRouteImport } from './routes/_authenticated/app.catalogo.produtos'
-import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
-import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
-import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
-import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
-import { Route as AuthenticatedHashAtendimentoIndexRouteImport } from './routes/_authenticated/hash/atendimento/index'
-import { Route as AuthenticatedHashEmpresaIdRouteImport } from './routes/_authenticated/hash.empresa.$id'
-import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
+import { Route as SuporteSlugNovoRouteImport } from './routes/suporte.$slug.novo'
+import { Route as ApiPublicManifestRouteImport } from './routes/api/public/manifest'
+import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$category.$article'
+import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
+import { Route as AuthenticatedHashStudioRouteImport } from './routes/_authenticated/hash.studio'
+import { Route as AuthenticatedHashSeoRouteImport } from './routes/_authenticated/hash.seo'
+import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
+import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
+import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
+import { Route as AuthenticatedHashMigracaoRouteImport } from './routes/_authenticated/hash.migracao'
+import { Route as AuthenticatedHashLiberacoesRouteImport } from './routes/_authenticated/hash.liberacoes'
+import { Route as AuthenticatedHashLandingRouteImport } from './routes/_authenticated/hash.landing'
+import { Route as AuthenticatedHashIntegracoesRouteImport } from './routes/_authenticated/hash.integracoes'
+import { Route as AuthenticatedHashFinanceiroRouteImport } from './routes/_authenticated/hash.financeiro'
+import { Route as AuthenticatedHashEquipeRouteImport } from './routes/_authenticated/hash.equipe'
+import { Route as AuthenticatedHashEmpresasRouteImport } from './routes/_authenticated/hash.empresas'
+import { Route as AuthenticatedHashEmailsRouteImport } from './routes/_authenticated/hash.emails'
+import { Route as AuthenticatedHashEmailTemplatesRouteImport } from './routes/_authenticated/hash.email-templates'
+import { Route as AuthenticatedHashEmailFilaRouteImport } from './routes/_authenticated/hash.email-fila'
+import { Route as AuthenticatedHashConfigRouteImport } from './routes/_authenticated/hash.config'
+import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_authenticated/hash.cardapio-jsonld'
+import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
+import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
+import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
+import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
+import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
+import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
+import { Route as AuthenticatedCarteiraScannerRouteImport } from './routes/_authenticated/carteira.scanner'
+import { Route as AuthenticatedCarteiraRetrospectivaRouteImport } from './routes/_authenticated/carteira.retrospectiva'
+import { Route as AuthenticatedCarteiraPremiosRouteImport } from './routes/_authenticated/carteira.premios'
+import { Route as AuthenticatedCarteiraPerfilRouteImport } from './routes/_authenticated/carteira.perfil'
+import { Route as AuthenticatedCarteiraMensagensRouteImport } from './routes/_authenticated/carteira.mensagens'
+import { Route as AuthenticatedCarteiraHistoricoRouteImport } from './routes/_authenticated/carteira.historico'
+import { Route as AuthenticatedCarteiraFavoritosRouteImport } from './routes/_authenticated/carteira.favoritos'
+import { Route as AuthenticatedCarteiraDescobrirRouteImport } from './routes/_authenticated/carteira.descobrir'
+import { Route as AuthenticatedCarteiraConquistasRouteImport } from './routes/_authenticated/carteira.conquistas'
+import { Route as AuthenticatedCarteiraAjudaRouteImport } from './routes/_authenticated/carteira.ajuda'
+import { Route as AuthenticatedCarteiraSlugRouteImport } from './routes/_authenticated/carteira.$slug'
+import { Route as AuthenticatedAppWalletRouteImport } from './routes/_authenticated/app.wallet'
+import { Route as AuthenticatedAppStudioRouteImport } from './routes/_authenticated/app.studio'
+import { Route as AuthenticatedAppRetencaoRouteImport } from './routes/_authenticated/app.retencao'
+import { Route as AuthenticatedAppQrcodesRouteImport } from './routes/_authenticated/app.qrcodes'
+import { Route as AuthenticatedAppQrRouteImport } from './routes/_authenticated/app.qr'
+import { Route as AuthenticatedAppPromocoesRouteImport } from './routes/_authenticated/app.promocoes'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
+import { Route as AuthenticatedAppPedidosRouteImport } from './routes/_authenticated/app.pedidos'
+import { Route as AuthenticatedAppPagamentosRouteImport } from './routes/_authenticated/app.pagamentos'
+import { Route as AuthenticatedAppNotificacoesRouteImport } from './routes/_authenticated/app.notificacoes'
+import { Route as AuthenticatedAppMensagensRouteImport } from './routes/_authenticated/app.mensagens'
+import { Route as AuthenticatedAppLinktreeRouteImport } from './routes/_authenticated/app.linktree'
+import { Route as AuthenticatedAppKbRouteImport } from './routes/_authenticated/app.kb'
+import { Route as AuthenticatedAppEquipeRouteImport } from './routes/_authenticated/app.equipe'
+import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
+import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenticated/app.catalogo'
+import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
+import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
+import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
+import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
+import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
-import { Route as AuthenticatedHashSuporteIdRouteImport } from './routes/_authenticated/hash.suporte.$id'
-import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
-import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
-import { Route as ApiPublicDiagEnvRouteImport } from './routes/api/public/diag/env'
-import { Route as ApiPublicDiagFideRouteImport } from './routes/api/public/diag/fide'
-import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
-import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
-import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
-import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
-import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
-import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
-import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
-import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
-import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
-import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
-import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
-import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
+import { Route as AuthenticatedHashPlanosIndexRouteImport } from './routes/_authenticated/hash.planos.index'
+import { Route as AuthenticatedHashAtendimentoIndexRouteImport } from './routes/_authenticated/hash/atendimento/index'
+import { Route as AuthenticatedAppPlanosIndexRouteImport } from './routes/_authenticated/app.planos.index'
+import { Route as AuthenticatedAppFidelizeIndexRouteImport } from './routes/_authenticated/app.fidelize.index'
+import { Route as AuthenticatedAppCatalogoIndexRouteImport } from './routes/_authenticated/app.catalogo.index'
+import { Route as AuthenticatedAppCardapioIndexRouteImport } from './routes/_authenticated/app.cardapio.index'
+import { Route as AuthenticatedAppAvaliacoesIndexRouteImport } from './routes/_authenticated/app.avaliacoes.index'
 import { Route as SuporteSlugKbArticleRouteImport } from './routes/suporte.$slug.kb.$article'
-import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
-import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
-import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
+import { Route as ApiPublicWebhooksWhatsappRouteImport } from './routes/api/public/webhooks/whatsapp'
+import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api/public/webhooks/mercadopago'
+import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/webhooks/asaas'
+import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
+import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
+import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
+import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
+import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
+import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
+import { Route as ApiPublicHooksNotifyExpiringRewardsRouteImport } from './routes/api/public/hooks/notify-expiring-rewards'
+import { Route as ApiPublicHooksMercadopagoRetryRouteImport } from './routes/api/public/hooks/mercadopago-retry'
+import { Route as ApiPublicHooksDispatchScheduledPushRouteImport } from './routes/api/public/hooks/dispatch-scheduled-push'
+import { Route as ApiPublicDiagFideRouteImport } from './routes/api/public/diag/fide'
+import { Route as ApiPublicDiagEnvRouteImport } from './routes/api/public/diag/env'
+import { Route as ApiPublicCronReengagementRouteImport } from './routes/api/public/cron/reengagement'
+import { Route as ApiPublicCronBirthdayRouteImport } from './routes/api/public/cron/birthday'
+import { Route as AuthenticatedHashSuporteIdRouteImport } from './routes/_authenticated/hash.suporte.$id'
+import { Route as AuthenticatedHashEmpresaIdRouteImport } from './routes/_authenticated/hash.empresa.$id'
+import { Route as AuthenticatedCarteiraESlugRouteImport } from './routes/_authenticated/carteira.e.$slug'
+import { Route as AuthenticatedCarteiraSlugPromocoesRouteImport } from './routes/_authenticated/carteira.$slug.promocoes'
+import { Route as AuthenticatedAppCatalogoProdutosRouteImport } from './routes/_authenticated/app.catalogo.produtos'
+import { Route as AuthenticatedAppCatalogoColecoesRouteImport } from './routes/_authenticated/app.catalogo.colecoes'
+import { Route as AuthenticatedAppCatalogoAparenciaRouteImport } from './routes/_authenticated/app.catalogo.aparencia'
+import { Route as AuthenticatedAppCardapioPratosRouteImport } from './routes/_authenticated/app.cardapio.pratos'
+import { Route as AuthenticatedAppCardapioCategoriasRouteImport } from './routes/_authenticated/app.cardapio.categorias'
+import { Route as AuthenticatedAppCardapioAparenciaRouteImport } from './routes/_authenticated/app.cardapio.aparencia'
+import { Route as AuthenticatedAppAvaliacoesTemaRouteImport } from './routes/_authenticated/app.avaliacoes.tema'
+import { Route as AuthenticatedAppAvaliacoesQrRouteImport } from './routes/_authenticated/app.avaliacoes.qr'
 import { Route as ApiPublicWalletV1LogRouteImport } from './routes/api/public/wallet/v1/log'
+import { Route as ApiPublicWalletAppleTokenRouteImport } from './routes/api/public/wallet.apple.$token'
+import { Route as ApiPublicRTCodeRouteImport } from './routes/api/public/r/t/$code'
+import { Route as AuthenticatedAppFidelizeTicketIdRouteImport } from './routes/_authenticated/app.fidelize.ticket.$id'
 import { Route as ApiPublicRQrSlugDestRouteImport } from './routes/api/public/r/qr/$slug/$dest'
 import { Route as ApiPublicWalletV1PassesPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/passes.$passTypeId.$serial'
 import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId'
 import { Route as ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRouteImport } from './routes/api/public/wallet/v1/devices.$deviceId.registrations.$passTypeId.$serial'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BaixarMigratorRoute = BaixarMigratorRouteImport.update({
-  id: '/baixar-migrator',
-  path: '/baixar-migrator',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CriativosRoute = CriativosRouteImport.update({
-  id: '/criativos',
-  path: '/criativos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrecosRoute = PrecosRouteImport.update({
-  id: '/precos',
-  path: '/precos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreviewDockRoute = PreviewDockRouteImport.update({
-  id: '/preview-dock',
-  path: '/preview-dock',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreviewHeroRoute = PreviewHeroRouteImport.update({
-  id: '/preview-hero',
-  path: '/preview-hero',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacidadeRoute = PrivacidadeRouteImport.update({
-  id: '/privacidade',
-  path: '/privacidade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermosRoute = TermosRouteImport.update({
@@ -219,109 +165,68 @@ const TermosRoute = TermosRouteImport.update({
   path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VideosRoute = VideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
-  id: '/carteira',
-  path: '/carteira',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedHashRoute = AuthenticatedHashRouteImport.update({
-  id: '/hash',
-  path: '/hash',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const PreviewHeroRoute = PreviewHeroRouteImport.update({
+  id: '/preview-hero',
+  path: '/preview-hero',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
-  id: '/lgpd',
-  path: '/lgpd',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const PreviewDockRoute = PreviewDockRouteImport.update({
+  id: '/preview-dock',
+  path: '/preview-dock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrecosRoute = PrecosRouteImport.update({
+  id: '/precos',
+  path: '/precos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CriativosRoute = CriativosRouteImport.update({
+  id: '/criativos',
+  path: '/criativos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BaixarMigratorRoute = BaixarMigratorRouteImport.update({
+  id: '/baixar-migrator',
+  path: '/baixar-migrator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AjudaIndexRoute = AjudaIndexRouteImport.update({
   id: '/ajuda/',
   path: '/ajuda/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
-  id: '/api/test-turnstile',
-  path: '/api/test-turnstile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
-  id: '/nova-senha',
-  path: '/nova-senha',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
-  id: '/recuperar',
-  path: '/recuperar',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AvaliacoesSlugRoute = AvaliacoesSlugRouteImport.update({
-  id: '/avaliacoes/$slug',
-  path: '/avaliacoes/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvaliarSlugRoute = AvaliarSlugRouteImport.update({
-  id: '/avaliar/$slug',
-  path: '/avaliar/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CTokenRoute = CTokenRouteImport.update({
-  id: '/c/$token',
-  path: '/c/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CardapioSlugRoute = CardapioSlugRouteImport.update({
-  id: '/cardapio/$slug',
-  path: '/cardapio/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CartaoSlugRoute = CartaoSlugRouteImport.update({
-  id: '/cartao/$slug',
-  path: '/cartao/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
-  id: '/catalogo/$slug',
-  path: '/catalogo/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DevQrDesignNameRoute = DevQrDesignNameRouteImport.update({
-  id: '/dev/qr-design-name',
-  path: '/dev/qr-design-name',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ESlugRoute = ESlugRouteImport.update({
-  id: '/e/$slug',
-  path: '/e/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InviteTokenRoute = InviteTokenRouteImport.update({
-  id: '/invite/$token',
-  path: '/invite/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LSlugRoute = LSlugRouteImport.update({
-  id: '/l/$slug',
-  path: '/l/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LinksSlugRoute = LinksSlugRouteImport.update({
-  id: '/links/$slug',
-  path: '/links/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RCodeRoute = RCodeRouteImport.update({
-  id: '/r/$code',
-  path: '/r/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteMeusRoute = SuporteMeusRouteImport.update({
@@ -329,128 +234,115 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
   path: '/suporte/meus',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksSlugRoute = LinksSlugRouteImport.update({
+  id: '/links/$slug',
+  path: '/links/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LSlugRoute = LSlugRouteImport.update({
+  id: '/l/$slug',
+  path: '/l/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ESlugRoute = ESlugRouteImport.update({
+  id: '/e/$slug',
+  path: '/e/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevQrDesignNameRoute = DevQrDesignNameRouteImport.update({
+  id: '/dev/qr-design-name',
+  path: '/dev/qr-design-name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CatalogoSlugRoute = CatalogoSlugRouteImport.update({
+  id: '/catalogo/$slug',
+  path: '/catalogo/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartaoSlugRoute = CartaoSlugRouteImport.update({
+  id: '/cartao/$slug',
+  path: '/cartao/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CardapioSlugRoute = CardapioSlugRouteImport.update({
+  id: '/cardapio/$slug',
+  path: '/cardapio/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CTokenRoute = CTokenRouteImport.update({
+  id: '/c/$token',
+  path: '/c/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliarSlugRoute = AvaliarSlugRouteImport.update({
+  id: '/avaliar/$slug',
+  path: '/avaliar/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AvaliacoesSlugRoute = AvaliacoesSlugRouteImport.update({
+  id: '/avaliacoes/$slug',
+  path: '/avaliacoes/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
+  id: '/nova-senha',
+  path: '/nova-senha',
+  getParentRoute: () => AuthRoute,
+} as any)
+const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
+  id: '/api/test-turnstile',
+  path: '/api/test-turnstile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedLgpdRoute = AuthenticatedLgpdRouteImport.update({
+  id: '/lgpd',
+  path: '/lgpd',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHashRoute = AuthenticatedHashRouteImport.update({
+  id: '/hash',
+  path: '/hash',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCarteiraRoute = AuthenticatedCarteiraRouteImport.update({
+  id: '/carteira',
+  path: '/carteira',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
+  id: '/suporte/$slug/',
+  path: '/suporte/$slug/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
+  id: '/ajuda/$category/',
+  path: '/ajuda/$category/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHashIndexRoute = AuthenticatedHashIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppAnalyticsRoute =
-  AuthenticatedAppAnalyticsRouteImport.update({
-    id: '/analytics',
-    path: '/analytics',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAnunciosRoute =
-  AuthenticatedAppAnunciosRouteImport.update({
-    id: '/anuncios',
-    path: '/anuncios',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppCampanhasRoute =
-  AuthenticatedAppCampanhasRouteImport.update({
-    id: '/campanhas',
-    path: '/campanhas',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppCardapioRoute =
-  AuthenticatedAppCardapioRouteImport.update({
-    id: '/cardapio',
-    path: '/cardapio',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppCarimbarRoute =
-  AuthenticatedAppCarimbarRouteImport.update({
-    id: '/carimbar',
-    path: '/carimbar',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppCatalogoRoute =
-  AuthenticatedAppCatalogoRouteImport.update({
-    id: '/catalogo',
-    path: '/catalogo',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppClientesRoute =
-  AuthenticatedAppClientesRouteImport.update({
-    id: '/clientes',
-    path: '/clientes',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppEquipeRoute = AuthenticatedAppEquipeRouteImport.update({
-  id: '/equipe',
-  path: '/equipe',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppKbRoute = AuthenticatedAppKbRouteImport.update({
-  id: '/kb',
-  path: '/kb',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppLinktreeRoute =
-  AuthenticatedAppLinktreeRouteImport.update({
-    id: '/linktree',
-    path: '/linktree',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppMensagensRoute =
-  AuthenticatedAppMensagensRouteImport.update({
-    id: '/mensagens',
-    path: '/mensagens',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppNotificacoesRoute =
-  AuthenticatedAppNotificacoesRouteImport.update({
-    id: '/notificacoes',
-    path: '/notificacoes',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppPagamentosRoute =
-  AuthenticatedAppPagamentosRouteImport.update({
-    id: '/pagamentos',
-    path: '/pagamentos',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppPedidosRoute = AuthenticatedAppPedidosRouteImport.update({
-  id: '/pedidos',
-  path: '/pedidos',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
-  id: '/perfil',
-  path: '/perfil',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppPromocoesRoute =
-  AuthenticatedAppPromocoesRouteImport.update({
-    id: '/promocoes',
-    path: '/promocoes',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppQrRoute = AuthenticatedAppQrRouteImport.update({
-  id: '/qr',
-  path: '/qr',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppQrcodesRoute = AuthenticatedAppQrcodesRouteImport.update({
-  id: '/qrcodes',
-  path: '/qrcodes',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppRetencaoRoute =
-  AuthenticatedAppRetencaoRouteImport.update({
-    id: '/retencao',
-    path: '/retencao',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppStudioRoute = AuthenticatedAppStudioRouteImport.update({
-  id: '/studio',
-  path: '/studio',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
-const AuthenticatedAppWalletRoute = AuthenticatedAppWalletRouteImport.update({
-  id: '/wallet',
-  path: '/wallet',
-  getParentRoute: () => AuthenticatedAppRoute,
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
 const AuthenticatedCarteiraIndexRoute =
   AuthenticatedCarteiraIndexRouteImport.update({
@@ -458,179 +350,56 @@ const AuthenticatedCarteiraIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
-const AuthenticatedCarteiraSlugRoute =
-  AuthenticatedCarteiraSlugRouteImport.update({
-    id: '/$slug',
-    path: '/$slug',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraAjudaRoute =
-  AuthenticatedCarteiraAjudaRouteImport.update({
-    id: '/ajuda',
-    path: '/ajuda',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraConquistasRoute =
-  AuthenticatedCarteiraConquistasRouteImport.update({
-    id: '/conquistas',
-    path: '/conquistas',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraDescobrirRoute =
-  AuthenticatedCarteiraDescobrirRouteImport.update({
-    id: '/descobrir',
-    path: '/descobrir',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraFavoritosRoute =
-  AuthenticatedCarteiraFavoritosRouteImport.update({
-    id: '/favoritos',
-    path: '/favoritos',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraHistoricoRoute =
-  AuthenticatedCarteiraHistoricoRouteImport.update({
-    id: '/historico',
-    path: '/historico',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraMensagensRoute =
-  AuthenticatedCarteiraMensagensRouteImport.update({
-    id: '/mensagens',
-    path: '/mensagens',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraPerfilRoute =
-  AuthenticatedCarteiraPerfilRouteImport.update({
-    id: '/perfil',
-    path: '/perfil',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraPremiosRoute =
-  AuthenticatedCarteiraPremiosRouteImport.update({
-    id: '/premios',
-    path: '/premios',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraRetrospectivaRoute =
-  AuthenticatedCarteiraRetrospectivaRouteImport.update({
-    id: '/retrospectiva',
-    path: '/retrospectiva',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedCarteiraScannerRoute =
-  AuthenticatedCarteiraScannerRouteImport.update({
-    id: '/scanner',
-    path: '/scanner',
-    getParentRoute: () => AuthenticatedCarteiraRoute,
-  } as any)
-const AuthenticatedHashIndexRoute = AuthenticatedHashIndexRouteImport.update({
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
+  id: '/suporte/chamado/$id',
+  path: '/suporte/chamado/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
+  id: '/suporte/$slug/novo',
+  path: '/suporte/$slug/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicManifestRoute = ApiPublicManifestRouteImport.update({
+  id: '/api/public/manifest',
+  path: '/api/public/manifest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
+  id: '/ajuda/$category/$article',
+  path: '/ajuda/$category/$article',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHashUsuariosRoute =
+  AuthenticatedHashUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashStudioRoute = AuthenticatedHashStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const AuthenticatedHashAjudaRoute = AuthenticatedHashAjudaRouteImport.update({
-  id: '/ajuda',
-  path: '/ajuda',
+const AuthenticatedHashSeoRoute = AuthenticatedHashSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const AuthenticatedHashAlertasRoute =
-  AuthenticatedHashAlertasRouteImport.update({
-    id: '/alertas',
-    path: '/alertas',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashAnunciosRoute =
-  AuthenticatedHashAnunciosRouteImport.update({
-    id: '/anuncios',
-    path: '/anuncios',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashAssinaturasRoute =
-  AuthenticatedHashAssinaturasRouteImport.update({
-    id: '/assinaturas',
-    path: '/assinaturas',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashAuditoriaRoute =
-  AuthenticatedHashAuditoriaRouteImport.update({
-    id: '/auditoria',
-    path: '/auditoria',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashAvaliacoesRoute =
-  AuthenticatedHashAvaliacoesRouteImport.update({
-    id: '/avaliacoes',
-    path: '/avaliacoes',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashCardapioJsonldRoute =
-  AuthenticatedHashCardapioJsonldRouteImport.update({
-    id: '/cardapio-jsonld',
-    path: '/cardapio-jsonld',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashConfigRoute = AuthenticatedHashConfigRouteImport.update({
-  id: '/config',
-  path: '/config',
+const AuthenticatedHashPixelRoute = AuthenticatedHashPixelRouteImport.update({
+  id: '/pixel',
+  path: '/pixel',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const AuthenticatedHashEmailFilaRoute =
-  AuthenticatedHashEmailFilaRouteImport.update({
-    id: '/email-fila',
-    path: '/email-fila',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashEmailTemplatesRoute =
-  AuthenticatedHashEmailTemplatesRouteImport.update({
-    id: '/email-templates',
-    path: '/email-templates',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashEmailsRoute = AuthenticatedHashEmailsRouteImport.update({
-  id: '/emails',
-  path: '/emails',
-  getParentRoute: () => AuthenticatedHashRoute,
-} as any)
-const AuthenticatedHashEmpresasRoute =
-  AuthenticatedHashEmpresasRouteImport.update({
-    id: '/empresas',
-    path: '/empresas',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashEquipeRoute = AuthenticatedHashEquipeRouteImport.update({
-  id: '/equipe',
-  path: '/equipe',
-  getParentRoute: () => AuthenticatedHashRoute,
-} as any)
-const AuthenticatedHashFinanceiroRoute =
-  AuthenticatedHashFinanceiroRouteImport.update({
-    id: '/financeiro',
-    path: '/financeiro',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashIntegracoesRoute =
-  AuthenticatedHashIntegracoesRouteImport.update({
-    id: '/integracoes',
-    path: '/integracoes',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashLandingRoute =
-  AuthenticatedHashLandingRouteImport.update({
-    id: '/landing',
-    path: '/landing',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashLiberacoesRoute =
-  AuthenticatedHashLiberacoesRouteImport.update({
-    id: '/liberacoes',
-    path: '/liberacoes',
-    getParentRoute: () => AuthenticatedHashRoute,
-  } as any)
-const AuthenticatedHashMigracaoRoute =
-  AuthenticatedHashMigracaoRouteImport.update({
-    id: '/migracao',
-    path: '/migracao',
+const AuthenticatedHashPagamentosRoute =
+  AuthenticatedHashPagamentosRouteImport.update({
+    id: '/pagamentos',
+    path: '/pagamentos',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashNotificacoesRoute =
@@ -639,163 +408,298 @@ const AuthenticatedHashNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedHashPagamentosRoute =
-  AuthenticatedHashPagamentosRouteImport.update({
-    id: '/pagamentos',
-    path: '/pagamentos',
+const AuthenticatedHashMigracaoRoute =
+  AuthenticatedHashMigracaoRouteImport.update({
+    id: '/migracao',
+    path: '/migracao',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedHashPixelRoute = AuthenticatedHashPixelRouteImport.update({
-  id: '/pixel',
-  path: '/pixel',
-  getParentRoute: () => AuthenticatedHashRoute,
-} as any)
-const AuthenticatedHashSeoRoute = AuthenticatedHashSeoRouteImport.update({
-  id: '/seo',
-  path: '/seo',
-  getParentRoute: () => AuthenticatedHashRoute,
-} as any)
-const AuthenticatedHashStudioRoute = AuthenticatedHashStudioRouteImport.update({
-  id: '/studio',
-  path: '/studio',
-  getParentRoute: () => AuthenticatedHashRoute,
-} as any)
-const AuthenticatedHashUsuariosRoute =
-  AuthenticatedHashUsuariosRouteImport.update({
-    id: '/usuarios',
-    path: '/usuarios',
+const AuthenticatedHashLiberacoesRoute =
+  AuthenticatedHashLiberacoesRouteImport.update({
+    id: '/liberacoes',
+    path: '/liberacoes',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AjudaCategoryIndexRoute = AjudaCategoryIndexRouteImport.update({
-  id: '/ajuda/$category/',
-  path: '/ajuda/$category/',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedHashLandingRoute =
+  AuthenticatedHashLandingRouteImport.update({
+    id: '/landing',
+    path: '/landing',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashIntegracoesRoute =
+  AuthenticatedHashIntegracoesRouteImport.update({
+    id: '/integracoes',
+    path: '/integracoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashFinanceiroRoute =
+  AuthenticatedHashFinanceiroRouteImport.update({
+    id: '/financeiro',
+    path: '/financeiro',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEquipeRoute = AuthenticatedHashEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const AjudaCategoryArticleRoute = AjudaCategoryArticleRouteImport.update({
-  id: '/ajuda/$category/$article',
-  path: '/ajuda/$category/$article',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedHashEmpresasRoute =
+  AuthenticatedHashEmpresasRouteImport.update({
+    id: '/empresas',
+    path: '/empresas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmailsRoute = AuthenticatedHashEmailsRouteImport.update({
+  id: '/emails',
+  path: '/emails',
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const ApiPublicManifestRoute = ApiPublicManifestRouteImport.update({
-  id: '/api/public/manifest',
-  path: '/api/public/manifest',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedHashEmailTemplatesRoute =
+  AuthenticatedHashEmailTemplatesRouteImport.update({
+    id: '/email-templates',
+    path: '/email-templates',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmailFilaRoute =
+  AuthenticatedHashEmailFilaRouteImport.update({
+    id: '/email-fila',
+    path: '/email-fila',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashConfigRoute = AuthenticatedHashConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const SuporteSlugIndexRoute = SuporteSlugIndexRouteImport.update({
-  id: '/suporte/$slug/',
-  path: '/suporte/$slug/',
-  getParentRoute: () => rootRouteImport,
+const AuthenticatedHashCardapioJsonldRoute =
+  AuthenticatedHashCardapioJsonldRouteImport.update({
+    id: '/cardapio-jsonld',
+    path: '/cardapio-jsonld',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAvaliacoesRoute =
+  AuthenticatedHashAvaliacoesRouteImport.update({
+    id: '/avaliacoes',
+    path: '/avaliacoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAuditoriaRoute =
+  AuthenticatedHashAuditoriaRouteImport.update({
+    id: '/auditoria',
+    path: '/auditoria',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAssinaturasRoute =
+  AuthenticatedHashAssinaturasRouteImport.update({
+    id: '/assinaturas',
+    path: '/assinaturas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAnunciosRoute =
+  AuthenticatedHashAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAlertasRoute =
+  AuthenticatedHashAlertasRouteImport.update({
+    id: '/alertas',
+    path: '/alertas',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashAjudaRoute = AuthenticatedHashAjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
+  getParentRoute: () => AuthenticatedHashRoute,
 } as any)
-const SuporteSlugNovoRoute = SuporteSlugNovoRouteImport.update({
-  id: '/suporte/$slug/novo',
-  path: '/suporte/$slug/novo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SuporteChamadoIdRoute = SuporteChamadoIdRouteImport.update({
-  id: '/suporte/chamado/$id',
-  path: '/suporte/chamado/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedAppAvaliacoesIndexRoute =
-  AuthenticatedAppAvaliacoesIndexRouteImport.update({
-    id: '/avaliacoes/',
-    path: '/avaliacoes/',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAvaliacoesQrRoute =
-  AuthenticatedAppAvaliacoesQrRouteImport.update({
-    id: '/avaliacoes/qr',
-    path: '/avaliacoes/qr',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppAvaliacoesTemaRoute =
-  AuthenticatedAppAvaliacoesTemaRouteImport.update({
-    id: '/avaliacoes/tema',
-    path: '/avaliacoes/tema',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppCardapioIndexRoute =
-  AuthenticatedAppCardapioIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedAppCardapioRoute,
-  } as any)
-const AuthenticatedAppCardapioAparenciaRoute =
-  AuthenticatedAppCardapioAparenciaRouteImport.update({
-    id: '/aparencia',
-    path: '/aparencia',
-    getParentRoute: () => AuthenticatedAppCardapioRoute,
-  } as any)
-const AuthenticatedAppCardapioCategoriasRoute =
-  AuthenticatedAppCardapioCategoriasRouteImport.update({
-    id: '/categorias',
-    path: '/categorias',
-    getParentRoute: () => AuthenticatedAppCardapioRoute,
-  } as any)
-const AuthenticatedAppCardapioPratosRoute =
-  AuthenticatedAppCardapioPratosRouteImport.update({
-    id: '/pratos',
-    path: '/pratos',
-    getParentRoute: () => AuthenticatedAppCardapioRoute,
-  } as any)
-const AuthenticatedAppCatalogoIndexRoute =
-  AuthenticatedAppCatalogoIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedAppCatalogoRoute,
-  } as any)
-const AuthenticatedAppCatalogoAparenciaRoute =
-  AuthenticatedAppCatalogoAparenciaRouteImport.update({
-    id: '/aparencia',
-    path: '/aparencia',
-    getParentRoute: () => AuthenticatedAppCatalogoRoute,
-  } as any)
-const AuthenticatedAppCatalogoColecoesRoute =
-  AuthenticatedAppCatalogoColecoesRouteImport.update({
-    id: '/colecoes',
-    path: '/colecoes',
-    getParentRoute: () => AuthenticatedAppCatalogoRoute,
-  } as any)
-const AuthenticatedAppCatalogoProdutosRoute =
-  AuthenticatedAppCatalogoProdutosRouteImport.update({
-    id: '/produtos',
-    path: '/produtos',
-    getParentRoute: () => AuthenticatedAppCatalogoRoute,
-  } as any)
-const AuthenticatedAppFidelizeIndexRoute =
-  AuthenticatedAppFidelizeIndexRouteImport.update({
-    id: '/fidelize/',
-    path: '/fidelize/',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedAppPlanosIndexRoute =
-  AuthenticatedAppPlanosIndexRouteImport.update({
-    id: '/planos/',
-    path: '/planos/',
-    getParentRoute: () => AuthenticatedAppRoute,
-  } as any)
-const AuthenticatedCarteiraSlugPromocoesRoute =
-  AuthenticatedCarteiraSlugPromocoesRouteImport.update({
-    id: '/promocoes',
-    path: '/promocoes',
-    getParentRoute: () => AuthenticatedCarteiraSlugRoute,
-  } as any)
-const AuthenticatedCarteiraESlugRoute =
-  AuthenticatedCarteiraESlugRouteImport.update({
-    id: '/e/$slug',
-    path: '/e/$slug',
+const AuthenticatedCarteiraScannerRoute =
+  AuthenticatedCarteiraScannerRouteImport.update({
+    id: '/scanner',
+    path: '/scanner',
     getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
-const AuthenticatedHashAtendimentoIndexRoute =
-  AuthenticatedHashAtendimentoIndexRouteImport.update({
-    id: '/atendimento/',
-    path: '/atendimento/',
-    getParentRoute: () => AuthenticatedHashRoute,
+const AuthenticatedCarteiraRetrospectivaRoute =
+  AuthenticatedCarteiraRetrospectivaRouteImport.update({
+    id: '/retrospectiva',
+    path: '/retrospectiva',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
   } as any)
-const AuthenticatedHashEmpresaIdRoute =
-  AuthenticatedHashEmpresaIdRouteImport.update({
-    id: '/empresa/$id',
-    path: '/empresa/$id',
+const AuthenticatedCarteiraPremiosRoute =
+  AuthenticatedCarteiraPremiosRouteImport.update({
+    id: '/premios',
+    path: '/premios',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraPerfilRoute =
+  AuthenticatedCarteiraPerfilRouteImport.update({
+    id: '/perfil',
+    path: '/perfil',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraMensagensRoute =
+  AuthenticatedCarteiraMensagensRouteImport.update({
+    id: '/mensagens',
+    path: '/mensagens',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraHistoricoRoute =
+  AuthenticatedCarteiraHistoricoRouteImport.update({
+    id: '/historico',
+    path: '/historico',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraFavoritosRoute =
+  AuthenticatedCarteiraFavoritosRouteImport.update({
+    id: '/favoritos',
+    path: '/favoritos',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraDescobrirRoute =
+  AuthenticatedCarteiraDescobrirRouteImport.update({
+    id: '/descobrir',
+    path: '/descobrir',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraConquistasRoute =
+  AuthenticatedCarteiraConquistasRouteImport.update({
+    id: '/conquistas',
+    path: '/conquistas',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraAjudaRoute =
+  AuthenticatedCarteiraAjudaRouteImport.update({
+    id: '/ajuda',
+    path: '/ajuda',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraSlugRoute =
+  AuthenticatedCarteiraSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedAppWalletRoute = AuthenticatedAppWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppStudioRoute = AuthenticatedAppStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppRetencaoRoute =
+  AuthenticatedAppRetencaoRouteImport.update({
+    id: '/retencao',
+    path: '/retencao',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppQrcodesRoute = AuthenticatedAppQrcodesRouteImport.update({
+  id: '/qrcodes',
+  path: '/qrcodes',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppQrRoute = AuthenticatedAppQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPromocoesRoute =
+  AuthenticatedAppPromocoesRouteImport.update({
+    id: '/promocoes',
+    path: '/promocoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPedidosRoute = AuthenticatedAppPedidosRouteImport.update({
+  id: '/pedidos',
+  path: '/pedidos',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppPagamentosRoute =
+  AuthenticatedAppPagamentosRouteImport.update({
+    id: '/pagamentos',
+    path: '/pagamentos',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppNotificacoesRoute =
+  AuthenticatedAppNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppMensagensRoute =
+  AuthenticatedAppMensagensRouteImport.update({
+    id: '/mensagens',
+    path: '/mensagens',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppLinktreeRoute =
+  AuthenticatedAppLinktreeRouteImport.update({
+    id: '/linktree',
+    path: '/linktree',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppKbRoute = AuthenticatedAppKbRouteImport.update({
+  id: '/kb',
+  path: '/kb',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppEquipeRoute = AuthenticatedAppEquipeRouteImport.update({
+  id: '/equipe',
+  path: '/equipe',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppClientesRoute =
+  AuthenticatedAppClientesRouteImport.update({
+    id: '/clientes',
+    path: '/clientes',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCatalogoRoute =
+  AuthenticatedAppCatalogoRouteImport.update({
+    id: '/catalogo',
+    path: '/catalogo',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCarimbarRoute =
+  AuthenticatedAppCarimbarRouteImport.update({
+    id: '/carimbar',
+    path: '/carimbar',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCardapioRoute =
+  AuthenticatedAppCardapioRouteImport.update({
+    id: '/cardapio',
+    path: '/cardapio',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCampanhasRoute =
+  AuthenticatedAppCampanhasRouteImport.update({
+    id: '/campanhas',
+    path: '/campanhas',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAnunciosRoute =
+  AuthenticatedAppAnunciosRouteImport.update({
+    id: '/anuncios',
+    path: '/anuncios',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppAnalyticsRoute =
+  AuthenticatedAppAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedHashSuporteIndexRoute =
+  AuthenticatedHashSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashPlanosIndexRoute =
@@ -804,67 +708,78 @@ const AuthenticatedHashPlanosIndexRoute =
     path: '/planos/',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedHashSuporteIndexRoute =
-  AuthenticatedHashSuporteIndexRouteImport.update({
-    id: '/suporte/',
-    path: '/suporte/',
+const AuthenticatedHashAtendimentoIndexRoute =
+  AuthenticatedHashAtendimentoIndexRouteImport.update({
+    id: '/atendimento/',
+    path: '/atendimento/',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
-const AuthenticatedHashSuporteIdRoute =
-  AuthenticatedHashSuporteIdRouteImport.update({
-    id: '/suporte/$id',
-    path: '/suporte/$id',
-    getParentRoute: () => AuthenticatedHashRoute,
+const AuthenticatedAppPlanosIndexRoute =
+  AuthenticatedAppPlanosIndexRouteImport.update({
+    id: '/planos/',
+    path: '/planos/',
+    getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const ApiPublicCronBirthdayRoute = ApiPublicCronBirthdayRouteImport.update({
-  id: '/api/public/cron/birthday',
-  path: '/api/public/cron/birthday',
+const AuthenticatedAppFidelizeIndexRoute =
+  AuthenticatedAppFidelizeIndexRouteImport.update({
+    id: '/fidelize/',
+    path: '/fidelize/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppCatalogoIndexRoute =
+  AuthenticatedAppCatalogoIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCardapioIndexRoute =
+  AuthenticatedAppCardapioIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
+const AuthenticatedAppAvaliacoesIndexRoute =
+  AuthenticatedAppAvaliacoesIndexRouteImport.update({
+    id: '/avaliacoes/',
+    path: '/avaliacoes/',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
+  id: '/suporte/$slug/kb/$article',
+  path: '/suporte/$slug/kb/$article',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCronReengagementRoute =
-  ApiPublicCronReengagementRouteImport.update({
-    id: '/api/public/cron/reengagement',
-    path: '/api/public/cron/reengagement',
+const ApiPublicWebhooksWhatsappRoute =
+  ApiPublicWebhooksWhatsappRouteImport.update({
+    id: '/api/public/webhooks/whatsapp',
+    path: '/api/public/webhooks/whatsapp',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicDiagEnvRoute = ApiPublicDiagEnvRouteImport.update({
-  id: '/api/public/diag/env',
-  path: '/api/public/diag/env',
+const ApiPublicWebhooksMercadopagoRoute =
+  ApiPublicWebhooksMercadopagoRouteImport.update({
+    id: '/api/public/webhooks/mercadopago',
+    path: '/api/public/webhooks/mercadopago',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWebhooksAsaasRoute = ApiPublicWebhooksAsaasRouteImport.update({
+  id: '/api/public/webhooks/asaas',
+  path: '/api/public/webhooks/asaas',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicDiagFideRoute = ApiPublicDiagFideRouteImport.update({
-  id: '/api/public/diag/fide',
-  path: '/api/public/diag/fide',
+const ApiPublicTPlanRoute = ApiPublicTPlanRouteImport.update({
+  id: '/api/public/t/plan',
+  path: '/api/public/t/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksDispatchScheduledPushRoute =
-  ApiPublicHooksDispatchScheduledPushRouteImport.update({
-    id: '/api/public/hooks/dispatch-scheduled-push',
-    path: '/api/public/hooks/dispatch-scheduled-push',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksMercadopagoRetryRoute =
-  ApiPublicHooksMercadopagoRetryRouteImport.update({
-    id: '/api/public/hooks/mercadopago-retry',
-    path: '/api/public/hooks/mercadopago-retry',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksNotifyExpiringRewardsRoute =
-  ApiPublicHooksNotifyExpiringRewardsRouteImport.update({
-    id: '/api/public/hooks/notify-expiring-rewards',
-    path: '/api/public/hooks/notify-expiring-rewards',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksProcessEmailQueueRoute =
-  ApiPublicHooksProcessEmailQueueRouteImport.update({
-    id: '/api/public/hooks/process-email-queue',
-    path: '/api/public/hooks/process-email-queue',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksSponsoredAdsLifecycleRoute =
-  ApiPublicHooksSponsoredAdsLifecycleRouteImport.update({
-    id: '/api/public/hooks/sponsored-ads-lifecycle',
-    path: '/api/public/hooks/sponsored-ads-lifecycle',
+const ApiPublicTEventRoute = ApiPublicTEventRouteImport.update({
+  id: '/api/public/t/event',
+  path: '/api/public/t/event',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMercadopagoPublicKeyRoute =
+  ApiPublicMercadopagoPublicKeyRouteImport.update({
+    id: '/api/public/mercadopago/public-key',
+    path: '/api/public/mercadopago/public-key',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksWalletSyncRoute =
@@ -873,53 +788,132 @@ const ApiPublicHooksWalletSyncRoute =
     path: '/api/public/hooks/wallet-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicMercadopagoPublicKeyRoute =
-  ApiPublicMercadopagoPublicKeyRouteImport.update({
-    id: '/api/public/mercadopago/public-key',
-    path: '/api/public/mercadopago/public-key',
+const ApiPublicHooksSponsoredAdsLifecycleRoute =
+  ApiPublicHooksSponsoredAdsLifecycleRouteImport.update({
+    id: '/api/public/hooks/sponsored-ads-lifecycle',
+    path: '/api/public/hooks/sponsored-ads-lifecycle',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicTEventRoute = ApiPublicTEventRouteImport.update({
-  id: '/api/public/t/event',
-  path: '/api/public/t/event',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicTPlanRoute = ApiPublicTPlanRouteImport.update({
-  id: '/api/public/t/plan',
-  path: '/api/public/t/plan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWebhooksAsaasRoute = ApiPublicWebhooksAsaasRouteImport.update({
-  id: '/api/public/webhooks/asaas',
-  path: '/api/public/webhooks/asaas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWebhooksMercadopagoRoute =
-  ApiPublicWebhooksMercadopagoRouteImport.update({
-    id: '/api/public/webhooks/mercadopago',
-    path: '/api/public/webhooks/mercadopago',
+const ApiPublicHooksProcessEmailQueueRoute =
+  ApiPublicHooksProcessEmailQueueRouteImport.update({
+    id: '/api/public/hooks/process-email-queue',
+    path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWebhooksWhatsappRoute =
-  ApiPublicWebhooksWhatsappRouteImport.update({
-    id: '/api/public/webhooks/whatsapp',
-    path: '/api/public/webhooks/whatsapp',
+const ApiPublicHooksNotifyExpiringRewardsRoute =
+  ApiPublicHooksNotifyExpiringRewardsRouteImport.update({
+    id: '/api/public/hooks/notify-expiring-rewards',
+    path: '/api/public/hooks/notify-expiring-rewards',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SuporteSlugKbArticleRoute = SuporteSlugKbArticleRouteImport.update({
-  id: '/suporte/$slug/kb/$article',
-  path: '/suporte/$slug/kb/$article',
+const ApiPublicHooksMercadopagoRetryRoute =
+  ApiPublicHooksMercadopagoRetryRouteImport.update({
+    id: '/api/public/hooks/mercadopago-retry',
+    path: '/api/public/hooks/mercadopago-retry',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksDispatchScheduledPushRoute =
+  ApiPublicHooksDispatchScheduledPushRouteImport.update({
+    id: '/api/public/hooks/dispatch-scheduled-push',
+    path: '/api/public/hooks/dispatch-scheduled-push',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicDiagFideRoute = ApiPublicDiagFideRouteImport.update({
+  id: '/api/public/diag/fide',
+  path: '/api/public/diag/fide',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAppFidelizeTicketIdRoute =
-  AuthenticatedAppFidelizeTicketIdRouteImport.update({
-    id: '/fidelize/ticket/$id',
-    path: '/fidelize/ticket/$id',
+const ApiPublicDiagEnvRoute = ApiPublicDiagEnvRouteImport.update({
+  id: '/api/public/diag/env',
+  path: '/api/public/diag/env',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronReengagementRoute =
+  ApiPublicCronReengagementRouteImport.update({
+    id: '/api/public/cron/reengagement',
+    path: '/api/public/cron/reengagement',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronBirthdayRoute = ApiPublicCronBirthdayRouteImport.update({
+  id: '/api/public/cron/birthday',
+  path: '/api/public/cron/birthday',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHashSuporteIdRoute =
+  AuthenticatedHashSuporteIdRouteImport.update({
+    id: '/suporte/$id',
+    path: '/suporte/$id',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashEmpresaIdRoute =
+  AuthenticatedHashEmpresaIdRouteImport.update({
+    id: '/empresa/$id',
+    path: '/empresa/$id',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedCarteiraESlugRoute =
+  AuthenticatedCarteiraESlugRouteImport.update({
+    id: '/e/$slug',
+    path: '/e/$slug',
+    getParentRoute: () => AuthenticatedCarteiraRoute,
+  } as any)
+const AuthenticatedCarteiraSlugPromocoesRoute =
+  AuthenticatedCarteiraSlugPromocoesRouteImport.update({
+    id: '/promocoes',
+    path: '/promocoes',
+    getParentRoute: () => AuthenticatedCarteiraSlugRoute,
+  } as any)
+const AuthenticatedAppCatalogoProdutosRoute =
+  AuthenticatedAppCatalogoProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCatalogoColecoesRoute =
+  AuthenticatedAppCatalogoColecoesRouteImport.update({
+    id: '/colecoes',
+    path: '/colecoes',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCatalogoAparenciaRoute =
+  AuthenticatedAppCatalogoAparenciaRouteImport.update({
+    id: '/aparencia',
+    path: '/aparencia',
+    getParentRoute: () => AuthenticatedAppCatalogoRoute,
+  } as any)
+const AuthenticatedAppCardapioPratosRoute =
+  AuthenticatedAppCardapioPratosRouteImport.update({
+    id: '/pratos',
+    path: '/pratos',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
+const AuthenticatedAppCardapioCategoriasRoute =
+  AuthenticatedAppCardapioCategoriasRouteImport.update({
+    id: '/categorias',
+    path: '/categorias',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
+const AuthenticatedAppCardapioAparenciaRoute =
+  AuthenticatedAppCardapioAparenciaRouteImport.update({
+    id: '/aparencia',
+    path: '/aparencia',
+    getParentRoute: () => AuthenticatedAppCardapioRoute,
+  } as any)
+const AuthenticatedAppAvaliacoesTemaRoute =
+  AuthenticatedAppAvaliacoesTemaRouteImport.update({
+    id: '/avaliacoes/tema',
+    path: '/avaliacoes/tema',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const ApiPublicRTCodeRoute = ApiPublicRTCodeRouteImport.update({
-  id: '/api/public/r/t/$code',
-  path: '/api/public/r/t/$code',
+const AuthenticatedAppAvaliacoesQrRoute =
+  AuthenticatedAppAvaliacoesQrRouteImport.update({
+    id: '/avaliacoes/qr',
+    path: '/avaliacoes/qr',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
+  id: '/api/public/wallet/v1/log',
+  path: '/api/public/wallet/v1/log',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWalletAppleTokenRoute =
@@ -928,11 +922,17 @@ const ApiPublicWalletAppleTokenRoute =
     path: '/api/public/wallet/apple/$token',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWalletV1LogRoute = ApiPublicWalletV1LogRouteImport.update({
-  id: '/api/public/wallet/v1/log',
-  path: '/api/public/wallet/v1/log',
+const ApiPublicRTCodeRoute = ApiPublicRTCodeRouteImport.update({
+  id: '/api/public/r/t/$code',
+  path: '/api/public/r/t/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppFidelizeTicketIdRoute =
+  AuthenticatedAppFidelizeTicketIdRouteImport.update({
+    id: '/fidelize/ticket/$id',
+    path: '/fidelize/ticket/$id',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
 const ApiPublicRQrSlugDestRoute = ApiPublicRQrSlugDestRouteImport.update({
   id: '/api/public/r/qr/$slug/$dest',
   path: '/api/public/r/qr/$slug/$dest',
@@ -1895,88 +1895,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/baixar-migrator': {
-      id: '/baixar-migrator'
-      path: '/baixar-migrator'
-      fullPath: '/baixar-migrator'
-      preLoaderRoute: typeof BaixarMigratorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/criativos': {
-      id: '/criativos'
-      path: '/criativos'
-      fullPath: '/criativos'
-      preLoaderRoute: typeof CriativosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/precos': {
-      id: '/precos'
-      path: '/precos'
-      fullPath: '/precos'
-      preLoaderRoute: typeof PrecosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preview-dock': {
-      id: '/preview-dock'
-      path: '/preview-dock'
-      fullPath: '/preview-dock'
-      preLoaderRoute: typeof PreviewDockRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preview-hero': {
-      id: '/preview-hero'
-      path: '/preview-hero'
-      fullPath: '/preview-hero'
-      preLoaderRoute: typeof PreviewHeroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacidade': {
-      id: '/privacidade'
-      path: '/privacidade'
-      fullPath: '/privacidade'
-      preLoaderRoute: typeof PrivacidadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/termos': {
@@ -1986,151 +1909,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/videos': {
-      id: '/videos'
-      path: '/videos'
-      fullPath: '/videos'
-      preLoaderRoute: typeof VideosRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app': {
-      id: '/_authenticated/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AuthenticatedAppRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/carteira': {
-      id: '/_authenticated/carteira'
-      path: '/carteira'
-      fullPath: '/carteira'
-      preLoaderRoute: typeof AuthenticatedCarteiraRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/hash': {
-      id: '/_authenticated/hash'
-      path: '/hash'
-      fullPath: '/hash'
-      preLoaderRoute: typeof AuthenticatedHashRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/preview-hero': {
+      id: '/preview-hero'
+      path: '/preview-hero'
+      fullPath: '/preview-hero'
+      preLoaderRoute: typeof PreviewHeroRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/lgpd': {
-      id: '/_authenticated/lgpd'
-      path: '/lgpd'
-      fullPath: '/lgpd'
-      preLoaderRoute: typeof AuthenticatedLgpdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/preview-dock': {
+      id: '/preview-dock'
+      path: '/preview-dock'
+      fullPath: '/preview-dock'
+      preLoaderRoute: typeof PreviewDockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/precos': {
+      id: '/precos'
+      path: '/precos'
+      fullPath: '/precos'
+      preLoaderRoute: typeof PrecosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/criativos': {
+      id: '/criativos'
+      path: '/criativos'
+      fullPath: '/criativos'
+      preLoaderRoute: typeof CriativosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/baixar-migrator': {
+      id: '/baixar-migrator'
+      path: '/baixar-migrator'
+      fullPath: '/baixar-migrator'
+      preLoaderRoute: typeof BaixarMigratorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/ajuda/': {
       id: '/ajuda/'
       path: '/ajuda'
       fullPath: '/ajuda/'
       preLoaderRoute: typeof AjudaIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/test-turnstile': {
-      id: '/api/test-turnstile'
-      path: '/api/test-turnstile'
-      fullPath: '/api/test-turnstile'
-      preLoaderRoute: typeof ApiTestTurnstileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/nova-senha': {
-      id: '/auth/nova-senha'
-      path: '/nova-senha'
-      fullPath: '/auth/nova-senha'
-      preLoaderRoute: typeof AuthNovaSenhaRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/recuperar': {
-      id: '/auth/recuperar'
-      path: '/recuperar'
-      fullPath: '/auth/recuperar'
-      preLoaderRoute: typeof AuthRecuperarRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/avaliacoes/$slug': {
-      id: '/avaliacoes/$slug'
-      path: '/avaliacoes/$slug'
-      fullPath: '/avaliacoes/$slug'
-      preLoaderRoute: typeof AvaliacoesSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/avaliar/$slug': {
-      id: '/avaliar/$slug'
-      path: '/avaliar/$slug'
-      fullPath: '/avaliar/$slug'
-      preLoaderRoute: typeof AvaliarSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/c/$token': {
-      id: '/c/$token'
-      path: '/c/$token'
-      fullPath: '/c/$token'
-      preLoaderRoute: typeof CTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cardapio/$slug': {
-      id: '/cardapio/$slug'
-      path: '/cardapio/$slug'
-      fullPath: '/cardapio/$slug'
-      preLoaderRoute: typeof CardapioSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cartao/$slug': {
-      id: '/cartao/$slug'
-      path: '/cartao/$slug'
-      fullPath: '/cartao/$slug'
-      preLoaderRoute: typeof CartaoSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/catalogo/$slug': {
-      id: '/catalogo/$slug'
-      path: '/catalogo/$slug'
-      fullPath: '/catalogo/$slug'
-      preLoaderRoute: typeof CatalogoSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dev/qr-design-name': {
-      id: '/dev/qr-design-name'
-      path: '/dev/qr-design-name'
-      fullPath: '/dev/qr-design-name'
-      preLoaderRoute: typeof DevQrDesignNameRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/e/$slug': {
-      id: '/e/$slug'
-      path: '/e/$slug'
-      fullPath: '/e/$slug'
-      preLoaderRoute: typeof ESlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/invite/$token': {
-      id: '/invite/$token'
-      path: '/invite/$token'
-      fullPath: '/invite/$token'
-      preLoaderRoute: typeof InviteTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/l/$slug': {
-      id: '/l/$slug'
-      path: '/l/$slug'
-      fullPath: '/l/$slug'
-      preLoaderRoute: typeof LSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/links/$slug': {
-      id: '/links/$slug'
-      path: '/links/$slug'
-      fullPath: '/links/$slug'
-      preLoaderRoute: typeof LinksSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/r/$code': {
-      id: '/r/$code'
-      path: '/r/$code'
-      fullPath: '/r/$code'
-      preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/meus': {
@@ -2140,418 +2007,145 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteMeusRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/': {
-      id: '/_authenticated/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/analytics': {
-      id: '/_authenticated/app/analytics'
-      path: '/analytics'
-      fullPath: '/app/analytics'
-      preLoaderRoute: typeof AuthenticatedAppAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/links/$slug': {
+      id: '/links/$slug'
+      path: '/links/$slug'
+      fullPath: '/links/$slug'
+      preLoaderRoute: typeof LinksSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/anuncios': {
-      id: '/_authenticated/app/anuncios'
-      path: '/anuncios'
-      fullPath: '/app/anuncios'
-      preLoaderRoute: typeof AuthenticatedAppAnunciosRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/l/$slug': {
+      id: '/l/$slug'
+      path: '/l/$slug'
+      fullPath: '/l/$slug'
+      preLoaderRoute: typeof LSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/campanhas': {
-      id: '/_authenticated/app/campanhas'
-      path: '/campanhas'
-      fullPath: '/app/campanhas'
-      preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/cardapio': {
-      id: '/_authenticated/app/cardapio'
-      path: '/cardapio'
-      fullPath: '/app/cardapio'
-      preLoaderRoute: typeof AuthenticatedAppCardapioRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/e/$slug': {
+      id: '/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/e/$slug'
+      preLoaderRoute: typeof ESlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/carimbar': {
-      id: '/_authenticated/app/carimbar'
-      path: '/carimbar'
-      fullPath: '/app/carimbar'
-      preLoaderRoute: typeof AuthenticatedAppCarimbarRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/dev/qr-design-name': {
+      id: '/dev/qr-design-name'
+      path: '/dev/qr-design-name'
+      fullPath: '/dev/qr-design-name'
+      preLoaderRoute: typeof DevQrDesignNameRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/catalogo': {
-      id: '/_authenticated/app/catalogo'
-      path: '/catalogo'
-      fullPath: '/app/catalogo'
-      preLoaderRoute: typeof AuthenticatedAppCatalogoRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/catalogo/$slug': {
+      id: '/catalogo/$slug'
+      path: '/catalogo/$slug'
+      fullPath: '/catalogo/$slug'
+      preLoaderRoute: typeof CatalogoSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/clientes': {
-      id: '/_authenticated/app/clientes'
-      path: '/clientes'
-      fullPath: '/app/clientes'
-      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/cartao/$slug': {
+      id: '/cartao/$slug'
+      path: '/cartao/$slug'
+      fullPath: '/cartao/$slug'
+      preLoaderRoute: typeof CartaoSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/equipe': {
-      id: '/_authenticated/app/equipe'
-      path: '/equipe'
-      fullPath: '/app/equipe'
-      preLoaderRoute: typeof AuthenticatedAppEquipeRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/cardapio/$slug': {
+      id: '/cardapio/$slug'
+      path: '/cardapio/$slug'
+      fullPath: '/cardapio/$slug'
+      preLoaderRoute: typeof CardapioSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/kb': {
-      id: '/_authenticated/app/kb'
-      path: '/kb'
-      fullPath: '/app/kb'
-      preLoaderRoute: typeof AuthenticatedAppKbRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/c/$token': {
+      id: '/c/$token'
+      path: '/c/$token'
+      fullPath: '/c/$token'
+      preLoaderRoute: typeof CTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/linktree': {
-      id: '/_authenticated/app/linktree'
-      path: '/linktree'
-      fullPath: '/app/linktree'
-      preLoaderRoute: typeof AuthenticatedAppLinktreeRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/avaliar/$slug': {
+      id: '/avaliar/$slug'
+      path: '/avaliar/$slug'
+      fullPath: '/avaliar/$slug'
+      preLoaderRoute: typeof AvaliarSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/mensagens': {
-      id: '/_authenticated/app/mensagens'
-      path: '/mensagens'
-      fullPath: '/app/mensagens'
-      preLoaderRoute: typeof AuthenticatedAppMensagensRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/avaliacoes/$slug': {
+      id: '/avaliacoes/$slug'
+      path: '/avaliacoes/$slug'
+      fullPath: '/avaliacoes/$slug'
+      preLoaderRoute: typeof AvaliacoesSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/notificacoes': {
-      id: '/_authenticated/app/notificacoes'
-      path: '/notificacoes'
-      fullPath: '/app/notificacoes'
-      preLoaderRoute: typeof AuthenticatedAppNotificacoesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/auth/recuperar': {
+      id: '/auth/recuperar'
+      path: '/recuperar'
+      fullPath: '/auth/recuperar'
+      preLoaderRoute: typeof AuthRecuperarRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_authenticated/app/pagamentos': {
-      id: '/_authenticated/app/pagamentos'
-      path: '/pagamentos'
-      fullPath: '/app/pagamentos'
-      preLoaderRoute: typeof AuthenticatedAppPagamentosRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/auth/nova-senha': {
+      id: '/auth/nova-senha'
+      path: '/nova-senha'
+      fullPath: '/auth/nova-senha'
+      preLoaderRoute: typeof AuthNovaSenhaRouteImport
+      parentRoute: typeof AuthRoute
     }
-    '/_authenticated/app/pedidos': {
-      id: '/_authenticated/app/pedidos'
-      path: '/pedidos'
-      fullPath: '/app/pedidos'
-      preLoaderRoute: typeof AuthenticatedAppPedidosRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/api/test-turnstile': {
+      id: '/api/test-turnstile'
+      path: '/api/test-turnstile'
+      fullPath: '/api/test-turnstile'
+      preLoaderRoute: typeof ApiTestTurnstileRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/perfil': {
-      id: '/_authenticated/app/perfil'
-      path: '/perfil'
-      fullPath: '/app/perfil'
-      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/_authenticated/lgpd': {
+      id: '/_authenticated/lgpd'
+      path: '/lgpd'
+      fullPath: '/lgpd'
+      preLoaderRoute: typeof AuthenticatedLgpdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/app/promocoes': {
-      id: '/_authenticated/app/promocoes'
-      path: '/promocoes'
-      fullPath: '/app/promocoes'
-      preLoaderRoute: typeof AuthenticatedAppPromocoesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/_authenticated/hash': {
+      id: '/_authenticated/hash'
+      path: '/hash'
+      fullPath: '/hash'
+      preLoaderRoute: typeof AuthenticatedHashRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/app/qr': {
-      id: '/_authenticated/app/qr'
-      path: '/qr'
-      fullPath: '/app/qr'
-      preLoaderRoute: typeof AuthenticatedAppQrRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/_authenticated/carteira': {
+      id: '/_authenticated/carteira'
+      path: '/carteira'
+      fullPath: '/carteira'
+      preLoaderRoute: typeof AuthenticatedCarteiraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/app/qrcodes': {
-      id: '/_authenticated/app/qrcodes'
-      path: '/qrcodes'
-      fullPath: '/app/qrcodes'
-      preLoaderRoute: typeof AuthenticatedAppQrcodesRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/app/retencao': {
-      id: '/_authenticated/app/retencao'
-      path: '/retencao'
-      fullPath: '/app/retencao'
-      preLoaderRoute: typeof AuthenticatedAppRetencaoRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/studio': {
-      id: '/_authenticated/app/studio'
-      path: '/studio'
-      fullPath: '/app/studio'
-      preLoaderRoute: typeof AuthenticatedAppStudioRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/wallet': {
-      id: '/_authenticated/app/wallet'
-      path: '/wallet'
-      fullPath: '/app/wallet'
-      preLoaderRoute: typeof AuthenticatedAppWalletRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/carteira/': {
-      id: '/_authenticated/carteira/'
-      path: '/'
-      fullPath: '/carteira/'
-      preLoaderRoute: typeof AuthenticatedCarteiraIndexRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/$slug': {
-      id: '/_authenticated/carteira/$slug'
-      path: '/$slug'
-      fullPath: '/carteira/$slug'
-      preLoaderRoute: typeof AuthenticatedCarteiraSlugRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/ajuda': {
-      id: '/_authenticated/carteira/ajuda'
-      path: '/ajuda'
-      fullPath: '/carteira/ajuda'
-      preLoaderRoute: typeof AuthenticatedCarteiraAjudaRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/conquistas': {
-      id: '/_authenticated/carteira/conquistas'
-      path: '/conquistas'
-      fullPath: '/carteira/conquistas'
-      preLoaderRoute: typeof AuthenticatedCarteiraConquistasRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/descobrir': {
-      id: '/_authenticated/carteira/descobrir'
-      path: '/descobrir'
-      fullPath: '/carteira/descobrir'
-      preLoaderRoute: typeof AuthenticatedCarteiraDescobrirRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/favoritos': {
-      id: '/_authenticated/carteira/favoritos'
-      path: '/favoritos'
-      fullPath: '/carteira/favoritos'
-      preLoaderRoute: typeof AuthenticatedCarteiraFavoritosRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/historico': {
-      id: '/_authenticated/carteira/historico'
-      path: '/historico'
-      fullPath: '/carteira/historico'
-      preLoaderRoute: typeof AuthenticatedCarteiraHistoricoRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/mensagens': {
-      id: '/_authenticated/carteira/mensagens'
-      path: '/mensagens'
-      fullPath: '/carteira/mensagens'
-      preLoaderRoute: typeof AuthenticatedCarteiraMensagensRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/perfil': {
-      id: '/_authenticated/carteira/perfil'
-      path: '/perfil'
-      fullPath: '/carteira/perfil'
-      preLoaderRoute: typeof AuthenticatedCarteiraPerfilRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/premios': {
-      id: '/_authenticated/carteira/premios'
-      path: '/premios'
-      fullPath: '/carteira/premios'
-      preLoaderRoute: typeof AuthenticatedCarteiraPremiosRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/retrospectiva': {
-      id: '/_authenticated/carteira/retrospectiva'
-      path: '/retrospectiva'
-      fullPath: '/carteira/retrospectiva'
-      preLoaderRoute: typeof AuthenticatedCarteiraRetrospectivaRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/carteira/scanner': {
-      id: '/_authenticated/carteira/scanner'
-      path: '/scanner'
-      fullPath: '/carteira/scanner'
-      preLoaderRoute: typeof AuthenticatedCarteiraScannerRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/hash/': {
-      id: '/_authenticated/hash/'
-      path: '/'
-      fullPath: '/hash/'
-      preLoaderRoute: typeof AuthenticatedHashIndexRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/ajuda': {
-      id: '/_authenticated/hash/ajuda'
-      path: '/ajuda'
-      fullPath: '/hash/ajuda'
-      preLoaderRoute: typeof AuthenticatedHashAjudaRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/alertas': {
-      id: '/_authenticated/hash/alertas'
-      path: '/alertas'
-      fullPath: '/hash/alertas'
-      preLoaderRoute: typeof AuthenticatedHashAlertasRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/anuncios': {
-      id: '/_authenticated/hash/anuncios'
-      path: '/anuncios'
-      fullPath: '/hash/anuncios'
-      preLoaderRoute: typeof AuthenticatedHashAnunciosRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/assinaturas': {
-      id: '/_authenticated/hash/assinaturas'
-      path: '/assinaturas'
-      fullPath: '/hash/assinaturas'
-      preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/auditoria': {
-      id: '/_authenticated/hash/auditoria'
-      path: '/auditoria'
-      fullPath: '/hash/auditoria'
-      preLoaderRoute: typeof AuthenticatedHashAuditoriaRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/avaliacoes': {
-      id: '/_authenticated/hash/avaliacoes'
-      path: '/avaliacoes'
-      fullPath: '/hash/avaliacoes'
-      preLoaderRoute: typeof AuthenticatedHashAvaliacoesRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/cardapio-jsonld': {
-      id: '/_authenticated/hash/cardapio-jsonld'
-      path: '/cardapio-jsonld'
-      fullPath: '/hash/cardapio-jsonld'
-      preLoaderRoute: typeof AuthenticatedHashCardapioJsonldRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/config': {
-      id: '/_authenticated/hash/config'
-      path: '/config'
-      fullPath: '/hash/config'
-      preLoaderRoute: typeof AuthenticatedHashConfigRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/email-fila': {
-      id: '/_authenticated/hash/email-fila'
-      path: '/email-fila'
-      fullPath: '/hash/email-fila'
-      preLoaderRoute: typeof AuthenticatedHashEmailFilaRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/email-templates': {
-      id: '/_authenticated/hash/email-templates'
-      path: '/email-templates'
-      fullPath: '/hash/email-templates'
-      preLoaderRoute: typeof AuthenticatedHashEmailTemplatesRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/emails': {
-      id: '/_authenticated/hash/emails'
-      path: '/emails'
-      fullPath: '/hash/emails'
-      preLoaderRoute: typeof AuthenticatedHashEmailsRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/empresas': {
-      id: '/_authenticated/hash/empresas'
-      path: '/empresas'
-      fullPath: '/hash/empresas'
-      preLoaderRoute: typeof AuthenticatedHashEmpresasRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/equipe': {
-      id: '/_authenticated/hash/equipe'
-      path: '/equipe'
-      fullPath: '/hash/equipe'
-      preLoaderRoute: typeof AuthenticatedHashEquipeRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/financeiro': {
-      id: '/_authenticated/hash/financeiro'
-      path: '/financeiro'
-      fullPath: '/hash/financeiro'
-      preLoaderRoute: typeof AuthenticatedHashFinanceiroRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/integracoes': {
-      id: '/_authenticated/hash/integracoes'
-      path: '/integracoes'
-      fullPath: '/hash/integracoes'
-      preLoaderRoute: typeof AuthenticatedHashIntegracoesRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/landing': {
-      id: '/_authenticated/hash/landing'
-      path: '/landing'
-      fullPath: '/hash/landing'
-      preLoaderRoute: typeof AuthenticatedHashLandingRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/liberacoes': {
-      id: '/_authenticated/hash/liberacoes'
-      path: '/liberacoes'
-      fullPath: '/hash/liberacoes'
-      preLoaderRoute: typeof AuthenticatedHashLiberacoesRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/migracao': {
-      id: '/_authenticated/hash/migracao'
-      path: '/migracao'
-      fullPath: '/hash/migracao'
-      preLoaderRoute: typeof AuthenticatedHashMigracaoRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/notificacoes': {
-      id: '/_authenticated/hash/notificacoes'
-      path: '/notificacoes'
-      fullPath: '/hash/notificacoes'
-      preLoaderRoute: typeof AuthenticatedHashNotificacoesRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/pagamentos': {
-      id: '/_authenticated/hash/pagamentos'
-      path: '/pagamentos'
-      fullPath: '/hash/pagamentos'
-      preLoaderRoute: typeof AuthenticatedHashPagamentosRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/pixel': {
-      id: '/_authenticated/hash/pixel'
-      path: '/pixel'
-      fullPath: '/hash/pixel'
-      preLoaderRoute: typeof AuthenticatedHashPixelRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/seo': {
-      id: '/_authenticated/hash/seo'
-      path: '/seo'
-      fullPath: '/hash/seo'
-      preLoaderRoute: typeof AuthenticatedHashSeoRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/studio': {
-      id: '/_authenticated/hash/studio'
-      path: '/studio'
-      fullPath: '/hash/studio'
-      preLoaderRoute: typeof AuthenticatedHashStudioRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
-    }
-    '/_authenticated/hash/usuarios': {
-      id: '/_authenticated/hash/usuarios'
-      path: '/usuarios'
-      fullPath: '/hash/usuarios'
-      preLoaderRoute: typeof AuthenticatedHashUsuariosRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
+    '/suporte/$slug/': {
+      id: '/suporte/$slug/'
+      path: '/suporte/$slug'
+      fullPath: '/suporte/$slug/'
+      preLoaderRoute: typeof SuporteSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/ajuda/$category/': {
       id: '/ajuda/$category/'
@@ -2560,25 +2154,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjudaCategoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ajuda/$category/$article': {
-      id: '/ajuda/$category/$article'
-      path: '/ajuda/$category/$article'
-      fullPath: '/ajuda/$category/$article'
-      preLoaderRoute: typeof AjudaCategoryArticleRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/hash/': {
+      id: '/_authenticated/hash/'
+      path: '/'
+      fullPath: '/hash/'
+      preLoaderRoute: typeof AuthenticatedHashIndexRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
     }
-    '/api/public/manifest': {
-      id: '/api/public/manifest'
-      path: '/api/public/manifest'
-      fullPath: '/api/public/manifest'
-      preLoaderRoute: typeof ApiPublicManifestRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/carteira/': {
+      id: '/_authenticated/carteira/'
+      path: '/'
+      fullPath: '/carteira/'
+      preLoaderRoute: typeof AuthenticatedCarteiraIndexRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
     }
-    '/suporte/$slug/': {
-      id: '/suporte/$slug/'
-      path: '/suporte/$slug'
-      fullPath: '/suporte/$slug/'
-      preLoaderRoute: typeof SuporteSlugIndexRouteImport
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/suporte/chamado/$id': {
+      id: '/suporte/chamado/$id'
+      path: '/suporte/chamado/$id'
+      fullPath: '/suporte/chamado/$id'
+      preLoaderRoute: typeof SuporteChamadoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte/$slug/novo': {
@@ -2588,130 +2189,417 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteSlugNovoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/suporte/chamado/$id': {
-      id: '/suporte/chamado/$id'
-      path: '/suporte/chamado/$id'
-      fullPath: '/suporte/chamado/$id'
-      preLoaderRoute: typeof SuporteChamadoIdRouteImport
+    '/api/public/manifest': {
+      id: '/api/public/manifest'
+      path: '/api/public/manifest'
+      fullPath: '/api/public/manifest'
+      preLoaderRoute: typeof ApiPublicManifestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/avaliacoes/': {
-      id: '/_authenticated/app/avaliacoes/'
-      path: '/avaliacoes'
-      fullPath: '/app/avaliacoes/'
-      preLoaderRoute: typeof AuthenticatedAppAvaliacoesIndexRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
+    '/ajuda/$category/$article': {
+      id: '/ajuda/$category/$article'
+      path: '/ajuda/$category/$article'
+      fullPath: '/ajuda/$category/$article'
+      preLoaderRoute: typeof AjudaCategoryArticleRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/avaliacoes/qr': {
-      id: '/_authenticated/app/avaliacoes/qr'
-      path: '/avaliacoes/qr'
-      fullPath: '/app/avaliacoes/qr'
-      preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/avaliacoes/tema': {
-      id: '/_authenticated/app/avaliacoes/tema'
-      path: '/avaliacoes/tema'
-      fullPath: '/app/avaliacoes/tema'
-      preLoaderRoute: typeof AuthenticatedAppAvaliacoesTemaRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/cardapio/': {
-      id: '/_authenticated/app/cardapio/'
-      path: '/'
-      fullPath: '/app/cardapio/'
-      preLoaderRoute: typeof AuthenticatedAppCardapioIndexRouteImport
-      parentRoute: typeof AuthenticatedAppCardapioRoute
-    }
-    '/_authenticated/app/cardapio/aparencia': {
-      id: '/_authenticated/app/cardapio/aparencia'
-      path: '/aparencia'
-      fullPath: '/app/cardapio/aparencia'
-      preLoaderRoute: typeof AuthenticatedAppCardapioAparenciaRouteImport
-      parentRoute: typeof AuthenticatedAppCardapioRoute
-    }
-    '/_authenticated/app/cardapio/categorias': {
-      id: '/_authenticated/app/cardapio/categorias'
-      path: '/categorias'
-      fullPath: '/app/cardapio/categorias'
-      preLoaderRoute: typeof AuthenticatedAppCardapioCategoriasRouteImport
-      parentRoute: typeof AuthenticatedAppCardapioRoute
-    }
-    '/_authenticated/app/cardapio/pratos': {
-      id: '/_authenticated/app/cardapio/pratos'
-      path: '/pratos'
-      fullPath: '/app/cardapio/pratos'
-      preLoaderRoute: typeof AuthenticatedAppCardapioPratosRouteImport
-      parentRoute: typeof AuthenticatedAppCardapioRoute
-    }
-    '/_authenticated/app/catalogo/': {
-      id: '/_authenticated/app/catalogo/'
-      path: '/'
-      fullPath: '/app/catalogo/'
-      preLoaderRoute: typeof AuthenticatedAppCatalogoIndexRouteImport
-      parentRoute: typeof AuthenticatedAppCatalogoRoute
-    }
-    '/_authenticated/app/catalogo/aparencia': {
-      id: '/_authenticated/app/catalogo/aparencia'
-      path: '/aparencia'
-      fullPath: '/app/catalogo/aparencia'
-      preLoaderRoute: typeof AuthenticatedAppCatalogoAparenciaRouteImport
-      parentRoute: typeof AuthenticatedAppCatalogoRoute
-    }
-    '/_authenticated/app/catalogo/colecoes': {
-      id: '/_authenticated/app/catalogo/colecoes'
-      path: '/colecoes'
-      fullPath: '/app/catalogo/colecoes'
-      preLoaderRoute: typeof AuthenticatedAppCatalogoColecoesRouteImport
-      parentRoute: typeof AuthenticatedAppCatalogoRoute
-    }
-    '/_authenticated/app/catalogo/produtos': {
-      id: '/_authenticated/app/catalogo/produtos'
-      path: '/produtos'
-      fullPath: '/app/catalogo/produtos'
-      preLoaderRoute: typeof AuthenticatedAppCatalogoProdutosRouteImport
-      parentRoute: typeof AuthenticatedAppCatalogoRoute
-    }
-    '/_authenticated/app/fidelize/': {
-      id: '/_authenticated/app/fidelize/'
-      path: '/fidelize'
-      fullPath: '/app/fidelize/'
-      preLoaderRoute: typeof AuthenticatedAppFidelizeIndexRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/planos/': {
-      id: '/_authenticated/app/planos/'
-      path: '/planos'
-      fullPath: '/app/planos/'
-      preLoaderRoute: typeof AuthenticatedAppPlanosIndexRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/carteira/$slug/promocoes': {
-      id: '/_authenticated/carteira/$slug/promocoes'
-      path: '/promocoes'
-      fullPath: '/carteira/$slug/promocoes'
-      preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
-      parentRoute: typeof AuthenticatedCarteiraSlugRoute
-    }
-    '/_authenticated/carteira/e/$slug': {
-      id: '/_authenticated/carteira/e/$slug'
-      path: '/e/$slug'
-      fullPath: '/carteira/e/$slug'
-      preLoaderRoute: typeof AuthenticatedCarteiraESlugRouteImport
-      parentRoute: typeof AuthenticatedCarteiraRoute
-    }
-    '/_authenticated/hash/atendimento/': {
-      id: '/_authenticated/hash/atendimento/'
-      path: '/atendimento'
-      fullPath: '/hash/atendimento/'
-      preLoaderRoute: typeof AuthenticatedHashAtendimentoIndexRouteImport
+    '/_authenticated/hash/usuarios': {
+      id: '/_authenticated/hash/usuarios'
+      path: '/usuarios'
+      fullPath: '/hash/usuarios'
+      preLoaderRoute: typeof AuthenticatedHashUsuariosRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
-    '/_authenticated/hash/empresa/$id': {
-      id: '/_authenticated/hash/empresa/$id'
-      path: '/empresa/$id'
-      fullPath: '/hash/empresa/$id'
-      preLoaderRoute: typeof AuthenticatedHashEmpresaIdRouteImport
+    '/_authenticated/hash/studio': {
+      id: '/_authenticated/hash/studio'
+      path: '/studio'
+      fullPath: '/hash/studio'
+      preLoaderRoute: typeof AuthenticatedHashStudioRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/seo': {
+      id: '/_authenticated/hash/seo'
+      path: '/seo'
+      fullPath: '/hash/seo'
+      preLoaderRoute: typeof AuthenticatedHashSeoRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/pixel': {
+      id: '/_authenticated/hash/pixel'
+      path: '/pixel'
+      fullPath: '/hash/pixel'
+      preLoaderRoute: typeof AuthenticatedHashPixelRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/pagamentos': {
+      id: '/_authenticated/hash/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/hash/pagamentos'
+      preLoaderRoute: typeof AuthenticatedHashPagamentosRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/notificacoes': {
+      id: '/_authenticated/hash/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/hash/notificacoes'
+      preLoaderRoute: typeof AuthenticatedHashNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/migracao': {
+      id: '/_authenticated/hash/migracao'
+      path: '/migracao'
+      fullPath: '/hash/migracao'
+      preLoaderRoute: typeof AuthenticatedHashMigracaoRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/liberacoes': {
+      id: '/_authenticated/hash/liberacoes'
+      path: '/liberacoes'
+      fullPath: '/hash/liberacoes'
+      preLoaderRoute: typeof AuthenticatedHashLiberacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/landing': {
+      id: '/_authenticated/hash/landing'
+      path: '/landing'
+      fullPath: '/hash/landing'
+      preLoaderRoute: typeof AuthenticatedHashLandingRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/integracoes': {
+      id: '/_authenticated/hash/integracoes'
+      path: '/integracoes'
+      fullPath: '/hash/integracoes'
+      preLoaderRoute: typeof AuthenticatedHashIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/financeiro': {
+      id: '/_authenticated/hash/financeiro'
+      path: '/financeiro'
+      fullPath: '/hash/financeiro'
+      preLoaderRoute: typeof AuthenticatedHashFinanceiroRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/equipe': {
+      id: '/_authenticated/hash/equipe'
+      path: '/equipe'
+      fullPath: '/hash/equipe'
+      preLoaderRoute: typeof AuthenticatedHashEquipeRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/empresas': {
+      id: '/_authenticated/hash/empresas'
+      path: '/empresas'
+      fullPath: '/hash/empresas'
+      preLoaderRoute: typeof AuthenticatedHashEmpresasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/emails': {
+      id: '/_authenticated/hash/emails'
+      path: '/emails'
+      fullPath: '/hash/emails'
+      preLoaderRoute: typeof AuthenticatedHashEmailsRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/email-templates': {
+      id: '/_authenticated/hash/email-templates'
+      path: '/email-templates'
+      fullPath: '/hash/email-templates'
+      preLoaderRoute: typeof AuthenticatedHashEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/email-fila': {
+      id: '/_authenticated/hash/email-fila'
+      path: '/email-fila'
+      fullPath: '/hash/email-fila'
+      preLoaderRoute: typeof AuthenticatedHashEmailFilaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/config': {
+      id: '/_authenticated/hash/config'
+      path: '/config'
+      fullPath: '/hash/config'
+      preLoaderRoute: typeof AuthenticatedHashConfigRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/cardapio-jsonld': {
+      id: '/_authenticated/hash/cardapio-jsonld'
+      path: '/cardapio-jsonld'
+      fullPath: '/hash/cardapio-jsonld'
+      preLoaderRoute: typeof AuthenticatedHashCardapioJsonldRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/avaliacoes': {
+      id: '/_authenticated/hash/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/hash/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedHashAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/auditoria': {
+      id: '/_authenticated/hash/auditoria'
+      path: '/auditoria'
+      fullPath: '/hash/auditoria'
+      preLoaderRoute: typeof AuthenticatedHashAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/assinaturas': {
+      id: '/_authenticated/hash/assinaturas'
+      path: '/assinaturas'
+      fullPath: '/hash/assinaturas'
+      preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/anuncios': {
+      id: '/_authenticated/hash/anuncios'
+      path: '/anuncios'
+      fullPath: '/hash/anuncios'
+      preLoaderRoute: typeof AuthenticatedHashAnunciosRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/alertas': {
+      id: '/_authenticated/hash/alertas'
+      path: '/alertas'
+      fullPath: '/hash/alertas'
+      preLoaderRoute: typeof AuthenticatedHashAlertasRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/ajuda': {
+      id: '/_authenticated/hash/ajuda'
+      path: '/ajuda'
+      fullPath: '/hash/ajuda'
+      preLoaderRoute: typeof AuthenticatedHashAjudaRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/carteira/scanner': {
+      id: '/_authenticated/carteira/scanner'
+      path: '/scanner'
+      fullPath: '/carteira/scanner'
+      preLoaderRoute: typeof AuthenticatedCarteiraScannerRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/retrospectiva': {
+      id: '/_authenticated/carteira/retrospectiva'
+      path: '/retrospectiva'
+      fullPath: '/carteira/retrospectiva'
+      preLoaderRoute: typeof AuthenticatedCarteiraRetrospectivaRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/premios': {
+      id: '/_authenticated/carteira/premios'
+      path: '/premios'
+      fullPath: '/carteira/premios'
+      preLoaderRoute: typeof AuthenticatedCarteiraPremiosRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/perfil': {
+      id: '/_authenticated/carteira/perfil'
+      path: '/perfil'
+      fullPath: '/carteira/perfil'
+      preLoaderRoute: typeof AuthenticatedCarteiraPerfilRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/mensagens': {
+      id: '/_authenticated/carteira/mensagens'
+      path: '/mensagens'
+      fullPath: '/carteira/mensagens'
+      preLoaderRoute: typeof AuthenticatedCarteiraMensagensRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/historico': {
+      id: '/_authenticated/carteira/historico'
+      path: '/historico'
+      fullPath: '/carteira/historico'
+      preLoaderRoute: typeof AuthenticatedCarteiraHistoricoRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/favoritos': {
+      id: '/_authenticated/carteira/favoritos'
+      path: '/favoritos'
+      fullPath: '/carteira/favoritos'
+      preLoaderRoute: typeof AuthenticatedCarteiraFavoritosRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/descobrir': {
+      id: '/_authenticated/carteira/descobrir'
+      path: '/descobrir'
+      fullPath: '/carteira/descobrir'
+      preLoaderRoute: typeof AuthenticatedCarteiraDescobrirRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/conquistas': {
+      id: '/_authenticated/carteira/conquistas'
+      path: '/conquistas'
+      fullPath: '/carteira/conquistas'
+      preLoaderRoute: typeof AuthenticatedCarteiraConquistasRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/ajuda': {
+      id: '/_authenticated/carteira/ajuda'
+      path: '/ajuda'
+      fullPath: '/carteira/ajuda'
+      preLoaderRoute: typeof AuthenticatedCarteiraAjudaRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/$slug': {
+      id: '/_authenticated/carteira/$slug'
+      path: '/$slug'
+      fullPath: '/carteira/$slug'
+      preLoaderRoute: typeof AuthenticatedCarteiraSlugRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/app/wallet': {
+      id: '/_authenticated/app/wallet'
+      path: '/wallet'
+      fullPath: '/app/wallet'
+      preLoaderRoute: typeof AuthenticatedAppWalletRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/studio': {
+      id: '/_authenticated/app/studio'
+      path: '/studio'
+      fullPath: '/app/studio'
+      preLoaderRoute: typeof AuthenticatedAppStudioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/retencao': {
+      id: '/_authenticated/app/retencao'
+      path: '/retencao'
+      fullPath: '/app/retencao'
+      preLoaderRoute: typeof AuthenticatedAppRetencaoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/qrcodes': {
+      id: '/_authenticated/app/qrcodes'
+      path: '/qrcodes'
+      fullPath: '/app/qrcodes'
+      preLoaderRoute: typeof AuthenticatedAppQrcodesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/qr': {
+      id: '/_authenticated/app/qr'
+      path: '/qr'
+      fullPath: '/app/qr'
+      preLoaderRoute: typeof AuthenticatedAppQrRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/promocoes': {
+      id: '/_authenticated/app/promocoes'
+      path: '/promocoes'
+      fullPath: '/app/promocoes'
+      preLoaderRoute: typeof AuthenticatedAppPromocoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/pedidos': {
+      id: '/_authenticated/app/pedidos'
+      path: '/pedidos'
+      fullPath: '/app/pedidos'
+      preLoaderRoute: typeof AuthenticatedAppPedidosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/pagamentos': {
+      id: '/_authenticated/app/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/app/pagamentos'
+      preLoaderRoute: typeof AuthenticatedAppPagamentosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/notificacoes': {
+      id: '/_authenticated/app/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/app/notificacoes'
+      preLoaderRoute: typeof AuthenticatedAppNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/mensagens': {
+      id: '/_authenticated/app/mensagens'
+      path: '/mensagens'
+      fullPath: '/app/mensagens'
+      preLoaderRoute: typeof AuthenticatedAppMensagensRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/linktree': {
+      id: '/_authenticated/app/linktree'
+      path: '/linktree'
+      fullPath: '/app/linktree'
+      preLoaderRoute: typeof AuthenticatedAppLinktreeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/kb': {
+      id: '/_authenticated/app/kb'
+      path: '/kb'
+      fullPath: '/app/kb'
+      preLoaderRoute: typeof AuthenticatedAppKbRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/equipe': {
+      id: '/_authenticated/app/equipe'
+      path: '/equipe'
+      fullPath: '/app/equipe'
+      preLoaderRoute: typeof AuthenticatedAppEquipeRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/clientes': {
+      id: '/_authenticated/app/clientes'
+      path: '/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/catalogo': {
+      id: '/_authenticated/app/catalogo'
+      path: '/catalogo'
+      fullPath: '/app/catalogo'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/carimbar': {
+      id: '/_authenticated/app/carimbar'
+      path: '/carimbar'
+      fullPath: '/app/carimbar'
+      preLoaderRoute: typeof AuthenticatedAppCarimbarRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/cardapio': {
+      id: '/_authenticated/app/cardapio'
+      path: '/cardapio'
+      fullPath: '/app/cardapio'
+      preLoaderRoute: typeof AuthenticatedAppCardapioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/campanhas': {
+      id: '/_authenticated/app/campanhas'
+      path: '/campanhas'
+      fullPath: '/app/campanhas'
+      preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/anuncios': {
+      id: '/_authenticated/app/anuncios'
+      path: '/anuncios'
+      fullPath: '/app/anuncios'
+      preLoaderRoute: typeof AuthenticatedAppAnunciosRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/analytics': {
+      id: '/_authenticated/app/analytics'
+      path: '/analytics'
+      fullPath: '/app/analytics'
+      preLoaderRoute: typeof AuthenticatedAppAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/hash/suporte/': {
+      id: '/_authenticated/hash/suporte/'
+      path: '/suporte'
+      fullPath: '/hash/suporte/'
+      preLoaderRoute: typeof AuthenticatedHashSuporteIndexRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/planos/': {
@@ -2721,123 +2609,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashPlanosIndexRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
-    '/_authenticated/hash/suporte/': {
-      id: '/_authenticated/hash/suporte/'
-      path: '/suporte'
-      fullPath: '/hash/suporte/'
-      preLoaderRoute: typeof AuthenticatedHashSuporteIndexRouteImport
+    '/_authenticated/hash/atendimento/': {
+      id: '/_authenticated/hash/atendimento/'
+      path: '/atendimento'
+      fullPath: '/hash/atendimento/'
+      preLoaderRoute: typeof AuthenticatedHashAtendimentoIndexRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
-    '/_authenticated/hash/suporte/$id': {
-      id: '/_authenticated/hash/suporte/$id'
-      path: '/suporte/$id'
-      fullPath: '/hash/suporte/$id'
-      preLoaderRoute: typeof AuthenticatedHashSuporteIdRouteImport
-      parentRoute: typeof AuthenticatedHashRoute
+    '/_authenticated/app/planos/': {
+      id: '/_authenticated/app/planos/'
+      path: '/planos'
+      fullPath: '/app/planos/'
+      preLoaderRoute: typeof AuthenticatedAppPlanosIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/api/public/cron/birthday': {
-      id: '/api/public/cron/birthday'
-      path: '/api/public/cron/birthday'
-      fullPath: '/api/public/cron/birthday'
-      preLoaderRoute: typeof ApiPublicCronBirthdayRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/app/fidelize/': {
+      id: '/_authenticated/app/fidelize/'
+      path: '/fidelize'
+      fullPath: '/app/fidelize/'
+      preLoaderRoute: typeof AuthenticatedAppFidelizeIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/api/public/cron/reengagement': {
-      id: '/api/public/cron/reengagement'
-      path: '/api/public/cron/reengagement'
-      fullPath: '/api/public/cron/reengagement'
-      preLoaderRoute: typeof ApiPublicCronReengagementRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/app/catalogo/': {
+      id: '/_authenticated/app/catalogo/'
+      path: '/'
+      fullPath: '/app/catalogo/'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoIndexRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
     }
-    '/api/public/diag/env': {
-      id: '/api/public/diag/env'
-      path: '/api/public/diag/env'
-      fullPath: '/api/public/diag/env'
-      preLoaderRoute: typeof ApiPublicDiagEnvRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/app/cardapio/': {
+      id: '/_authenticated/app/cardapio/'
+      path: '/'
+      fullPath: '/app/cardapio/'
+      preLoaderRoute: typeof AuthenticatedAppCardapioIndexRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
     }
-    '/api/public/diag/fide': {
-      id: '/api/public/diag/fide'
-      path: '/api/public/diag/fide'
-      fullPath: '/api/public/diag/fide'
-      preLoaderRoute: typeof ApiPublicDiagFideRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_authenticated/app/avaliacoes/': {
+      id: '/_authenticated/app/avaliacoes/'
+      path: '/avaliacoes'
+      fullPath: '/app/avaliacoes/'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
-    '/api/public/hooks/dispatch-scheduled-push': {
-      id: '/api/public/hooks/dispatch-scheduled-push'
-      path: '/api/public/hooks/dispatch-scheduled-push'
-      fullPath: '/api/public/hooks/dispatch-scheduled-push'
-      preLoaderRoute: typeof ApiPublicHooksDispatchScheduledPushRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/mercadopago-retry': {
-      id: '/api/public/hooks/mercadopago-retry'
-      path: '/api/public/hooks/mercadopago-retry'
-      fullPath: '/api/public/hooks/mercadopago-retry'
-      preLoaderRoute: typeof ApiPublicHooksMercadopagoRetryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/notify-expiring-rewards': {
-      id: '/api/public/hooks/notify-expiring-rewards'
-      path: '/api/public/hooks/notify-expiring-rewards'
-      fullPath: '/api/public/hooks/notify-expiring-rewards'
-      preLoaderRoute: typeof ApiPublicHooksNotifyExpiringRewardsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-email-queue': {
-      id: '/api/public/hooks/process-email-queue'
-      path: '/api/public/hooks/process-email-queue'
-      fullPath: '/api/public/hooks/process-email-queue'
-      preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/sponsored-ads-lifecycle': {
-      id: '/api/public/hooks/sponsored-ads-lifecycle'
-      path: '/api/public/hooks/sponsored-ads-lifecycle'
-      fullPath: '/api/public/hooks/sponsored-ads-lifecycle'
-      preLoaderRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/wallet-sync': {
-      id: '/api/public/hooks/wallet-sync'
-      path: '/api/public/hooks/wallet-sync'
-      fullPath: '/api/public/hooks/wallet-sync'
-      preLoaderRoute: typeof ApiPublicHooksWalletSyncRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/mercadopago/public-key': {
-      id: '/api/public/mercadopago/public-key'
-      path: '/api/public/mercadopago/public-key'
-      fullPath: '/api/public/mercadopago/public-key'
-      preLoaderRoute: typeof ApiPublicMercadopagoPublicKeyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/t/event': {
-      id: '/api/public/t/event'
-      path: '/api/public/t/event'
-      fullPath: '/api/public/t/event'
-      preLoaderRoute: typeof ApiPublicTEventRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/t/plan': {
-      id: '/api/public/t/plan'
-      path: '/api/public/t/plan'
-      fullPath: '/api/public/t/plan'
-      preLoaderRoute: typeof ApiPublicTPlanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/asaas': {
-      id: '/api/public/webhooks/asaas'
-      path: '/api/public/webhooks/asaas'
-      fullPath: '/api/public/webhooks/asaas'
-      preLoaderRoute: typeof ApiPublicWebhooksAsaasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhooks/mercadopago': {
-      id: '/api/public/webhooks/mercadopago'
-      path: '/api/public/webhooks/mercadopago'
-      fullPath: '/api/public/webhooks/mercadopago'
-      preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
+    '/suporte/$slug/kb/$article': {
+      id: '/suporte/$slug/kb/$article'
+      path: '/suporte/$slug/kb/$article'
+      fullPath: '/suporte/$slug/kb/$article'
+      preLoaderRoute: typeof SuporteSlugKbArticleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhooks/whatsapp': {
@@ -2847,25 +2665,200 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/suporte/$slug/kb/$article': {
-      id: '/suporte/$slug/kb/$article'
-      path: '/suporte/$slug/kb/$article'
-      fullPath: '/suporte/$slug/kb/$article'
-      preLoaderRoute: typeof SuporteSlugKbArticleRouteImport
+    '/api/public/webhooks/mercadopago': {
+      id: '/api/public/webhooks/mercadopago'
+      path: '/api/public/webhooks/mercadopago'
+      fullPath: '/api/public/webhooks/mercadopago'
+      preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/app/fidelize/ticket/$id': {
-      id: '/_authenticated/app/fidelize/ticket/$id'
-      path: '/fidelize/ticket/$id'
-      fullPath: '/app/fidelize/ticket/$id'
-      preLoaderRoute: typeof AuthenticatedAppFidelizeTicketIdRouteImport
+    '/api/public/webhooks/asaas': {
+      id: '/api/public/webhooks/asaas'
+      path: '/api/public/webhooks/asaas'
+      fullPath: '/api/public/webhooks/asaas'
+      preLoaderRoute: typeof ApiPublicWebhooksAsaasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/t/plan': {
+      id: '/api/public/t/plan'
+      path: '/api/public/t/plan'
+      fullPath: '/api/public/t/plan'
+      preLoaderRoute: typeof ApiPublicTPlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/t/event': {
+      id: '/api/public/t/event'
+      path: '/api/public/t/event'
+      fullPath: '/api/public/t/event'
+      preLoaderRoute: typeof ApiPublicTEventRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/mercadopago/public-key': {
+      id: '/api/public/mercadopago/public-key'
+      path: '/api/public/mercadopago/public-key'
+      fullPath: '/api/public/mercadopago/public-key'
+      preLoaderRoute: typeof ApiPublicMercadopagoPublicKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/wallet-sync': {
+      id: '/api/public/hooks/wallet-sync'
+      path: '/api/public/hooks/wallet-sync'
+      fullPath: '/api/public/hooks/wallet-sync'
+      preLoaderRoute: typeof ApiPublicHooksWalletSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sponsored-ads-lifecycle': {
+      id: '/api/public/hooks/sponsored-ads-lifecycle'
+      path: '/api/public/hooks/sponsored-ads-lifecycle'
+      fullPath: '/api/public/hooks/sponsored-ads-lifecycle'
+      preLoaderRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-email-queue': {
+      id: '/api/public/hooks/process-email-queue'
+      path: '/api/public/hooks/process-email-queue'
+      fullPath: '/api/public/hooks/process-email-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/notify-expiring-rewards': {
+      id: '/api/public/hooks/notify-expiring-rewards'
+      path: '/api/public/hooks/notify-expiring-rewards'
+      fullPath: '/api/public/hooks/notify-expiring-rewards'
+      preLoaderRoute: typeof ApiPublicHooksNotifyExpiringRewardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/mercadopago-retry': {
+      id: '/api/public/hooks/mercadopago-retry'
+      path: '/api/public/hooks/mercadopago-retry'
+      fullPath: '/api/public/hooks/mercadopago-retry'
+      preLoaderRoute: typeof ApiPublicHooksMercadopagoRetryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/dispatch-scheduled-push': {
+      id: '/api/public/hooks/dispatch-scheduled-push'
+      path: '/api/public/hooks/dispatch-scheduled-push'
+      fullPath: '/api/public/hooks/dispatch-scheduled-push'
+      preLoaderRoute: typeof ApiPublicHooksDispatchScheduledPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diag/fide': {
+      id: '/api/public/diag/fide'
+      path: '/api/public/diag/fide'
+      fullPath: '/api/public/diag/fide'
+      preLoaderRoute: typeof ApiPublicDiagFideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/diag/env': {
+      id: '/api/public/diag/env'
+      path: '/api/public/diag/env'
+      fullPath: '/api/public/diag/env'
+      preLoaderRoute: typeof ApiPublicDiagEnvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/reengagement': {
+      id: '/api/public/cron/reengagement'
+      path: '/api/public/cron/reengagement'
+      fullPath: '/api/public/cron/reengagement'
+      preLoaderRoute: typeof ApiPublicCronReengagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/birthday': {
+      id: '/api/public/cron/birthday'
+      path: '/api/public/cron/birthday'
+      fullPath: '/api/public/cron/birthday'
+      preLoaderRoute: typeof ApiPublicCronBirthdayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/hash/suporte/$id': {
+      id: '/_authenticated/hash/suporte/$id'
+      path: '/suporte/$id'
+      fullPath: '/hash/suporte/$id'
+      preLoaderRoute: typeof AuthenticatedHashSuporteIdRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/empresa/$id': {
+      id: '/_authenticated/hash/empresa/$id'
+      path: '/empresa/$id'
+      fullPath: '/hash/empresa/$id'
+      preLoaderRoute: typeof AuthenticatedHashEmpresaIdRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/carteira/e/$slug': {
+      id: '/_authenticated/carteira/e/$slug'
+      path: '/e/$slug'
+      fullPath: '/carteira/e/$slug'
+      preLoaderRoute: typeof AuthenticatedCarteiraESlugRouteImport
+      parentRoute: typeof AuthenticatedCarteiraRoute
+    }
+    '/_authenticated/carteira/$slug/promocoes': {
+      id: '/_authenticated/carteira/$slug/promocoes'
+      path: '/promocoes'
+      fullPath: '/carteira/$slug/promocoes'
+      preLoaderRoute: typeof AuthenticatedCarteiraSlugPromocoesRouteImport
+      parentRoute: typeof AuthenticatedCarteiraSlugRoute
+    }
+    '/_authenticated/app/catalogo/produtos': {
+      id: '/_authenticated/app/catalogo/produtos'
+      path: '/produtos'
+      fullPath: '/app/catalogo/produtos'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoProdutosRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
+    '/_authenticated/app/catalogo/colecoes': {
+      id: '/_authenticated/app/catalogo/colecoes'
+      path: '/colecoes'
+      fullPath: '/app/catalogo/colecoes'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoColecoesRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
+    '/_authenticated/app/catalogo/aparencia': {
+      id: '/_authenticated/app/catalogo/aparencia'
+      path: '/aparencia'
+      fullPath: '/app/catalogo/aparencia'
+      preLoaderRoute: typeof AuthenticatedAppCatalogoAparenciaRouteImport
+      parentRoute: typeof AuthenticatedAppCatalogoRoute
+    }
+    '/_authenticated/app/cardapio/pratos': {
+      id: '/_authenticated/app/cardapio/pratos'
+      path: '/pratos'
+      fullPath: '/app/cardapio/pratos'
+      preLoaderRoute: typeof AuthenticatedAppCardapioPratosRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
+    }
+    '/_authenticated/app/cardapio/categorias': {
+      id: '/_authenticated/app/cardapio/categorias'
+      path: '/categorias'
+      fullPath: '/app/cardapio/categorias'
+      preLoaderRoute: typeof AuthenticatedAppCardapioCategoriasRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
+    }
+    '/_authenticated/app/cardapio/aparencia': {
+      id: '/_authenticated/app/cardapio/aparencia'
+      path: '/aparencia'
+      fullPath: '/app/cardapio/aparencia'
+      preLoaderRoute: typeof AuthenticatedAppCardapioAparenciaRouteImport
+      parentRoute: typeof AuthenticatedAppCardapioRoute
+    }
+    '/_authenticated/app/avaliacoes/tema': {
+      id: '/_authenticated/app/avaliacoes/tema'
+      path: '/avaliacoes/tema'
+      fullPath: '/app/avaliacoes/tema'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesTemaRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
-    '/api/public/r/t/$code': {
-      id: '/api/public/r/t/$code'
-      path: '/api/public/r/t/$code'
-      fullPath: '/api/public/r/t/$code'
-      preLoaderRoute: typeof ApiPublicRTCodeRouteImport
+    '/_authenticated/app/avaliacoes/qr': {
+      id: '/_authenticated/app/avaliacoes/qr'
+      path: '/avaliacoes/qr'
+      fullPath: '/app/avaliacoes/qr'
+      preLoaderRoute: typeof AuthenticatedAppAvaliacoesQrRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/api/public/wallet/v1/log': {
+      id: '/api/public/wallet/v1/log'
+      path: '/api/public/wallet/v1/log'
+      fullPath: '/api/public/wallet/v1/log'
+      preLoaderRoute: typeof ApiPublicWalletV1LogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/wallet/apple/$token': {
@@ -2875,12 +2868,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWalletAppleTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/wallet/v1/log': {
-      id: '/api/public/wallet/v1/log'
-      path: '/api/public/wallet/v1/log'
-      fullPath: '/api/public/wallet/v1/log'
-      preLoaderRoute: typeof ApiPublicWalletV1LogRouteImport
+    '/api/public/r/t/$code': {
+      id: '/api/public/r/t/$code'
+      path: '/api/public/r/t/$code'
+      fullPath: '/api/public/r/t/$code'
+      preLoaderRoute: typeof ApiPublicRTCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app/fidelize/ticket/$id': {
+      id: '/_authenticated/app/fidelize/ticket/$id'
+      path: '/fidelize/ticket/$id'
+      fullPath: '/app/fidelize/ticket/$id'
+      preLoaderRoute: typeof AuthenticatedAppFidelizeTicketIdRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
     }
     '/api/public/r/qr/$slug/$dest': {
       id: '/api/public/r/qr/$slug/$dest'
