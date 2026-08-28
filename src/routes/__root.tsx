@@ -15,7 +15,16 @@ import { getSeoMetadata } from "../lib/seo-utils.server";
 const getSeoMetadataFn = createServerFn({ method: "GET" })
   .validator((d: string) => d)
   .handler(async ({ data }) => {
-    return getSeoMetadata(data);
+    try {
+      return await getSeoMetadata(data);
+    } catch (e) {
+      console.error("[getSeoMetadataFn] Error:", e);
+      return {
+        title: "Afidelize",
+        meta: [{ name: "description", content: "Cartão fidelidade digital." }],
+        links: [],
+      } as Awaited<ReturnType<typeof getSeoMetadata>>;
+    }
   });
 
 

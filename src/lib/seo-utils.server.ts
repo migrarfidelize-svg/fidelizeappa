@@ -80,6 +80,18 @@ async function getDynamicSeo(
   pathname: string,
   config: SeoConfig
 ): Promise<DynamicSeo | null> {
+  try {
+    return await getDynamicSeoUnsafe(pathname, config);
+  } catch (e) {
+    console.error("[getDynamicSeo] Error:", e);
+    return null;
+  }
+}
+
+async function getDynamicSeoUnsafe(
+  pathname: string,
+  config: SeoConfig
+): Promise<DynamicSeo | null> {
   const platform = config.platformName || "Afidelize";
 
   // ==================================================
