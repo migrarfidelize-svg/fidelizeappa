@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -1706,6 +1706,62 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_agent_settings: {
+        Row: {
+          config: Json
+          created_at: string
+          enabled: boolean
+          establishment_id: string
+          flow_id: string
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          establishment_id: string
+          flow_id: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          enabled?: boolean
+          establishment_id?: string
+          flow_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_agent_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_agent_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_agent_settings_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: true
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_agent_settings_flow_tenant_fk"
+            columns: ["flow_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_flows"
+            referencedColumns: ["id", "establishment_id"]
+          },
+        ]
+      }
       crm_broadcast_recipients: {
         Row: {
           attempts: number
@@ -1713,6 +1769,7 @@ export type Database = {
           contact_id: string
           created_at: string
           delivered_at: string | null
+          establishment_id: string | null
           failed_at: string | null
           id: string
           last_error: string | null
@@ -1731,6 +1788,7 @@ export type Database = {
           contact_id: string
           created_at?: string
           delivered_at?: string | null
+          establishment_id?: string | null
           failed_at?: string | null
           id?: string
           last_error?: string | null
@@ -1749,6 +1807,7 @@ export type Database = {
           contact_id?: string
           created_at?: string
           delivered_at?: string | null
+          establishment_id?: string | null
           failed_at?: string | null
           id?: string
           last_error?: string | null
@@ -1776,6 +1835,34 @@ export type Database = {
             referencedRelation: "crm_contacts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "crm_broadcast_recipients_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcast_recipients_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcast_recipients_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcast_recipients_tenant_fk"
+            columns: ["broadcast_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_broadcasts"
+            referencedColumns: ["id", "establishment_id"]
+          },
         ]
       }
       crm_broadcasts: {
@@ -1783,6 +1870,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           delivered_count: number
+          establishment_id: string | null
           failed_count: number
           finished_at: string | null
           id: string
@@ -1803,6 +1891,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           delivered_count?: number
+          establishment_id?: string | null
           failed_count?: number
           finished_at?: string | null
           id?: string
@@ -1823,6 +1912,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           delivered_count?: number
+          establishment_id?: string | null
           failed_count?: number
           finished_at?: string | null
           id?: string
@@ -1839,19 +1929,44 @@ export type Database = {
           total_contacts?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_broadcasts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcasts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_broadcasts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_contact_tags: {
         Row: {
           contact_id: string
+          establishment_id: string | null
           tag_id: string
         }
         Insert: {
           contact_id: string
+          establishment_id?: string | null
           tag_id: string
         }
         Update: {
           contact_id?: string
+          establishment_id?: string | null
           tag_id?: string
         }
         Relationships: [
@@ -1860,6 +1975,34 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contact_tags_contact_tenant_fk"
+            columns: ["contact_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id", "establishment_id"]
+          },
+          {
+            foreignKeyName: "crm_contact_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contact_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contact_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -1876,6 +2019,7 @@ export type Database = {
           accept_communications: boolean
           created_at: string
           email: string | null
+          establishment_id: string | null
           id: string
           metadata: Json
           name: string
@@ -1891,6 +2035,7 @@ export type Database = {
           accept_communications?: boolean
           created_at?: string
           email?: string | null
+          establishment_id?: string | null
           id?: string
           metadata?: Json
           name: string
@@ -1906,6 +2051,7 @@ export type Database = {
           accept_communications?: boolean
           created_at?: string
           email?: string | null
+          establishment_id?: string | null
           id?: string
           metadata?: Json
           name?: string
@@ -1917,7 +2063,29 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_conversation_locks: {
         Row: {
@@ -1951,14 +2119,17 @@ export type Database = {
       crm_conversation_tags: {
         Row: {
           conversation_id: string
+          establishment_id: string
           tag_id: string
         }
         Insert: {
           conversation_id: string
+          establishment_id: string
           tag_id: string
         }
         Update: {
           conversation_id?: string
+          establishment_id?: string
           tag_id?: string
         }
         Relationships: [
@@ -1967,6 +2138,34 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversation_tags_conversation_tenant_fk"
+            columns: ["conversation_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id", "establishment_id"]
+          },
+          {
+            foreignKeyName: "crm_conversation_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversation_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversation_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
             referencedColumns: ["id"]
           },
           {
@@ -2179,6 +2378,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          establishment_id: string
           id: string
         }
         Insert: {
@@ -2186,6 +2386,7 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          establishment_id: string
           id?: string
         }
         Update: {
@@ -2193,6 +2394,7 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          establishment_id?: string
           id?: string
         }
         Relationships: [
@@ -2202,6 +2404,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "crm_conversations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_internal_notes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_internal_notes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_internal_notes_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_internal_notes_tenant_fk"
+            columns: ["conversation_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id", "establishment_id"]
           },
         ]
       }
@@ -2293,6 +2523,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          establishment_id: string | null
           id: string
           message: string
           shortcut: string
@@ -2300,6 +2531,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          establishment_id?: string | null
           id?: string
           message: string
           shortcut: string
@@ -2307,38 +2539,156 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          establishment_id?: string | null
           id?: string
           message?: string
           shortcut?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_quick_replies_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_quick_replies_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_quick_replies_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_support_tickets: {
+        Row: {
+          assigned_to: string | null
+          conversation_id: string
+          created_at: string
+          establishment_id: string
+          id: string
+          resolved_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          conversation_id: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          conversation_id?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_support_ticket_tenant_fk"
+            columns: ["conversation_id", "establishment_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id", "establishment_id"]
+          },
+          {
+            foreignKeyName: "crm_support_tickets_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_support_tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_support_tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_support_tickets_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_tags: {
         Row: {
           color: string
           created_at: string
+          establishment_id: string | null
           id: string
           name: string
         }
         Insert: {
           color?: string
           created_at?: string
+          establishment_id?: string | null
           id?: string
           name: string
         }
         Update: {
           color?: string
           created_at?: string
+          establishment_id?: string | null
           id?: string
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_tags_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_templates: {
         Row: {
           body: string
           category: string
           created_at: string
+          establishment_id: string | null
           id: string
           is_active: boolean
           name: string
@@ -2348,6 +2698,7 @@ export type Database = {
           body: string
           category: string
           created_at?: string
+          establishment_id?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -2357,12 +2708,35 @@ export type Database = {
           body?: string
           category?: string
           created_at?: string
+          establishment_id?: string | null
           id?: string
           is_active?: boolean
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crm_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_templates_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_achievements: {
         Row: {
