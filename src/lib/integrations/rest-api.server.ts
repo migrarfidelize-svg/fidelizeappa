@@ -416,7 +416,7 @@ function str(v: unknown, max = 200): string | null {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const API_VERSION = "2.0.0";
+export const API_VERSION = "2.2.0";
 const BOOT_AT = Date.now();
 
 function formatUptime(ms: number): string {
