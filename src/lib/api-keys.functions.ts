@@ -48,6 +48,15 @@ export const createApiKey = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { raw, prefix, hash } = generateApiKey();
 
+    // O escopo de provisionamento cria empresas/usuários fora do tenant atual:
+    // somente super admin pode emitir uma chave com esse poder.
+    const scopes = ["customers:read", "customers:write", "points:write"];
+    if (data.provisioning) {
+      const { data: isAdmin } = await context.supabase.rpc("is_super_admin", { _user: context.userId });
+      if (!isAdmin) throw new Error("Apenas super admin pode criar chaves com escopo de provisionamento.");
+      scopes.push("provisioning");
+    }
+
     const { data: row, error } = await supabaseAdmin
       .from("api_keys")
       .insert({
