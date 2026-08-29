@@ -7,6 +7,7 @@ import {
 } from "@/lib/mercadopago.functions";
 import { getActivePaymentProviders } from "@/lib/payment-providers.functions";
 import { getUpgradeQuote } from "@/lib/plan-proration.functions";
+import { getSubscriptionOriginNotice } from "@/lib/integrations/lifecycle-sync.functions";
 import { AsaasPaymentTabs } from "@/components/AsaasPaymentTabs";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
