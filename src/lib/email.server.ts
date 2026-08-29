@@ -61,13 +61,21 @@ async function performResendCall(
 ): Promise<{ ok: boolean; resend_id: string | null; error: string | null; duration_ms: number }> {
   const started = Date.now();
   const from = `${settings.sender_name} <${settings.sender_email}>`;
+  const senderDomain = settings.sender_email.split("@")[1] ?? "";
+  const unsubscribeMailto = `mailto:${settings.reply_to || settings.sender_email}?subject=unsubscribe`;
   const payload: Record<string, unknown> = {
     from,
     to: [input.to],
     subject: input.subject,
     html: input.html,
+    // Multipart (html + texto) reduz muito a pontuação de spam
+    text: input.text?.trim() || htmlToPlainText(input.html),
+    headers: {
+      "List-Unsubscribe": `<${unsubscribeMailto}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      ...(senderDomain ? { "X-Entity-Ref-ID": `${senderDomain}-${Date.now()}` } : {}),
+    },
   };
-  if (input.text) payload.text = input.text;
   if (settings.reply_to) payload.reply_to = settings.reply_to;
 
   let resend_id: string | null = null;
