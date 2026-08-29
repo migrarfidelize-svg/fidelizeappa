@@ -173,6 +173,15 @@ export function PaymentDialog({
   const dueNow = hasCredit ? quote!.amount : (plan?.price_monthly ?? 0);
   const chargePlan = plan ? { ...plan, price_monthly: dueNow } : null;
 
+  // Aviso: contas vindas de parceiro (ex.: Ronnei) têm a assinatura original encerrada.
+  const originFn = useServerFn(getSubscriptionOriginNotice);
+  const { data: originNotice } = useQuery({
+    queryKey: ["subscription-origin", establishmentId],
+    queryFn: () => originFn({ data: { establishment_id: establishmentId } }),
+    enabled: open && !!establishmentId,
+    staleTime: 60_000,
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0 border-0 shadow-2xl sm:rounded-3xl" style={{ fontFamily: "'Manrope', system-ui, sans-serif" }}>
