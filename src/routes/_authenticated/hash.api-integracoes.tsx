@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSkeleton } from "@/components/states";
 
-export const Route = createFileRoute("/_authenticated/app/api")({
+export const Route = createFileRoute("/_authenticated/hash/api-integracoes")({
   head: () => ({
     meta: [
       { title: "API de integrações — Fidelize" },

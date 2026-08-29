@@ -75,6 +75,7 @@ import { Route as AuthenticatedHashCardapioJsonldRouteImport } from './routes/_a
 import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authenticated/hash.avaliacoes'
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
+import { Route as AuthenticatedHashApiIntegracoesRouteImport } from './routes/_authenticated/hash.api-integracoes'
 import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
 import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
@@ -108,7 +109,6 @@ import { Route as AuthenticatedAppCatalogoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAppCarimbarRouteImport } from './routes/_authenticated/app.carimbar'
 import { Route as AuthenticatedAppCardapioRouteImport } from './routes/_authenticated/app.cardapio'
 import { Route as AuthenticatedAppCampanhasRouteImport } from './routes/_authenticated/app.campanhas'
-import { Route as AuthenticatedAppApiRouteImport } from './routes/_authenticated/app.api'
 import { Route as AuthenticatedAppAnunciosRouteImport } from './routes/_authenticated/app.anuncios'
 import { Route as AuthenticatedAppAnalyticsRouteImport } from './routes/_authenticated/app.analytics'
 import { Route as AuthenticatedHashSuporteIndexRouteImport } from './routes/_authenticated/hash.suporte.index'
@@ -504,6 +504,12 @@ const AuthenticatedHashAssinaturasRoute =
     path: '/assinaturas',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
+const AuthenticatedHashApiIntegracoesRoute =
+  AuthenticatedHashApiIntegracoesRouteImport.update({
+    id: '/api-integracoes',
+    path: '/api-integracoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedHashAnunciosRoute =
   AuthenticatedHashAnunciosRouteImport.update({
     id: '/anuncios',
@@ -693,11 +699,6 @@ const AuthenticatedAppCampanhasRoute =
     path: '/campanhas',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
-const AuthenticatedAppApiRoute = AuthenticatedAppApiRouteImport.update({
-  id: '/api',
-  path: '/api',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppAnunciosRoute =
   AuthenticatedAppAnunciosRouteImport.update({
     id: '/anuncios',
@@ -1017,7 +1018,6 @@ export interface FileRoutesByFullPath {
   '/ajuda/': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
-  '/app/api': typeof AuthenticatedAppApiRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1051,6 +1051,7 @@ export interface FileRoutesByFullPath {
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1163,7 +1164,6 @@ export interface FileRoutesByTo {
   '/ajuda': typeof AjudaIndexRoute
   '/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/app/anuncios': typeof AuthenticatedAppAnunciosRoute
-  '/app/api': typeof AuthenticatedAppApiRoute
   '/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/app/carimbar': typeof AuthenticatedAppCarimbarRoute
   '/app/clientes': typeof AuthenticatedAppClientesRoute
@@ -1195,6 +1195,7 @@ export interface FileRoutesByTo {
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1312,7 +1313,6 @@ export interface FileRoutesById {
   '/ajuda/': typeof AjudaIndexRoute
   '/_authenticated/app/analytics': typeof AuthenticatedAppAnalyticsRoute
   '/_authenticated/app/anuncios': typeof AuthenticatedAppAnunciosRoute
-  '/_authenticated/app/api': typeof AuthenticatedAppApiRoute
   '/_authenticated/app/campanhas': typeof AuthenticatedAppCampanhasRoute
   '/_authenticated/app/cardapio': typeof AuthenticatedAppCardapioRouteWithChildren
   '/_authenticated/app/carimbar': typeof AuthenticatedAppCarimbarRoute
@@ -1346,6 +1346,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/_authenticated/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
   '/_authenticated/hash/avaliacoes': typeof AuthenticatedHashAvaliacoesRoute
@@ -1463,7 +1464,6 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/app/analytics'
     | '/app/anuncios'
-    | '/app/api'
     | '/app/campanhas'
     | '/app/cardapio'
     | '/app/carimbar'
@@ -1497,6 +1497,7 @@ export interface FileRouteTypes {
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
+    | '/hash/api-integracoes'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1609,7 +1610,6 @@ export interface FileRouteTypes {
     | '/ajuda'
     | '/app/analytics'
     | '/app/anuncios'
-    | '/app/api'
     | '/app/campanhas'
     | '/app/carimbar'
     | '/app/clientes'
@@ -1641,6 +1641,7 @@ export interface FileRouteTypes {
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
+    | '/hash/api-integracoes'
     | '/hash/assinaturas'
     | '/hash/auditoria'
     | '/hash/avaliacoes'
@@ -1757,7 +1758,6 @@ export interface FileRouteTypes {
     | '/ajuda/'
     | '/_authenticated/app/analytics'
     | '/_authenticated/app/anuncios'
-    | '/_authenticated/app/api'
     | '/_authenticated/app/campanhas'
     | '/_authenticated/app/cardapio'
     | '/_authenticated/app/carimbar'
@@ -1791,6 +1791,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/ajuda'
     | '/_authenticated/hash/alertas'
     | '/_authenticated/hash/anuncios'
+    | '/_authenticated/hash/api-integracoes'
     | '/_authenticated/hash/assinaturas'
     | '/_authenticated/hash/auditoria'
     | '/_authenticated/hash/avaliacoes'
@@ -2396,6 +2397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHashAssinaturasRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
+    '/_authenticated/hash/api-integracoes': {
+      id: '/_authenticated/hash/api-integracoes'
+      path: '/api-integracoes'
+      fullPath: '/hash/api-integracoes'
+      preLoaderRoute: typeof AuthenticatedHashApiIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
     '/_authenticated/hash/anuncios': {
       id: '/_authenticated/hash/anuncios'
       path: '/anuncios'
@@ -2625,13 +2633,6 @@ declare module '@tanstack/react-router' {
       path: '/campanhas'
       fullPath: '/app/campanhas'
       preLoaderRoute: typeof AuthenticatedAppCampanhasRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
-    '/_authenticated/app/api': {
-      id: '/_authenticated/app/api'
-      path: '/api'
-      fullPath: '/app/api'
-      preLoaderRoute: typeof AuthenticatedAppApiRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/anuncios': {
@@ -3021,7 +3022,6 @@ const AuthenticatedAppCatalogoRouteWithChildren =
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppAnalyticsRoute: typeof AuthenticatedAppAnalyticsRoute
   AuthenticatedAppAnunciosRoute: typeof AuthenticatedAppAnunciosRoute
-  AuthenticatedAppApiRoute: typeof AuthenticatedAppApiRoute
   AuthenticatedAppCampanhasRoute: typeof AuthenticatedAppCampanhasRoute
   AuthenticatedAppCardapioRoute: typeof AuthenticatedAppCardapioRouteWithChildren
   AuthenticatedAppCarimbarRoute: typeof AuthenticatedAppCarimbarRoute
@@ -3053,7 +3053,6 @@ interface AuthenticatedAppRouteChildren {
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppAnalyticsRoute: AuthenticatedAppAnalyticsRoute,
   AuthenticatedAppAnunciosRoute: AuthenticatedAppAnunciosRoute,
-  AuthenticatedAppApiRoute: AuthenticatedAppApiRoute,
   AuthenticatedAppCampanhasRoute: AuthenticatedAppCampanhasRoute,
   AuthenticatedAppCardapioRoute: AuthenticatedAppCardapioRouteWithChildren,
   AuthenticatedAppCarimbarRoute: AuthenticatedAppCarimbarRoute,
@@ -3142,6 +3141,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
   AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
+  AuthenticatedHashApiIntegracoesRoute: typeof AuthenticatedHashApiIntegracoesRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
   AuthenticatedHashAvaliacoesRoute: typeof AuthenticatedHashAvaliacoesRoute
@@ -3176,6 +3176,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAjudaRoute: AuthenticatedHashAjudaRoute,
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
   AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
+  AuthenticatedHashApiIntegracoesRoute: AuthenticatedHashApiIntegracoesRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,
   AuthenticatedHashAvaliacoesRoute: AuthenticatedHashAvaliacoesRoute,

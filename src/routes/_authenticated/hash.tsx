@@ -78,6 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/hash/landing", label: "Página inicial", icon: Sparkles },
       { to: "/hash/integracoes", label: "Integrações", icon: Plug },
+      { to: "/hash/api-integracoes", label: "API de Integrações", icon: Link2 },
       { to: "/hash/provisionamentos", label: "Provisionamentos", icon: ServerCog },
 
       { to: "/hash/pixel", label: "Monitor do Pixel", icon: Activity },
