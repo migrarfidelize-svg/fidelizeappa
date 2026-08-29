@@ -416,7 +416,7 @@ function str(v: unknown, max = 200): string | null {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const API_VERSION = "2.0.0";
+export const API_VERSION = "2.2.0";
 const BOOT_AT = Date.now();
 
 function formatUptime(ms: number): string {
@@ -451,6 +451,20 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
   // GET /health (também aceito autenticado)
   if (a === "health" && !b) return healthResponse();
+
+  // GET /ping-auth — valida autenticação sem tocar em dados de negócio
+  if (a === "ping-auth" && !b) {
+    if (method !== "GET") return errorResponse(405, "method_not_allowed", "Use GET neste endpoint.");
+    return jsonResponse({
+      success: true,
+      authenticated: true,
+      api_key_valid: true,
+      scopes: ctx.key.scopes,
+      sandbox,
+      key_type: ctx.key.key_type ?? "server",
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   // GET /provisioning/:tenantId | POST /provisioning/:tenantId/resend-access
   if (a === "provisioning" && b) {

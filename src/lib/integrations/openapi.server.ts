@@ -60,7 +60,7 @@ export function buildOpenApiDocument(origin: string) {
     openapi: "3.1.0",
     info: {
       title: "Fidelize — API de Integrações",
-      version: "2.1.0",
+      version: "2.2.0",
       description:
         "API REST privada para integração externa com o Fidelize. Exceto `/health` e a documentação, todas as rotas exigem API Key no cabeçalho `x-api-key` (ou `Authorization: Bearer`).\n\n**Escopos por chave:** `customers.read`, `customers.write`, `points.manage`, `stats.read`, `provisioning`. Cada endpoint valida o escopo necessário e responde 403 (`scope_required`) quando ausente.\n\n**Tipo da chave:** `browser` valida `Origin`/`Referer` contra a lista de origens permitidas; `server` (server-to-server) ignora a validação de origem e autentica apenas por API Key, escopos e limite de requisições.\n\n**Sandbox:** chaves marcadas como sandbox leem dados reais, mas nenhuma escrita é persistida — as respostas trazem `\"sandbox\": true`.\n\nCada chave é vinculada a um estabelecimento, possui limite de requisições por minuto, tipo (`browser` ou `server`), lista opcional de origens permitidas (apenas para chaves `browser`) e registra logs imutáveis de auditoria (endpoint, método, IP, origem, status, tempo de resposta e chave utilizada).",
     },
@@ -94,6 +94,35 @@ export function buildOpenApiDocument(origin: string) {
                 },
               },
             },
+          },
+        },
+      },
+      "/ping-auth": {
+        get: {
+          summary: "Valida a autenticação da API Key",
+          description:
+            "Permite que sistemas externos confirmem que a chave é válida e conheçam seus escopos, sem chamar endpoints de negócio. Retorna 401 quando a chave é inválida ou revogada e 429 quando o rate limit é excedido.",
+          responses: {
+            "200": {
+              description: "Autenticação válida",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      authenticated: { type: "boolean", example: true },
+                      api_key_valid: { type: "boolean", example: true },
+                      scopes: { type: "array", items: { type: "string" }, example: ["customers.read", "provisioning"] },
+                      sandbox: { type: "boolean" },
+                      key_type: { type: "string", enum: ["browser", "server"] },
+                      timestamp: { type: "string", format: "date-time" },
+                    },
+                  },
+                },
+              },
+            },
+            ...commonResponses,
           },
         },
       },
