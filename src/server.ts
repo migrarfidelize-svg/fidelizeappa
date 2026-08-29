@@ -1,12 +1,16 @@
 import "./lib/error-capture";
-import { startCRMTimeoutWorker } from "./lib/crm/flow-engine.server";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
-// This is the Node/Nitro server entry, so PM2 starts the persisted timeout
-// worker independently of browser sessions or inbound webhook traffic.
-startCRMTimeoutWorker();
+// Long-running timers are valid only in the explicitly selected VPS process.
+// Preview/Publish runs in a request-scoped worker and must not initialize the
+// CRM scheduler (or its server-only dependency graph) at module load time.
+if (process.env["FIDELIZE_VPS_BUILD"] === "1") {
+  void import("./lib/crm/flow-engine.server").then(({ startCRMTimeoutWorker }) => {
+    startCRMTimeoutWorker();
+  }).catch((error) => console.error(error));
+}
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
