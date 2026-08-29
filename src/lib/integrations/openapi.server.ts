@@ -60,7 +60,7 @@ export function buildOpenApiDocument(origin: string) {
     openapi: "3.1.0",
     info: {
       title: "Fidelize — API de Integrações",
-      version: "2.3.0",
+      version: "2.4.0",
       description:
         "API REST privada para integração externa com o Fidelize. Exceto `/health` e a documentação, todas as rotas exigem API Key no cabeçalho `x-api-key` (ou `Authorization: Bearer`).\n\n**Escopos por chave:** `customers.read`, `customers.write`, `points.manage`, `stats.read`, `provisioning`. Cada endpoint valida o escopo necessário e responde 403 (`scope_required`) quando ausente.\n\n**Tipo da chave:** `browser` valida `Origin`/`Referer` contra a lista de origens permitidas; `server` (server-to-server) ignora a validação de origem e autentica apenas por API Key, escopos e limite de requisições.\n\n**Sandbox:** chaves marcadas como sandbox leem dados reais, mas nenhuma escrita é persistida — as respostas trazem `\"sandbox\": true`.\n\nCada chave é vinculada a um estabelecimento, possui limite de requisições por minuto, tipo (`browser` ou `server`), lista opcional de origens permitidas (apenas para chaves `browser`) e registra logs imutáveis de auditoria (endpoint, método, IP, origem, status, tempo de resposta e chave utilizada).",
     },
@@ -126,7 +126,63 @@ export function buildOpenApiDocument(origin: string) {
           },
         },
       },
+      "/magic-link": {
+        post: {
+          summary: "Gera link de login automático (SSO)",
+          description:
+            "Requer escopo `provisioning`. Devolve uma URL de autologin de uso único, válida por 5 minutos, vinculada ao usuário e ao tenant. Após o uso o token é invalidado imediatamente.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["email"],
+                  properties: {
+                    email: { type: "string", format: "email", example: "dono@empresa.com" },
+                    source: { type: "string", example: "ronnei" },
+                  },
+                },
+                example: { email: "dono@empresa.com", source: "ronnei" },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Link gerado",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      email: { type: "string" },
+                      user_id: { type: "string", format: "uuid" },
+                      magic_link: { type: "string", format: "uri" },
+                      autologin_url: { type: "string", format: "uri" },
+                      autologin_token: { type: "string" },
+                      expires_at: { type: "string", format: "date-time" },
+                      expires_in: { type: "integer", example: 300 },
+                    },
+                  },
+                  example: {
+                    success: true,
+                    email: "dono@empresa.com",
+                    user_id: "7c9e...",
+                    magic_link: "https://fidelizeapp.lovable.app/auth/autologin?token=abc123",
+                    autologin_url: "https://fidelizeapp.lovable.app/auth/autologin?token=abc123",
+                    autologin_token: "abc123",
+                    expires_in: 300,
+                  },
+                },
+              },
+            },
+            ...commonResponses,
+          },
+        },
+      },
       "/password-reset": {
+
         post: {
           summary: "Envia o e-mail de redefinição de senha",
           description:
@@ -357,6 +413,15 @@ export function buildOpenApiDocument(origin: string) {
                       user_id: { type: "string", format: "uuid" },
                       temporary_password: { type: "string" },
                       login_url: { type: "string", format: "uri" },
+                      autologin_url: {
+                        type: "string",
+                        format: "uri",
+                        description: "Login automático (SSO): uso único, expira em 5 minutos.",
+                      },
+                      autologin_token: { type: "string" },
+                      autologin_expires_at: { type: "string", format: "date-time" },
+                      autologin_expires_in: { type: "integer", example: 300 },
+
                       slug: { type: "string" },
                       plan: { type: "string" },
                       modules: { type: "array", items: { type: "string" } },

@@ -620,6 +620,51 @@ export type Database = {
         }
         Relationships: []
       }
+      autologin_tokens: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          email: string
+          establishment_id: string | null
+          expires_at: string
+          id: string
+          issued_ip: string | null
+          source: string | null
+          token_hash: string
+          used_at: string | null
+          used_ip: string | null
+          user_id: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          email: string
+          establishment_id?: string | null
+          expires_at: string
+          id?: string
+          issued_ip?: string | null
+          source?: string | null
+          token_hash: string
+          used_at?: string | null
+          used_ip?: string | null
+          user_id: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          email?: string
+          establishment_id?: string | null
+          expires_at?: string
+          id?: string
+          issued_ip?: string | null
+          source?: string | null
+          token_hash?: string
+          used_at?: string | null
+          used_ip?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       automation_jobs: {
         Row: {
           attempts: number
