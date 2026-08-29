@@ -272,6 +272,8 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
       metadata: {
         partner: cfg.key,
         event: input.event,
+        sent_event: sentEvent,
+
         delivery_id: deliveryId,
         attempts,
         status_code: status ?? null,
