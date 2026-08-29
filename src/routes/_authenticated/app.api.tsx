@@ -49,6 +49,7 @@ function ApiPage() {
   const [saving, setSaving] = useState(false);
   const [scopes, setScopes] = useState<ApiScope[]>([...DEFAULT_API_SCOPES]);
   const [sandbox, setSandbox] = useState(false);
+  const [keyType, setKeyType] = useState<"browser" | "server">("browser");
 
   const [fDays, setFDays] = useState("7");
   const [fEndpoint, setFEndpoint] = useState("");
@@ -95,6 +96,7 @@ function ApiPage() {
           allowed_origins: origins.split(",").map((o) => o.trim()).filter(Boolean),
           scopes,
           sandbox,
+          key_type: keyType,
         },
       });
       setSecret(res.secret);
@@ -152,8 +154,36 @@ function ApiPage() {
                 value={origins}
                 onChange={(e) => setOrigins(e.target.value)}
                 placeholder="https://meusistema.com, 200.10.1.5"
+                disabled={keyType === "server"}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Tipo da chave</Label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={keyType === "browser" ? "default" : "outline"}
+                onClick={() => setKeyType("browser")}
+              >
+                Browser
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={keyType === "server" ? "default" : "outline"}
+                onClick={() => setKeyType("server")}
+              >
+                Server-to-Server
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {keyType === "server"
+                ? "Autentica apenas por API Key, escopos e limite de requisições — a origem não é validada."
+                : "Valida Origin/Referer da requisição contra a lista de origens permitidas."}
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -299,11 +329,16 @@ function ApiPage() {
                     <p className="text-xs text-muted-foreground">
                       criada em {new Date(k.created_at).toLocaleDateString("pt-BR")} · {k.rate_limit_per_minute} req/min ·{" "}
                       {k.requests_total ?? 0} requisições ·{" "}
-                      {k.allowed_origins?.length ? `origens: ${k.allowed_origins.join(", ")}` : "todas as origens"} ·{" "}
+                      {k.key_type === "server"
+                        ? "sem validação de origem"
+                        : k.allowed_origins?.length
+                          ? `origens: ${k.allowed_origins.join(", ")}`
+                          : "todas as origens"} ·{" "}
                       {k.last_used_at ? `último uso ${new Date(k.last_used_at).toLocaleString("pt-BR")}` : "nunca usada"}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Badge variant="outline">{k.key_type === "server" ? "Server-to-Server" : "Browser"}</Badge>
                     {k.sandbox && <Badge variant="outline">Sandbox</Badge>}
                     {k.revoked_at ? (
                       <Badge variant="secondary">Revogada</Badge>
