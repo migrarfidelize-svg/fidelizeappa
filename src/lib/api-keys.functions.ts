@@ -32,13 +32,16 @@ export const listApiKeys = createServerFn({ method: "GET" })
     // Total de requisições por chave (logs imutáveis)
     const { data: logRows } = await context.supabase
       .from("api_request_logs")
-      .select("api_key_id")
+      .select("api_key_id, ip, path, created_at")
       .eq("establishment_id", data.establishment_id)
+      .order("created_at", { ascending: false })
       .limit(50000);
     const counts = new Map<string, number>();
-    for (const l of (logRows ?? []) as Array<{ api_key_id: string | null }>) {
+    const lastCall = new Map<string, { ip: string | null; path: string | null; created_at: string }>();
+    for (const l of (logRows ?? []) as Array<{ api_key_id: string | null; ip: string | null; path: string | null; created_at: string }>) {
       if (!l.api_key_id) continue;
       counts.set(l.api_key_id, (counts.get(l.api_key_id) ?? 0) + 1);
+      if (!lastCall.has(l.api_key_id)) lastCall.set(l.api_key_id, { ip: l.ip, path: l.path, created_at: l.created_at });
     }
 
     return keys.map((k) => ({
@@ -47,6 +50,8 @@ export const listApiKeys = createServerFn({ method: "GET" })
       sandbox: Boolean(k["sandbox"]),
       key_type: (k["key_type"] as string) ?? "browser",
       requests_total: counts.get(String(k["id"])) ?? 0,
+      last_ip: lastCall.get(String(k["id"]))?.ip ?? null,
+      last_endpoint: lastCall.get(String(k["id"]))?.path ?? null,
       status: k["revoked_at"] ? "revoked" : "active",
     }));
   });
