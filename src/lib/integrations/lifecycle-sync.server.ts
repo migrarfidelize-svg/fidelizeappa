@@ -158,52 +158,80 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
     triggered_by: input.origin ?? "app",
   };
 
-  const body = JSON.stringify(payload);
-  const timestamp = Math.floor(Date.now() / 1000).toString();
-  const signature = cfg.secret
-    ? `sha256=${createHmac("sha256", cfg.secret).update(`${timestamp}.${body}`).digest("hex")}`
-    : null;
+  /**
+   * Nomes alternativos aceitos pelo receptor do parceiro.
+   * O contrato oficial continua sendo `subscription.*`; se o parceiro
+   * responder 400 "evento não suportado", reenviamos com o alias legado.
+   */
+  const eventAliases: Record<LifecycleEvent, string[]> = {
+    "subscription.upgraded": ["upgrade"],
+    "subscription.downgraded": ["downgrade"],
+    "subscription.changed": ["upgrade"],
+    "subscription.cancelled": ["subscription.canceled"],
+    "subscription.suspended": ["subscription.cancelled", "subscription.canceled"],
+    "subscription.reactivated": [],
+  };
+  const eventCandidates = [input.event, ...(eventAliases[input.event] ?? [])];
 
   let delivered = false;
   let status: number | undefined;
   let attempts = 0;
   let lastError: string | undefined;
+  let sentEvent: string = input.event;
 
   if (cfg.url) {
-    for (let i = 0; i < 3 && !delivered; i++) {
-      attempts = i + 1;
-      try {
-        if (i > 0) await new Promise((r) => setTimeout(r, i * 800));
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 10_000);
-        const res = await fetch(cfg.url, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            "x-fidelize-event": input.event,
-            "x-fidelize-delivery": deliveryId,
-            "x-fidelize-timestamp": timestamp,
-            ...(signature ? { "x-fidelize-signature": signature } : {}),
-            // Compatibilidade com os métodos aceitos pelo Ronnei (shared secret).
-            // O padrão definitivo continua sendo o HMAC x-fidelize-signature.
-            ...(cfg.secret
-              ? { "x-api-key": cfg.secret, authorization: `Bearer ${cfg.secret}` }
-              : {}),
-            origin: "https://fidelizeapp.lovable.app",
-          },
-          body,
-          signal: controller.signal,
-        });
-        clearTimeout(timer);
-        status = res.status;
-        delivered = res.ok;
-        if (!res.ok) lastError = `HTTP ${res.status}`;
-      } catch (e) {
-        lastError = e instanceof Error ? e.message : String(e);
+    outer: for (const candidate of eventCandidates) {
+      const candidatePayload = { ...payload, event: candidate };
+      const body = JSON.stringify(candidatePayload);
+      const timestamp = Math.floor(Date.now() / 1000).toString();
+      const signature = cfg.secret
+        // Contrato do parceiro: HMAC-SHA256 do corpo bruto (sem prefixo de timestamp).
+        ? `sha256=${createHmac("sha256", cfg.secret).update(body).digest("hex")}`
+
+        : null;
+
+      for (let i = 0; i < 3 && !delivered; i++) {
+        attempts += 1;
+        try {
+          if (i > 0) await new Promise((r) => setTimeout(r, i * 800));
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 10_000);
+          const res = await fetch(cfg.url, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-fidelize-event": candidate,
+              "x-fidelize-delivery": deliveryId,
+              "x-fidelize-timestamp": timestamp,
+              ...(signature ? { "x-fidelize-signature": signature } : {}),
+              // Compatibilidade com os métodos aceitos pelo Ronnei (shared secret).
+              // O padrão definitivo continua sendo o HMAC x-fidelize-signature.
+              ...(cfg.secret
+                ? { "x-api-key": cfg.secret, authorization: `Bearer ${cfg.secret}` }
+                : {}),
+              origin: "https://fidelizeapp.lovable.app",
+            },
+            body,
+            signal: controller.signal,
+          });
+          clearTimeout(timer);
+          status = res.status;
+          delivered = res.ok;
+          sentEvent = candidate;
+          if (!res.ok) {
+            lastError = `HTTP ${res.status}`;
+            // 400 = contrato/evento recusado: tentar o próximo alias sem repetir.
+            if (res.status === 400) continue outer;
+          }
+        } catch (e) {
+          lastError = e instanceof Error ? e.message : String(e);
+        }
       }
+      if (delivered) break;
     }
   } else {
     lastError = `Webhook do parceiro ${cfg.label} não configurado.`;
+
   }
 
   // Fonte da verdade: após qualquer evento de ciclo de vida enviado ao parceiro,
@@ -246,6 +274,8 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
       metadata: {
         partner: cfg.key,
         event: input.event,
+        sent_event: sentEvent,
+
         delivery_id: deliveryId,
         attempts,
         status_code: status ?? null,
