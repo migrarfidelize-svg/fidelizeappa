@@ -12,7 +12,8 @@ export async function verifyMercadoPagoSignature(opts: {
   maxAgeMs?: number;
   /** Injeção para testes; default Date.now(). */
   now?: () => number;
-}): boolean {
+}): Promise<boolean> {
+  const { createHmac, timingSafeEqual } = await import("node:crypto");
   const { signatureHeader, requestId, dataId, secret } = opts;
   const maxAgeMs = opts.maxAgeMs ?? 10 * 60 * 1000;
   const now = opts.now ?? Date.now;
