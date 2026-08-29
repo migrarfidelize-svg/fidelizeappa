@@ -67,6 +67,7 @@ export const adminProvisioningOverview = createServerFn({ method: "GET" })
       active,
       suspended,
       errored,
+      success_rate: provisions.length > 0 ? ((provisions.length - errored) / provisions.length) * 100 : 100,
       by_plan: byPlan,
       last_provision: provisions[0]
         ? {
@@ -79,7 +80,7 @@ export const adminProvisioningOverview = createServerFn({ method: "GET" })
             created_at: provisions[0].created_at,
           }
         : null,
-      accounts: provisions.slice(0, 100).map((p) => {
+      accounts: provisions.slice(0, 500).map((p) => {
         const t = p.entity_id ? byId.get(p.entity_id) : undefined;
         return {
           id: p.id,
@@ -90,10 +91,12 @@ export const adminProvisioningOverview = createServerFn({ method: "GET" })
           source: (p.metadata ?? {})["source"] ?? null,
           email: (p.metadata ?? {})["email"] ?? null,
           status: !t ? "erro" : t.active ? "ativa" : "suspensa",
+          sandbox: Boolean((p.metadata ?? {})["sandbox"]),
+          login_url: (p.metadata ?? {})["login_url"] ?? null,
           created_at: p.created_at,
         };
       }),
-      events: rows.slice(0, 100).map((r) => ({
+      events: rows.slice(0, 200).map((r) => ({
         id: r.id,
         action: r.action,
         tenant_id: r.entity_id,
