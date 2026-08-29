@@ -11,6 +11,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { listActivePlans, changeEstablishmentPlan, getMyPlanUsage } from "@/lib/plans.functions";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { getSubscriptionOriginNotice } from "@/lib/integrations/lifecycle-sync.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,6 +51,12 @@ function MerchantPlansPage() {
   const { data: usage } = useQuery({
     queryKey: ["plan-usage", activeEst?.id],
     queryFn: () => getUsage({ data: { establishment_id: activeEst!.id } }),
+    enabled: !!activeEst?.id,
+  });
+  const originNoticeFn = useServerFn(getSubscriptionOriginNotice);
+  const { data: originNotice } = useQuery({
+    queryKey: ["subscription-origin", activeEst?.id],
+    queryFn: () => originNoticeFn({ data: { establishment_id: activeEst!.id } }),
     enabled: !!activeEst?.id,
   });
 
@@ -212,6 +219,11 @@ function MerchantPlansPage() {
                 {pending?.kind === "downgrade" && (
                   <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-destructive">
                     Ao fazer downgrade você poderá perder acesso a recursos e ficar acima dos limites do novo plano.
+                  </div>
+                )}
+                {originNotice?.notice && (
+                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-foreground">
+                    <strong>Atenção:</strong> {originNotice.notice}
                   </div>
                 )}
                 <div className="text-xs text-muted-foreground">A alteração é registrada em histórico de assinaturas e auditoria.</div>

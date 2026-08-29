@@ -463,6 +463,13 @@ export const cancelSubscription = createServerFn({ method: "POST" })
       entity_id: data.establishment_id,
       metadata: { at: new Date().toISOString() } as never,
     });
+    const { safeNotifyOriginPartner } = await import("@/lib/integrations/lifecycle-sync.server");
+    await safeNotifyOriginPartner({
+      tenantId: data.establishment_id,
+      event: "subscription.cancelled",
+      actorUserId: userId,
+      origin: "app",
+    });
     return { ok: true };
   });
 
