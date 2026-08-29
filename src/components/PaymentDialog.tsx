@@ -243,6 +243,15 @@ export function PaymentDialog({
                   )}
                 </div>
 
+                {originNotice?.notice && (
+                  <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 text-xs text-amber-100">
+                    <p className="font-semibold">Assinatura contratada pelo {originNotice.partner_label}</p>
+                    <p className="mt-1 text-amber-100/80">{originNotice.notice}</p>
+                  </div>
+                )}
+
+
+
                 <div className="mt-5 flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
                   <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-indigo-300" />PCI-DSS</span>
                   <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5 text-indigo-300" />SSL 256-bit</span>
