@@ -525,16 +525,11 @@ export async function changeAccountPlan(
 
   await supabaseAdmin.from("establishments").update({ plan: tier } as never).eq("id", tenantId);
 
-  const modules = [...PROVISION_MODULES];
-  await supabaseAdmin.from("establishment_feature_overrides").upsert(
-    modules.map((feature_key) => ({
-      establishment_id: tenantId,
-      feature_key,
-      enabled: true,
-      note: `Alteração de plano via API (${plan})`,
-    })) as never,
-    { onConflict: "establishment_id,feature_key" },
-  );
+  // Módulos passam a seguir o novo plano; liberações fixas legadas são removidas
+  // para que downgrade/upgrade reflitam exatamente o plano contratado.
+  await clearLegacyOverrides(supabaseAdmin as never, tenantId);
+  const modules = await listPlanModules(supabaseAdmin as never, (planRow as { id: string }).id);
+
 
   const response = { success: true, tenant_id: tenantId, plan, tier, modules, status: "active" };
   await writeLifecycleAudit({
