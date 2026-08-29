@@ -580,7 +580,7 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     if (!user) return errorResponse(404, "user_not_found", "Usuário não encontrado.");
 
     const { data: membership } = await db
-      .from("establishment_users")
+      .from("establishment_members")
       .select("establishment_id")
       .eq("user_id", user.id)
       .limit(1)
