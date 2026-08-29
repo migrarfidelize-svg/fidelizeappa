@@ -408,7 +408,7 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         });
         const { mode, isTest } = classification;
 
-        const signatureValid = verifyMercadoPagoSignature({
+        const signatureValid = await verifyMercadoPagoSignature({
           signatureHeader, requestId, dataId, secret,
         });
 
