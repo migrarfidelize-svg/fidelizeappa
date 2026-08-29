@@ -52,6 +52,12 @@ function MerchantPlansPage() {
     queryFn: () => getUsage({ data: { establishment_id: activeEst!.id } }),
     enabled: !!activeEst?.id,
   });
+  const originNoticeFn = useServerFn(getSubscriptionOriginNotice);
+  const { data: originNotice } = useQuery({
+    queryKey: ["subscription-origin", activeEst?.id],
+    queryFn: () => originNoticeFn({ data: { establishment_id: activeEst!.id } }),
+    enabled: !!activeEst?.id,
+  });
 
   const currentTier = usage?.plan?.tier;
   const [expanded, setExpanded] = useState<string | null>(null);
