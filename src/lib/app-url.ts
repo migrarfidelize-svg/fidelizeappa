@@ -1,32 +1,24 @@
 /**
  * Resolve a URL pública da aplicação para uso em server functions
- * (links em e-mails, webhooks, redirects). Ordem de precedência:
- *   1. PUBLISHED_APP_URL    (domínio publicado/canônico)
- *   2. PUBLIC_APP_URL       (produção — recomendado)
- *   3. APP_URL              (alias legado)
- *   4. VITE_APP_URL         (compartilhado com o cliente)
- *   5. http://localhost:8080 (fallback apenas em dev)
+ * (links em e-mails, webhooks, redirects) e no cliente.
  *
- * Nunca fazer hardcode do domínio do projeto — configure via env.
+ * Ordem de precedência:
+ *   1. APP_URL                    (domínio configurado — produção/canônico)
+ *   2. window.location.origin     (cliente, quando APP_URL não estiver setada)
+ *   3. http://localhost:8080      (fallback apenas em dev/servidor sem APP_URL)
+ *
+ * Para trocar o domínio (ex.: afidelize.app), atualize apenas a secret APP_URL
+ * (e PUBLIC_APP_URL/PUBLISHED_APP_URL se ainda referenciados) — sem mudanças no código.
  */
 export function getPublicAppUrl(): string {
-  const candidates = [
-    process.env['PUBLIC_APP_URL'],
-    process.env['PUBLISHED_APP_URL'],
-    process.env['APP_URL'],
-    process.env['VITE_APP_URL'],
-  ].filter((v): v is string => !!v);
+  const appUrl = process.env['APP_URL'];
+  if (appUrl && appUrl.trim()) return appUrl.replace(/\/+$/, "");
 
-  const isPreviewOrLocal = (u: string) =>
-    /(-preview--|--[0-9a-f-]+\.lovable\.app|localhost|127\.0\.0\.1)/i.test(u);
+  // Cliente: usa a origem atual da página (sem hardcode).
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin.replace(/\/+$/, "");
+  }
 
-  // Se estivermos em produção (não local/preview) e houver um candidato canônico, use-o.
-  const canonical = candidates.find((u) => !isPreviewOrLocal(u));
-  if (canonical) return canonical.replace(/\/+$/, "");
-
-  // Fallback dinâmico para evitar hardcode: tenta o primeiro candidato disponível (provavelmente a URL do preview)
-  if (candidates.length > 0) return candidates[0].replace(/\/+$/, "");
-
-  // Último recurso
+  // Servidor sem APP_URL: fallback de desenvolvimento.
   return "http://localhost:8080";
 }
