@@ -143,18 +143,18 @@ function ApiAuditoria() {
                 </thead>
                 <tbody>
                   {(data?.rows ?? []).map((r) => {
-                    const code = Number(r["status_code"] ?? 0);
+                    const code = r.status_code ?? 0;
                     return (
-                      <tr key={String(r["id"])} className="border-t">
-                        <td className="py-2 pr-3 whitespace-nowrap">{new Date(String(r["created_at"])).toLocaleString("pt-BR")}</td>
-                        <td className="py-2 pr-3">{String(r["method"] ?? "—")}</td>
-                        <td className="py-2 pr-3 break-all">{String(r["path"] ?? "—")}</td>
-                        <td className="py-2 pr-3 break-all">{String(r["ip"] ?? "—")}</td>
-                        <td className="py-2 pr-3 break-all">{String(r["origin"] ?? "—")}</td>
-                        <td className="py-2 pr-3">{r["duration_ms"] != null ? `${String(r["duration_ms"])} ms` : "—"}</td>
+                      <tr key={r.id} className="border-t">
+                        <td className="py-2 pr-3 whitespace-nowrap">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                        <td className="py-2 pr-3">{r.method ?? "—"}</td>
+                        <td className="py-2 pr-3 break-all">{r.path ?? "—"}</td>
+                        <td className="py-2 pr-3 break-all">{r.ip ?? "—"}</td>
+                        <td className="py-2 pr-3 break-all">{r.origin ?? "—"}</td>
+                        <td className="py-2 pr-3">{r.duration_ms != null ? `${r.duration_ms} ms` : "—"}</td>
                         <td className="py-2 pr-3">
                           <Badge variant={code < 400 ? "default" : code < 500 ? "secondary" : "outline"}>
-                            {code} {String(r["error_code"] ?? "")}
+                            {code} {r.error_code ?? ""}
                           </Badge>
                         </td>
                       </tr>

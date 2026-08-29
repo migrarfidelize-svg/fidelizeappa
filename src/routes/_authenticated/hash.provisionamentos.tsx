@@ -93,14 +93,14 @@ function AdminProvisionamentos() {
   const [detailTenant, setDetailTenant] = useState<string | null>(null);
 
   const mutation = useMutation({
-    mutationFn: (v: { tenant_id: string; action: "resend_access" | "new_password" | "suspend" | "reactivate" }) =>
-      runAction({ data: v }),
-    onSuccess: (res: Record<string, unknown>, v) => {
+    mutationFn: async (v: { tenant_id: string; action: "resend_access" | "new_password" | "suspend" | "reactivate" }) =>
+      (await runAction({ data: v })) as { temporary_password: string | null; login_url: string | null },
+    onSuccess: (res, v) => {
       qc.invalidateQueries({ queryKey: ["admin-provisioning"] });
       if (v.action === "suspend") toast.success("Conta suspensa.");
       else if (v.action === "reactivate") toast.success("Conta reativada.");
       else {
-        const pwd = String(res["temporary_password"] ?? "");
+        const pwd = res.temporary_password ?? "";
         toast.success(pwd ? `Nova senha temporária: ${pwd}` : "Acesso reenviado.", {
           duration: 15000,
           action: pwd ? { label: "Copiar", onClick: () => copy(pwd, "Senha temporária") } : undefined,
@@ -404,10 +404,8 @@ function AdminProvisionamentos() {
             <LoadingSkeleton />
           ) : (
             <div className="space-y-3">
-              {detailQ.data?.account && (
-                <pre className="overflow-x-auto rounded bg-muted p-2 text-[11px]">
-                  {JSON.stringify(detailQ.data.account, null, 2)}
-                </pre>
+              {detailQ.data?.account_json && (
+                <pre className="overflow-x-auto rounded bg-muted p-2 text-[11px]">{detailQ.data.account_json}</pre>
               )}
               {(detailQ.data?.audit ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground">Sem eventos de auditoria.</p>
@@ -419,10 +417,8 @@ function AdminProvisionamentos() {
                       <span className="text-muted-foreground">{new Date(a.created_at).toLocaleString("pt-BR")}</span>
                       <span className="text-muted-foreground">IP {a.ip ?? "—"}</span>
                     </div>
-                    {a.metadata && (
-                      <pre className="mt-2 overflow-x-auto rounded bg-muted p-2 text-[11px]">
-                        {JSON.stringify(a.metadata, null, 2)}
-                      </pre>
+                    {a.metadata_json && (
+                      <pre className="mt-2 overflow-x-auto rounded bg-muted p-2 text-[11px]">{a.metadata_json}</pre>
                     )}
                   </div>
                 ))
