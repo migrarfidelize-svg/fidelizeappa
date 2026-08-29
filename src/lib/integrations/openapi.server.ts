@@ -60,9 +60,9 @@ export function buildOpenApiDocument(origin: string) {
     openapi: "3.1.0",
     info: {
       title: "Fidelize — API de Integrações",
-      version: "1.0.0",
+      version: "2.0.0",
       description:
-        "API REST privada para integração externa com o Fidelize. Todas as rotas exigem API Key no cabeçalho `x-api-key` (ou `Authorization: Bearer`). Cada chave é vinculada a um estabelecimento, possui limite de requisições por minuto, lista opcional de origens permitidas e registra logs de auditoria.",
+        "API REST privada para integração externa com o Fidelize. Exceto `/health` e a documentação, todas as rotas exigem API Key no cabeçalho `x-api-key` (ou `Authorization: Bearer`).\n\n**Escopos por chave:** `customers.read`, `customers.write`, `points.manage`, `stats.read`, `provisioning`. Cada endpoint valida o escopo necessário e responde 403 (`scope_required`) quando ausente.\n\n**Sandbox:** chaves marcadas como sandbox leem dados reais, mas nenhuma escrita é persistida — as respostas trazem `\"sandbox\": true`.\n\nCada chave é vinculada a um estabelecimento, possui limite de requisições por minuto, lista opcional de origens permitidas e registra logs imutáveis de auditoria (endpoint, método, IP, origem, status, tempo de resposta e chave utilizada).",
     },
     servers: [{ url: `${origin}${API_BASE_PATH}` }],
     security: [{ ApiKeyAuth: [] }],
@@ -73,6 +73,87 @@ export function buildOpenApiDocument(origin: string) {
       schemas: { Customer: customerSchema, Error: errorSchema },
     },
     paths: {
+      "/health": {
+        get: {
+          summary: "Saúde da API (público, não exige API Key)",
+          security: [],
+          responses: {
+            "200": {
+              description: "API operacional",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string", example: "ok" },
+                      version: { type: "string" },
+                      uptime: { type: "string" },
+                      timestamp: { type: "string", format: "date-time" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/provisioning/{tenantId}": {
+        get: {
+          summary: "Consulta uma conta provisionada",
+          description: "Retorna tenant, plano, módulos liberados, usuário administrador e status. Requer escopo `provisioning`.",
+          parameters: [{ name: "tenantId", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+          responses: {
+            "200": {
+              description: "Conta encontrada",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      tenant: { type: "object" },
+                      plan: { type: "object", nullable: true },
+                      modules: { type: "array", items: { type: "string" } },
+                      admin_user: { type: "object", nullable: true },
+                      status: { type: "string", enum: ["active", "pending", "inactive"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": { description: "Tenant não encontrado", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
+      "/provisioning/{tenantId}/resend-access": {
+        post: {
+          summary: "Reenvia o acesso do administrador (nova senha temporária)",
+          description: "Gera uma nova senha temporária, envia e-mail de acesso e registra auditoria. Requer escopo `provisioning`.",
+          parameters: [{ name: "tenantId", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+          responses: {
+            "200": {
+              description: "Acesso reenviado",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      tenant_id: { type: "string", format: "uuid" },
+                      user_id: { type: "string", format: "uuid" },
+                      email: { type: "string" },
+                      temporary_password: { type: "string" },
+                      login_url: { type: "string", format: "uri" },
+                    },
+                  },
+                },
+              },
+            },
+            "404": { description: "Tenant ou administrador não encontrado", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
       "/provision-account": {
         post: {
           summary: "Provisiona uma conta completa (empresa + admin + plano + módulos)",

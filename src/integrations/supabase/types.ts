@@ -273,7 +273,9 @@ export type Database = {
           name: string
           prefix: string
           rate_limit_per_minute: number
+          requests_count: number
           revoked_at: string | null
+          sandbox: boolean
           scopes: string[]
         }
         Insert: {
@@ -287,7 +289,9 @@ export type Database = {
           name: string
           prefix: string
           rate_limit_per_minute?: number
+          requests_count?: number
           revoked_at?: string | null
+          sandbox?: boolean
           scopes?: string[]
         }
         Update: {
@@ -301,7 +305,9 @@ export type Database = {
           name?: string
           prefix?: string
           rate_limit_per_minute?: number
+          requests_count?: number
           revoked_at?: string | null
+          sandbox?: boolean
           scopes?: string[]
         }
         Relationships: [

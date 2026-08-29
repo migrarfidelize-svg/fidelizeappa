@@ -3,6 +3,7 @@
  * Server-only: autenticação por API Key, rate limit, auditoria e handlers.
  */
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { hasScope, type ApiScope } from "./scopes";
 
 export const API_BASE_PATH = "/api/public/integrations";
 
@@ -13,6 +14,7 @@ export type ApiKeyRow = {
   prefix: string;
   key_hash: string;
   scopes: string[];
+  sandbox: boolean;
   allowed_origins: string[];
   rate_limit_per_minute: number;
   revoked_at: string | null;
@@ -95,7 +97,7 @@ export async function authenticateApiRequest(request: Request): Promise<AuthResu
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: row, error } = await supabaseAdmin
     .from("api_keys")
-    .select("id, establishment_id, name, prefix, key_hash, scopes, allowed_origins, rate_limit_per_minute, revoked_at")
+    .select("id, establishment_id, name, prefix, key_hash, scopes, sandbox, allowed_origins, rate_limit_per_minute, revoked_at")
     .eq("prefix", prefix)
     .maybeSingle();
 
@@ -412,18 +414,71 @@ function str(v: unknown, max = 200): string | null {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export const API_VERSION = "2.0.0";
+const BOOT_AT = Date.now();
+
+function formatUptime(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return `${d}d ${h}h ${m}m ${s % 60}s`;
+}
+
+/** Resposta do endpoint público de saúde (não exige API Key). */
+export function healthResponse(): Response {
+  return jsonResponse({
+    status: "ok",
+    version: API_VERSION,
+    uptime: formatUptime(Date.now() - BOOT_AT),
+    uptime_seconds: Math.floor((Date.now() - BOOT_AT) / 1000),
+    timestamp: new Date().toISOString(),
+  });
+}
+
 /** Roteia uma requisição já autenticada. `segments` = caminho após /api/public/integrations. */
 export async function handleApiRoute(request: Request, segments: string[], ctx: Ctx): Promise<Response> {
   const estId = ctx.key.establishment_id;
   const method = request.method.toUpperCase();
   const [a, b, c] = segments;
+  const sandbox = Boolean(ctx.key.sandbox);
+
+  const deny = (scope: ApiScope) =>
+    errorResponse(403, "scope_required", `Esta API Key não possui o escopo "${scope}".`);
+  const can = (scope: ApiScope) => hasScope(ctx.key.scopes, scope);
+
+  // GET /health (também aceito autenticado)
+  if (a === "health" && !b) return healthResponse();
+
+  // GET /provisioning/:tenantId | POST /provisioning/:tenantId/resend-access
+  if (a === "provisioning" && b) {
+    if (!can("provisioning")) return deny("provisioning");
+    if (!UUID_RE.test(b)) return errorResponse(422, "invalid_tenant_id", "tenantId inválido.");
+    const mod = await import("./provisioning.server");
+
+    if (!c && method === "GET") {
+      const result = await mod.getProvisionedAccount(b);
+      if (!result.ok) return errorResponse(result.status, result.code, result.message);
+      return jsonResponse(result.data);
+    }
+    if (c === "resend-access" && method === "POST") {
+      if (sandbox) {
+        return jsonResponse({ success: true, sandbox: true, tenant_id: b, email: null, temporary_password: "sandbox-temp-password" });
+      }
+      const result = await mod.resendProvisionedAccess(b, {
+        apiKeyId: ctx.key.id,
+        ip: clientIp(request),
+      });
+      if (!result.ok) return errorResponse(result.status, result.code, result.message);
+      return jsonResponse(result.data);
+    }
+    return errorResponse(405, "method_not_allowed", "Método não permitido para este recurso.");
+  }
 
   // POST /provision-account — cria empresa + admin + plano + módulos
   if (a === "provision-account" && !b) {
     if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
-    if (!(ctx.key.scopes ?? []).includes("provisioning")) {
-      return errorResponse(403, "scope_required", "Esta API Key não possui o escopo \"provisioning\".");
-    }
+    if (!can("provisioning")) return deny("provisioning");
     const body = await readJson(request);
     if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
 
@@ -439,6 +494,23 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     }
     if (phoneRaw && (phoneRaw.length < 10 || phoneRaw.length > 13)) {
       return errorResponse(422, "invalid_phone", "Telefone inválido.");
+    }
+
+    if (sandbox) {
+      return jsonResponse(
+        {
+          success: true,
+          sandbox: true,
+          tenant_id: "00000000-0000-4000-8000-000000000000",
+          user_id: "00000000-0000-4000-8000-000000000001",
+          temporary_password: "sandbox-temp-password",
+          login_url: `${new URL(request.url).origin}/auth`,
+          slug: "sandbox-tenant",
+          plan,
+          modules: ["loyalty", "menu", "linktree"],
+        },
+        201,
+      );
     }
 
     const { provisionAccount } = await import("./provisioning.server");
@@ -465,6 +537,9 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
   // GET /customer/:id  |  PUT /customer/:id  |  GET /customer/:id/stats
   if (a === "customer" && b && UUID_RE.test(b)) {
+    const needed: ApiScope = c === "stats" ? "stats.read" : method === "PUT" ? "customers.write" : "customers.read";
+    if (!can(needed)) return deny(needed);
+
     const customer = await findCustomerById(estId, b);
     if (!customer) return errorResponse(404, "customer_not_found", "Cliente não encontrado.");
 
@@ -494,6 +569,9 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
       if ("marketing_opt_in" in body) patch.marketing_opt_in = Boolean(body.marketing_opt_in);
       if ("blocked" in body) patch.blocked = Boolean(body.blocked);
       if (Object.keys(patch).length === 0) return errorResponse(422, "empty_update", "Nenhum campo para atualizar.");
+      if (sandbox) {
+        return jsonResponse({ sandbox: true, customer: { ...toCustomerDTO(customer), ...patch } });
+      }
 
       const db = await admin();
       const { data, error } = await db
@@ -511,6 +589,7 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
   // POST /customer
   if (a === "customer" && !b && method === "POST") {
+    if (!can("customers.write")) return deny("customers.write");
     const body = await readJson(request);
     if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
     const name = str(body.name, 80);
@@ -520,6 +599,33 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
     const existing = await findCustomerByPhone(estId, phone);
     if (existing) return jsonResponse({ customer: toCustomerDTO(existing), created: false }, 200);
+
+    if (sandbox) {
+      return jsonResponse(
+        {
+          sandbox: true,
+          created: true,
+          customer: {
+            id: "00000000-0000-4000-8000-000000000002",
+            code: "SANDBOX",
+            name,
+            phone,
+            email: str(body.email, 120),
+            tier: "bronze",
+            visits: 0,
+            last_visit_at: null,
+            marketing_opt_in: Boolean(body.marketing_opt_in ?? false),
+            birthdate: str(body.birthdate, 10),
+            notes: str(body.notes, 500),
+            blocked: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            establishment_id: estId,
+          },
+        },
+        201,
+      );
+    }
 
     const db = await admin();
     const { data, error } = await db
@@ -541,6 +647,7 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
   // GET /customer-by-phone/:phone
   if (a === "customer-by-phone" && b && method === "GET") {
+    if (!can("customers.read")) return deny("customers.read");
     const customer = await findCustomerByPhone(estId, decodeURIComponent(b));
     if (!customer) return errorResponse(404, "customer_not_found", "Cliente não encontrado.");
     return jsonResponse({ customer: toCustomerDTO(customer) });
@@ -548,6 +655,7 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
 
   // POST /points/add | POST /points/remove
   if (a === "points" && (b === "add" || b === "remove") && method === "POST") {
+    if (!can("points.manage")) return deny("points.manage");
     const body = await readJson(request);
     if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
 
@@ -567,6 +675,10 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     const quantity = Math.floor(qtyRaw);
     const campaignId = str(body.campaign_id, 40) ?? undefined;
     if (campaignId && !UUID_RE.test(campaignId)) return errorResponse(422, "invalid_campaign", "campaign_id inválido.");
+
+    if (sandbox) {
+      return jsonResponse({ ok: true, sandbox: true, customer_id: customer.id, [b === "add" ? "added" : "removed"]: quantity });
+    }
 
     const result = b === "add"
       ? await addPoints(estId, customer, quantity, campaignId)
