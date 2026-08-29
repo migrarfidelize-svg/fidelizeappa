@@ -55,19 +55,43 @@ async function insertEmailLog(row: {
   }
 }
 
+/** Converte HTML em texto simples para o corpo alternativo do e-mail. */
+export function htmlToPlainText(html: string): string {
+  return (html || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function performResendCall(
   settings: SystemEmailSettings,
   input: { to: string; subject: string; html: string; text?: string },
 ): Promise<{ ok: boolean; resend_id: string | null; error: string | null; duration_ms: number }> {
   const started = Date.now();
   const from = `${settings.sender_name} <${settings.sender_email}>`;
+  const senderDomain = settings.sender_email.split("@")[1] ?? "";
+  const unsubscribeMailto = `mailto:${settings.reply_to || settings.sender_email}?subject=unsubscribe`;
   const payload: Record<string, unknown> = {
     from,
     to: [input.to],
     subject: input.subject,
     html: input.html,
+    // Multipart (html + texto) reduz muito a pontuação de spam
+    text: input.text?.trim() || htmlToPlainText(input.html),
+    headers: {
+      "List-Unsubscribe": `<${unsubscribeMailto}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      ...(senderDomain ? { "X-Entity-Ref-ID": `${senderDomain}-${Date.now()}` } : {}),
+    },
   };
-  if (input.text) payload.text = input.text;
   if (settings.reply_to) payload.reply_to = settings.reply_to;
 
   let resend_id: string | null = null;
