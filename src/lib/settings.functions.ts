@@ -209,6 +209,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     await assertRole(supabase, userId, data.establishment_id, "manager");
     const { enforceLimit } = await import("@/lib/plans.functions");
     await enforceLimit(supabase, data.establishment_id, "employees", 1);
+    const { randomBytes } = await import("node:crypto");
     const token = randomBytes(24).toString("hex");
     const { data: inv, error } = await supabase.from("team_invites").insert({
       establishment_id: data.establishment_id,
@@ -241,6 +242,7 @@ export const resendInvite = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "manager");
+    const { randomBytes } = await import("node:crypto");
     const token = randomBytes(24).toString("hex");
     const expires_at = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString();
     const { data: inv, error } = await supabase.from("team_invites")
