@@ -318,7 +318,7 @@ export const setMyPin = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const hash = hashPin(data.pin);
+    const hash = await hashPin(data.pin);
     const { error } = await supabase.from("establishment_members").update({ pin_hash: hash })
       .eq("establishment_id", data.establishment_id).eq("user_id", userId);
     if (error) throw new Error(error.message);
@@ -344,7 +344,7 @@ export const verifyMyPin = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: m } = await supabase.from("establishment_members").select("pin_hash").eq("establishment_id", data.establishment_id).eq("user_id", userId).maybeSingle();
     if (!m?.pin_hash) return { ok: true, required: false };
-    const ok = verifyPin(data.pin, m.pin_hash);
+    const ok = await verifyPin(data.pin, m.pin_hash);
     if (ok) await supabase.from("establishment_members").update({ last_pin_used_at: new Date().toISOString() }).eq("establishment_id", data.establishment_id).eq("user_id", userId);
     return { ok, required: true };
   });
