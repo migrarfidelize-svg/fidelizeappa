@@ -30,7 +30,7 @@ await access(viteCli, constants.R_OK);
 const viteExitCode = await new Promise((resolveExitCode, reject) => {
   const child = spawn(process.execPath, [viteCli, "build"], {
     cwd: projectRoot,
-    env: process.env,
+    env: { ...process.env, FIDELIZE_VPS_BUILD: "1" },
     stdio: "inherit",
   });
   child.once("error", reject);
