@@ -594,6 +594,23 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     );
 
     if (!result.ok) return errorResponse(result.status, result.code, result.message);
+
+    // Login automático (SSO): token assinado, uso único, 5 minutos.
+    let autologin: { token: string; url: string; expires_at: string; expires_in: number } | null = null;
+    try {
+      const { issueAutologinToken } = await import("./autologin.server");
+      autologin = await issueAutologinToken({
+        userId: result.user_id,
+        email,
+        establishmentId: result.tenant_id,
+        apiKeyId: ctx.key.id,
+        source: str(body.source, 60),
+        ip: clientIp(request),
+      });
+    } catch (e) {
+      console.error("[integrations-api] falha ao emitir autologin", e);
+    }
+
     return jsonResponse(
       {
         success: true,
@@ -601,12 +618,17 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
         user_id: result.user_id,
         temporary_password: result.temporary_password,
         login_url: result.login_url,
+        autologin_url: autologin?.url ?? null,
+        autologin_token: autologin?.token ?? null,
+        autologin_expires_at: autologin?.expires_at ?? null,
+        autologin_expires_in: autologin?.expires_in ?? null,
         slug: result.slug,
         plan: result.plan,
         modules: result.modules,
       },
       201,
     );
+
   }
 
   // GET /customer/:id  |  PUT /customer/:id  |  GET /customer/:id/stats
