@@ -16,14 +16,45 @@ const PLAN_TIER: Record<PlanKey, string> = {
   premium: "enterprise",
 };
 
-/** Módulos liberados no provisionamento. */
-export const PROVISION_MODULES = [
-  "loyalty_card", // Cartão Fidelidade
+/**
+ * Módulos que o provisionamento antigo liberava por override fixo, independente
+ * do plano. Mantido apenas para limpar essas liberações legadas — hoje os
+ * módulos vêm exclusivamente de `plan_features`, igual à compra padrão.
+ */
+export const LEGACY_PROVISION_MODULES = [
+  "loyalty_card",
   "loyalty_cards",
   "stamps",
-  "digital_menu", // Cardápio Digital
-  "linktree", // Árvore de Links
+  "digital_menu",
+  "linktree",
 ] as const;
+
+/** Módulos incluídos no plano (mesma fonte usada pela compra padrão). */
+async function listPlanModules(
+  supabaseAdmin: { from: (t: string) => any },
+  planId: string,
+): Promise<string[]> {
+  const { data } = await supabaseAdmin
+    .from("plan_features")
+    .select("feature_key, enabled")
+    .eq("plan_id", planId);
+  return ((data ?? []) as Array<{ feature_key: string; enabled: boolean }>)
+    .filter((f) => f.enabled)
+    .map((f) => f.feature_key);
+}
+
+/** Remove liberações fixas criadas por provisionamentos antigos. */
+async function clearLegacyOverrides(
+  supabaseAdmin: { from: (t: string) => any },
+  tenantId: string,
+) {
+  await supabaseAdmin
+    .from("establishment_feature_overrides")
+    .delete()
+    .eq("establishment_id", tenantId)
+    .in("feature_key", [...LEGACY_PROVISION_MODULES]);
+}
+
 
 export type ProvisionInput = {
   name: string;
@@ -203,17 +234,10 @@ export async function provisionAccount(input: ProvisionInput, meta: {
     return { ok: false, status: 500, code: "subscription_failed", message: subErr.message };
   }
 
-  // 8. Liberação dos módulos (override explícito, independente do plano)
-  const modules = [...PROVISION_MODULES];
-  await supabaseAdmin.from("establishment_feature_overrides").upsert(
-    modules.map((feature_key) => ({
-      establishment_id: tenantId,
-      feature_key,
-      enabled: true,
-      note: `Provisionamento automático (${source})`,
-    })) as never,
-    { onConflict: "establishment_id,feature_key" },
-  );
+  // 8. Módulos: exatamente os do plano contratado (mesma regra da compra padrão).
+  //    Nenhum override fixo é criado — o gate usa `plan_features`.
+  const modules = await listPlanModules(supabaseAdmin as never, (plan as { id: string }).id);
+
 
   // 9. Auditoria
   try {
@@ -269,11 +293,16 @@ export async function getProvisionedAccount(tenantId: string): Promise<Provision
 
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
-    .select("id, tier, status, provider, current_period_start, current_period_end, metadata, created_at")
+    .select("id, plan_id, tier, status, provider, current_period_start, current_period_end, metadata, created_at")
     .eq("establishment_id", tenantId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  const planModules = (sub as { plan_id?: string | null } | null)?.plan_id
+    ? await listPlanModules(supabaseAdmin as never, (sub as { plan_id: string }).plan_id)
+    : [];
+
 
   const { data: overrides } = await supabaseAdmin
     .from("establishment_feature_overrides")
@@ -330,9 +359,13 @@ export async function getProvisionedAccount(tenantId: string): Promise<Provision
             source: (subRow.metadata ?? {})["source"] ?? null,
           }
         : null,
-      modules: ((overrides ?? []) as Array<{ feature_key: string; enabled: boolean }>)
-        .filter((o) => o.enabled)
-        .map((o) => o.feature_key),
+      modules: Array.from(new Set([
+        ...planModules,
+        ...((overrides ?? []) as Array<{ feature_key: string; enabled: boolean }>)
+          .filter((o) => o.enabled)
+          .map((o) => o.feature_key),
+      ])),
+      plan_modules: planModules,
       admin_user: adminUser,
       status: estRow.active && subRow?.status === "active" ? "active" : estRow.active ? "pending" : "inactive",
     },
@@ -501,16 +534,11 @@ export async function changeAccountPlan(
 
   await supabaseAdmin.from("establishments").update({ plan: tier } as never).eq("id", tenantId);
 
-  const modules = [...PROVISION_MODULES];
-  await supabaseAdmin.from("establishment_feature_overrides").upsert(
-    modules.map((feature_key) => ({
-      establishment_id: tenantId,
-      feature_key,
-      enabled: true,
-      note: `Alteração de plano via API (${plan})`,
-    })) as never,
-    { onConflict: "establishment_id,feature_key" },
-  );
+  // Módulos passam a seguir o novo plano; liberações fixas legadas são removidas
+  // para que downgrade/upgrade reflitam exatamente o plano contratado.
+  await clearLegacyOverrides(supabaseAdmin as never, tenantId);
+  const modules = await listPlanModules(supabaseAdmin as never, (planRow as { id: string }).id);
+
 
   const response = { success: true, tenant_id: tenantId, plan, tier, modules, status: "active" };
   await writeLifecycleAudit({
