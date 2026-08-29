@@ -355,45 +355,7 @@ export const requestPasswordRecovery = createServerFn({ method: "POST" })
     redirect_to: z.string().url().optional(),
   }).parse(d))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendTemplateEmail, enqueueEmail, renderTemplate } = await import("./email.server");
-
-    // Gera link de recuperação via Admin API (não vaza se o usuário existe)
-    let actionLink: string | null = null;
-    let userName = "";
-    try {
-      const { data: link } = await (supabaseAdmin.auth.admin as any).generateLink({
-        type: "recovery",
-        email: data.email,
-        options: data.redirect_to ? { redirectTo: data.redirect_to } : undefined,
-      });
-      actionLink = link?.properties?.action_link ?? null;
-      userName = (link?.user?.user_metadata as any)?.full_name ?? "";
-    } catch {
-      // Silencioso — sempre responder sucesso para evitar user enumeration
-    }
-
-    if (actionLink) {
-      const variables = { name: userName || "cliente", action_link: actionLink };
-      try {
-        await sendTemplateEmail({
-          to: data.email,
-          template: "password_recovery",
-          variables,
-        });
-      } catch (err: any) {
-        // Se o template estiver indisponível, enfileira um fallback
-        try {
-          const rendered = await renderTemplate("password_recovery", variables);
-          await enqueueEmail({
-            to: data.email, subject: rendered.subject, html: rendered.html,
-            text: rendered.text ?? undefined, template: "password_recovery",
-            variables, last_error: err?.message ?? "Falha inicial",
-          });
-        } catch {
-          // último recurso: template ausente
-        }
-      }
-    }
+    const { sendPasswordRecoveryEmail } = await import("./email.server");
+    await sendPasswordRecoveryEmail(data.email, data.redirect_to);
     return { ok: true as const };
   });
