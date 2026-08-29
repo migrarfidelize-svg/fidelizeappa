@@ -55,6 +55,22 @@ async function insertEmailLog(row: {
   }
 }
 
+/** Converte HTML em texto simples para o corpo alternativo do e-mail. */
+export function htmlToPlainText(html: string): string {
+  return (html || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 async function performResendCall(
   settings: SystemEmailSettings,
   input: { to: string; subject: string; html: string; text?: string },
