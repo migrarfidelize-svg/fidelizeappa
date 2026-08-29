@@ -16,14 +16,45 @@ const PLAN_TIER: Record<PlanKey, string> = {
   premium: "enterprise",
 };
 
-/** Módulos liberados no provisionamento. */
-export const PROVISION_MODULES = [
-  "loyalty_card", // Cartão Fidelidade
+/**
+ * Módulos que o provisionamento antigo liberava por override fixo, independente
+ * do plano. Mantido apenas para limpar essas liberações legadas — hoje os
+ * módulos vêm exclusivamente de `plan_features`, igual à compra padrão.
+ */
+export const LEGACY_PROVISION_MODULES = [
+  "loyalty_card",
   "loyalty_cards",
   "stamps",
-  "digital_menu", // Cardápio Digital
-  "linktree", // Árvore de Links
+  "digital_menu",
+  "linktree",
 ] as const;
+
+/** Módulos incluídos no plano (mesma fonte usada pela compra padrão). */
+async function listPlanModules(
+  supabaseAdmin: { from: (t: string) => any },
+  planId: string,
+): Promise<string[]> {
+  const { data } = await supabaseAdmin
+    .from("plan_features")
+    .select("feature_key, enabled")
+    .eq("plan_id", planId);
+  return ((data ?? []) as Array<{ feature_key: string; enabled: boolean }>)
+    .filter((f) => f.enabled)
+    .map((f) => f.feature_key);
+}
+
+/** Remove liberações fixas criadas por provisionamentos antigos. */
+async function clearLegacyOverrides(
+  supabaseAdmin: { from: (t: string) => any },
+  tenantId: string,
+) {
+  await supabaseAdmin
+    .from("establishment_feature_overrides")
+    .delete()
+    .eq("establishment_id", tenantId)
+    .in("feature_key", [...LEGACY_PROVISION_MODULES]);
+}
+
 
 export type ProvisionInput = {
   name: string;
