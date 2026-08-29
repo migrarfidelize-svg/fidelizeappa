@@ -15,6 +15,7 @@ export type ApiKeyRow = {
   key_hash: string;
   scopes: string[];
   sandbox: boolean;
+  key_type: string;
   allowed_origins: string[];
   rate_limit_per_minute: number;
   revoked_at: string | null;
@@ -97,7 +98,7 @@ export async function authenticateApiRequest(request: Request): Promise<AuthResu
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: row, error } = await supabaseAdmin
     .from("api_keys")
-    .select("id, establishment_id, name, prefix, key_hash, scopes, sandbox, allowed_origins, rate_limit_per_minute, revoked_at")
+    .select("id, establishment_id, name, prefix, key_hash, scopes, sandbox, key_type, allowed_origins, rate_limit_per_minute, revoked_at")
     .eq("prefix", prefix)
     .maybeSingle();
 
@@ -112,9 +113,10 @@ export async function authenticateApiRequest(request: Request): Promise<AuthResu
     return { ok: false, status: 401, code: "revoked_api_key", message: "API Key revogada.", keyId: key.id, establishmentId: key.establishment_id, prefix };
   }
 
-  // Validação de origem (quando configurada na chave)
+  // Validação de origem: apenas para chaves do tipo "browser".
+  // Chaves "server" (server-to-server) autenticam somente por API Key, escopos e rate limit.
   const allowed = key.allowed_origins ?? [];
-  if (allowed.length > 0) {
+  if (key.key_type !== "server" && allowed.length > 0) {
     const origin = request.headers.get("origin") || request.headers.get("referer");
     const host = origin ? (() => { try { return new URL(origin).origin; } catch { return origin; } })() : null;
     const ip = clientIp(request);

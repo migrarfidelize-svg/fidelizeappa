@@ -22,7 +22,7 @@ export const listApiKeys = createServerFn({ method: "GET" })
     await assertManager(context.supabase, context.userId, data.establishment_id);
     const { data: rows, error } = await context.supabase
       .from("api_keys")
-      .select("id, name, prefix, scopes, sandbox, allowed_origins, rate_limit_per_minute, last_used_at, revoked_at, created_at")
+      .select("id, name, prefix, scopes, sandbox, key_type, allowed_origins, rate_limit_per_minute, last_used_at, revoked_at, created_at")
       .eq("establishment_id", data.establishment_id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -45,6 +45,7 @@ export const listApiKeys = createServerFn({ method: "GET" })
       ...k,
       scopes: normalizeScopes(k["scopes"] as string[] | null),
       sandbox: Boolean(k["sandbox"]),
+      key_type: (k["key_type"] as string) ?? "browser",
       requests_total: counts.get(String(k["id"])) ?? 0,
       status: k["revoked_at"] ? "revoked" : "active",
     }));
@@ -61,6 +62,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         allowed_origins: z.array(z.string().trim().min(3).max(200)).max(20).default([]),
         scopes: z.array(z.enum(API_SCOPES)).max(API_SCOPES.length).optional(),
         sandbox: z.boolean().default(false),
+        key_type: z.enum(["browser", "server"]).default("browser"),
         provisioning: z.boolean().default(false),
       })
       .parse(d)
@@ -95,10 +97,11 @@ export const createApiKey = createServerFn({ method: "POST" })
         key_hash: hash,
         scopes,
         sandbox: data.sandbox,
+        key_type: data.key_type,
         allowed_origins: data.allowed_origins,
         rate_limit_per_minute: data.rate_limit_per_minute,
       })
-      .select("id, name, prefix, scopes, sandbox, allowed_origins, rate_limit_per_minute, created_at, revoked_at, last_used_at")
+      .select("id, name, prefix, scopes, sandbox, key_type, allowed_origins, rate_limit_per_minute, created_at, revoked_at, last_used_at")
       .single();
     if (error) throw new Error(error.message);
 
