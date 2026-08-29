@@ -56,6 +56,7 @@ import { Route as AjudaCategoryArticleRouteImport } from './routes/ajuda.$catego
 import { Route as AuthenticatedHashUsuariosRouteImport } from './routes/_authenticated/hash.usuarios'
 import { Route as AuthenticatedHashStudioRouteImport } from './routes/_authenticated/hash.studio'
 import { Route as AuthenticatedHashSeoRouteImport } from './routes/_authenticated/hash.seo'
+import { Route as AuthenticatedHashProvisionamentosRouteImport } from './routes/_authenticated/hash.provisionamentos'
 import { Route as AuthenticatedHashPixelRouteImport } from './routes/_authenticated/hash.pixel'
 import { Route as AuthenticatedHashPagamentosRouteImport } from './routes/_authenticated/hash.pagamentos'
 import { Route as AuthenticatedHashNotificacoesRouteImport } from './routes/_authenticated/hash.notificacoes'
@@ -393,6 +394,12 @@ const AuthenticatedHashSeoRoute = AuthenticatedHashSeoRouteImport.update({
   path: '/seo',
   getParentRoute: () => AuthenticatedHashRoute,
 } as any)
+const AuthenticatedHashProvisionamentosRoute =
+  AuthenticatedHashProvisionamentosRouteImport.update({
+    id: '/provisionamentos',
+    path: '/provisionamentos',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
 const AuthenticatedHashPixelRoute = AuthenticatedHashPixelRouteImport.update({
   id: '/pixel',
   path: '/pixel',
@@ -1062,6 +1069,7 @@ export interface FileRoutesByFullPath {
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/provisionamentos': typeof AuthenticatedHashProvisionamentosRoute
   '/hash/seo': typeof AuthenticatedHashSeoRoute
   '/hash/studio': typeof AuthenticatedHashStudioRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
@@ -1205,6 +1213,7 @@ export interface FileRoutesByTo {
   '/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/hash/provisionamentos': typeof AuthenticatedHashProvisionamentosRoute
   '/hash/seo': typeof AuthenticatedHashSeoRoute
   '/hash/studio': typeof AuthenticatedHashStudioRoute
   '/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
@@ -1355,6 +1364,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/notificacoes': typeof AuthenticatedHashNotificacoesRoute
   '/_authenticated/hash/pagamentos': typeof AuthenticatedHashPagamentosRoute
   '/_authenticated/hash/pixel': typeof AuthenticatedHashPixelRoute
+  '/_authenticated/hash/provisionamentos': typeof AuthenticatedHashProvisionamentosRoute
   '/_authenticated/hash/seo': typeof AuthenticatedHashSeoRoute
   '/_authenticated/hash/studio': typeof AuthenticatedHashStudioRoute
   '/_authenticated/hash/usuarios': typeof AuthenticatedHashUsuariosRoute
@@ -1505,6 +1515,7 @@ export interface FileRouteTypes {
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/provisionamentos'
     | '/hash/seo'
     | '/hash/studio'
     | '/hash/usuarios'
@@ -1648,6 +1659,7 @@ export interface FileRouteTypes {
     | '/hash/notificacoes'
     | '/hash/pagamentos'
     | '/hash/pixel'
+    | '/hash/provisionamentos'
     | '/hash/seo'
     | '/hash/studio'
     | '/hash/usuarios'
@@ -1797,6 +1809,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/notificacoes'
     | '/_authenticated/hash/pagamentos'
     | '/_authenticated/hash/pixel'
+    | '/_authenticated/hash/provisionamentos'
     | '/_authenticated/hash/seo'
     | '/_authenticated/hash/studio'
     | '/_authenticated/hash/usuarios'
@@ -2248,6 +2261,13 @@ declare module '@tanstack/react-router' {
       path: '/seo'
       fullPath: '/hash/seo'
       preLoaderRoute: typeof AuthenticatedHashSeoRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/provisionamentos': {
+      id: '/_authenticated/hash/provisionamentos'
+      path: '/provisionamentos'
+      fullPath: '/hash/provisionamentos'
+      preLoaderRoute: typeof AuthenticatedHashProvisionamentosRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/pixel': {
@@ -3140,6 +3160,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashNotificacoesRoute: typeof AuthenticatedHashNotificacoesRoute
   AuthenticatedHashPagamentosRoute: typeof AuthenticatedHashPagamentosRoute
   AuthenticatedHashPixelRoute: typeof AuthenticatedHashPixelRoute
+  AuthenticatedHashProvisionamentosRoute: typeof AuthenticatedHashProvisionamentosRoute
   AuthenticatedHashSeoRoute: typeof AuthenticatedHashSeoRoute
   AuthenticatedHashStudioRoute: typeof AuthenticatedHashStudioRoute
   AuthenticatedHashUsuariosRoute: typeof AuthenticatedHashUsuariosRoute
@@ -3173,6 +3194,8 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashNotificacoesRoute: AuthenticatedHashNotificacoesRoute,
   AuthenticatedHashPagamentosRoute: AuthenticatedHashPagamentosRoute,
   AuthenticatedHashPixelRoute: AuthenticatedHashPixelRoute,
+  AuthenticatedHashProvisionamentosRoute:
+    AuthenticatedHashProvisionamentosRoute,
   AuthenticatedHashSeoRoute: AuthenticatedHashSeoRoute,
   AuthenticatedHashStudioRoute: AuthenticatedHashStudioRoute,
   AuthenticatedHashUsuariosRoute: AuthenticatedHashUsuariosRoute,
