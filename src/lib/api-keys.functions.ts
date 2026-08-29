@@ -37,6 +37,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         name: z.string().trim().min(2).max(60),
         rate_limit_per_minute: z.number().int().min(10).max(6000).default(120),
         allowed_origins: z.array(z.string().trim().min(3).max(200)).max(20).default([]),
+        provisioning: z.boolean().default(false),
       })
       .parse(d)
   )
@@ -47,6 +48,15 @@ export const createApiKey = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { raw, prefix, hash } = generateApiKey();
 
+    // O escopo de provisionamento cria empresas/usuários fora do tenant atual:
+    // somente super admin pode emitir uma chave com esse poder.
+    const scopes = ["customers:read", "customers:write", "points:write"];
+    if (data.provisioning) {
+      const { data: isAdmin } = await context.supabase.rpc("is_super_admin", { _user: context.userId });
+      if (!isAdmin) throw new Error("Apenas super admin pode criar chaves com escopo de provisionamento.");
+      scopes.push("provisioning");
+    }
+
     const { data: row, error } = await supabaseAdmin
       .from("api_keys")
       .insert({
@@ -55,7 +65,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         name: data.name,
         prefix,
         key_hash: hash,
-        scopes: ["customers:read", "customers:write", "points:write"],
+        scopes,
         allowed_origins: data.allowed_origins,
         rate_limit_per_minute: data.rate_limit_per_minute,
       })
