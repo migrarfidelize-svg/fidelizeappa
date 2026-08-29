@@ -97,6 +97,35 @@ export function buildOpenApiDocument(origin: string) {
           },
         },
       },
+      "/ping-auth": {
+        get: {
+          summary: "Valida a autenticação da API Key",
+          description:
+            "Permite que sistemas externos confirmem que a chave é válida e conheçam seus escopos, sem chamar endpoints de negócio. Retorna 401 quando a chave é inválida ou revogada e 429 quando o rate limit é excedido.",
+          responses: {
+            "200": {
+              description: "Autenticação válida",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean", example: true },
+                      authenticated: { type: "boolean", example: true },
+                      api_key_valid: { type: "boolean", example: true },
+                      scopes: { type: "array", items: { type: "string" }, example: ["customers.read", "provisioning"] },
+                      sandbox: { type: "boolean" },
+                      key_type: { type: "string", enum: ["browser", "server"] },
+                      timestamp: { type: "string", format: "date-time" },
+                    },
+                  },
+                },
+              },
+            },
+            ...commonResponses,
+          },
+        },
+      },
       "/change-plan": {
         post: {
           summary: "Altera o plano de um tenant",
