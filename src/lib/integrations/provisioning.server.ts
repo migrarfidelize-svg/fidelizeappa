@@ -234,17 +234,10 @@ export async function provisionAccount(input: ProvisionInput, meta: {
     return { ok: false, status: 500, code: "subscription_failed", message: subErr.message };
   }
 
-  // 8. Liberação dos módulos (override explícito, independente do plano)
-  const modules = [...PROVISION_MODULES];
-  await supabaseAdmin.from("establishment_feature_overrides").upsert(
-    modules.map((feature_key) => ({
-      establishment_id: tenantId,
-      feature_key,
-      enabled: true,
-      note: `Provisionamento automático (${source})`,
-    })) as never,
-    { onConflict: "establishment_id,feature_key" },
-  );
+  // 8. Módulos: exatamente os do plano contratado (mesma regra da compra padrão).
+  //    Nenhum override fixo é criado — o gate usa `plan_features`.
+  const modules = await listPlanModules(supabaseAdmin as never, (plan as { id: string }).id);
+
 
   // 9. Auditoria
   try {
