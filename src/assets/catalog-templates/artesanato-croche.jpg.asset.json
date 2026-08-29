@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "61cece50-a449-4b42-8c50-366bae756410",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/61cece50-a449-4b42-8c50-366bae756410/artesanato-croche.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/61cece50-a449-4b42-8c50-366bae756410/artesanato-croche.jpg",
-  "original_filename": "artesanato-croche.jpg",
-  "size": 182019,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:23:39Z"
+  "created_at": "2026-07-26T23:23:39Z",
+  "original_filename": "artesanato-croche.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/61cece50-a449-4b42-8c50-366bae756410/artesanato-croche.jpg",
+  "size": 182019,
+  "url": "/__l5e/assets-v1/61cece50-a449-4b42-8c50-366bae756410/artesanato-croche.jpg",
+  "version": 1
 }

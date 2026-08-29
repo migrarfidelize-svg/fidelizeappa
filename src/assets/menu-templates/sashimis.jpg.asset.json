@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "36725ffe-1f66-49b1-9d32-657f256ba502",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/36725ffe-1f66-49b1-9d32-657f256ba502/sashimis.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/36725ffe-1f66-49b1-9d32-657f256ba502/sashimis.jpg",
-  "original_filename": "sashimis.jpg",
-  "size": 107554,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-25T17:37:33Z"
+  "created_at": "2026-07-25T17:37:33Z",
+  "original_filename": "sashimis.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/36725ffe-1f66-49b1-9d32-657f256ba502/sashimis.jpg",
+  "size": 107554,
+  "url": "/__l5e/assets-v1/36725ffe-1f66-49b1-9d32-657f256ba502/sashimis.jpg",
+  "version": 1
 }

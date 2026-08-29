@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "e7e66b57-44eb-428b-8fa2-7a7407d6eb1f",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/e7e66b57-44eb-428b-8fa2-7a7407d6eb1f/fidelize-mark.png",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/e7e66b57-44eb-428b-8fa2-7a7407d6eb1f/fidelize-mark.png",
-  "original_filename": "fidelize-mark.png",
-  "size": 9075,
   "content_type": "image/png",
-  "created_at": "2026-07-31T01:54:42Z"
+  "created_at": "2026-07-31T01:54:42Z",
+  "original_filename": "fidelize-mark.png",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/e7e66b57-44eb-428b-8fa2-7a7407d6eb1f/fidelize-mark.png",
+  "size": 9075,
+  "url": "/__l5e/assets-v1/e7e66b57-44eb-428b-8fa2-7a7407d6eb1f/fidelize-mark.png",
+  "version": 1
 }

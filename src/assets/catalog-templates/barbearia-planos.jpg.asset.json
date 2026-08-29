@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "b7500930-e241-40fe-93fe-f55b5b952988",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/b7500930-e241-40fe-93fe-f55b5b952988/barbearia-planos.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/b7500930-e241-40fe-93fe-f55b5b952988/barbearia-planos.jpg",
-  "original_filename": "barbearia-planos.jpg",
-  "size": 65593,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:51:05Z"
+  "created_at": "2026-07-26T23:51:05Z",
+  "original_filename": "barbearia-planos.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/b7500930-e241-40fe-93fe-f55b5b952988/barbearia-planos.jpg",
+  "size": 65593,
+  "url": "/__l5e/assets-v1/b7500930-e241-40fe-93fe-f55b5b952988/barbearia-planos.jpg",
+  "version": 1
 }

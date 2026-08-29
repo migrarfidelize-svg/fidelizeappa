@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "689228ef-6aff-4f7a-8e2d-800389856a9a",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/689228ef-6aff-4f7a-8e2d-800389856a9a/estetica-corporal.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/689228ef-6aff-4f7a-8e2d-800389856a9a/estetica-corporal.jpg",
-  "original_filename": "estetica-corporal.jpg",
-  "size": 64411,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:51:10Z"
+  "created_at": "2026-07-26T23:51:10Z",
+  "original_filename": "estetica-corporal.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/689228ef-6aff-4f7a-8e2d-800389856a9a/estetica-corporal.jpg",
+  "size": 64411,
+  "url": "/__l5e/assets-v1/689228ef-6aff-4f7a-8e2d-800389856a9a/estetica-corporal.jpg",
+  "version": 1
 }

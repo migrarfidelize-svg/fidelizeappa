@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "98f41196-3169-4a6f-95e6-38d12c70e98b",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/98f41196-3169-4a6f-95e6-38d12c70e98b/artesanato-velas.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/98f41196-3169-4a6f-95e6-38d12c70e98b/artesanato-velas.jpg",
-  "original_filename": "artesanato-velas.jpg",
-  "size": 82092,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:23:46Z"
+  "created_at": "2026-07-26T23:23:46Z",
+  "original_filename": "artesanato-velas.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/98f41196-3169-4a6f-95e6-38d12c70e98b/artesanato-velas.jpg",
+  "size": 82092,
+  "url": "/__l5e/assets-v1/98f41196-3169-4a6f-95e6-38d12c70e98b/artesanato-velas.jpg",
+  "version": 1
 }

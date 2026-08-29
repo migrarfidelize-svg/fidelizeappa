@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "c09c0217-0760-49b9-bc70-fe3bbd150d4a",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/c09c0217-0760-49b9-bc70-fe3bbd150d4a/casa-eletrica.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/c09c0217-0760-49b9-bc70-fe3bbd150d4a/casa-eletrica.jpg",
-  "original_filename": "casa-eletrica.jpg",
-  "size": 73175,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:51:16Z"
+  "created_at": "2026-07-26T23:51:16Z",
+  "original_filename": "casa-eletrica.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/c09c0217-0760-49b9-bc70-fe3bbd150d4a/casa-eletrica.jpg",
+  "size": 73175,
+  "url": "/__l5e/assets-v1/c09c0217-0760-49b9-bc70-fe3bbd150d4a/casa-eletrica.jpg",
+  "version": 1
 }

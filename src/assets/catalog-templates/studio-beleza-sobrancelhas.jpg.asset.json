@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "ffaffa29-4538-440c-8dd8-79574c82d5e2",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/ffaffa29-4538-440c-8dd8-79574c82d5e2/studio-beleza-sobrancelhas.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/ffaffa29-4538-440c-8dd8-79574c82d5e2/studio-beleza-sobrancelhas.jpg",
-  "original_filename": "studio-beleza-sobrancelhas.jpg",
-  "size": 61237,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:50:54Z"
+  "created_at": "2026-07-26T23:50:54Z",
+  "original_filename": "studio-beleza-sobrancelhas.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/ffaffa29-4538-440c-8dd8-79574c82d5e2/studio-beleza-sobrancelhas.jpg",
+  "size": 61237,
+  "url": "/__l5e/assets-v1/ffaffa29-4538-440c-8dd8-79574c82d5e2/studio-beleza-sobrancelhas.jpg",
+  "version": 1
 }

@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "b9ae2184-661c-44fb-aecc-8e3d7718c6e5",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/b9ae2184-661c-44fb-aecc-8e3d7718c6e5/acai-tradicional.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/b9ae2184-661c-44fb-aecc-8e3d7718c6e5/acai-tradicional.jpg",
-  "original_filename": "acai-tradicional.jpg",
-  "size": 85098,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-25T17:36:12Z"
+  "created_at": "2026-07-25T17:36:12Z",
+  "original_filename": "acai-tradicional.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/b9ae2184-661c-44fb-aecc-8e3d7718c6e5/acai-tradicional.jpg",
+  "size": 85098,
+  "url": "/__l5e/assets-v1/b9ae2184-661c-44fb-aecc-8e3d7718c6e5/acai-tradicional.jpg",
+  "version": 1
 }

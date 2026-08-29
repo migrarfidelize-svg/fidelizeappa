@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "a791ce30-4d1a-4484-bfa6-ea9f5b6925c5",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/a791ce30-4d1a-4484-bfa6-ea9f5b6925c5/cafes.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/a791ce30-4d1a-4484-bfa6-ea9f5b6925c5/cafes.jpg",
-  "original_filename": "cafes.jpg",
-  "size": 84611,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-25T17:36:41Z"
+  "created_at": "2026-07-25T17:36:41Z",
+  "original_filename": "cafes.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/a791ce30-4d1a-4484-bfa6-ea9f5b6925c5/cafes.jpg",
+  "size": 84611,
+  "url": "/__l5e/assets-v1/a791ce30-4d1a-4484-bfa6-ea9f5b6925c5/cafes.jpg",
+  "version": 1
 }

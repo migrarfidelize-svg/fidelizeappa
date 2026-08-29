@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "6c098062-6bb0-4efb-b7c7-90bf1e1ef654",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/6c098062-6bb0-4efb-b7c7-90bf1e1ef654/studio-beleza-combos.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/6c098062-6bb0-4efb-b7c7-90bf1e1ef654/studio-beleza-combos.jpg",
-  "original_filename": "studio-beleza-combos.jpg",
-  "size": 81527,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:50:56Z"
+  "created_at": "2026-07-26T23:50:56Z",
+  "original_filename": "studio-beleza-combos.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/6c098062-6bb0-4efb-b7c7-90bf1e1ef654/studio-beleza-combos.jpg",
+  "size": 81527,
+  "url": "/__l5e/assets-v1/6c098062-6bb0-4efb-b7c7-90bf1e1ef654/studio-beleza-combos.jpg",
+  "version": 1
 }

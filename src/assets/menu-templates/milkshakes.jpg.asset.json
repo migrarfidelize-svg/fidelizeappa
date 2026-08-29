@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "2b831c55-0c5b-4fda-897b-0ab27e6ef7be",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/2b831c55-0c5b-4fda-897b-0ab27e6ef7be/milkshakes.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/2b831c55-0c5b-4fda-897b-0ab27e6ef7be/milkshakes.jpg",
-  "original_filename": "milkshakes.jpg",
-  "size": 57378,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-25T17:38:15Z"
+  "created_at": "2026-07-25T17:38:15Z",
+  "original_filename": "milkshakes.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/2b831c55-0c5b-4fda-897b-0ab27e6ef7be/milkshakes.jpg",
+  "size": 57378,
+  "url": "/__l5e/assets-v1/2b831c55-0c5b-4fda-897b-0ab27e6ef7be/milkshakes.jpg",
+  "version": 1
 }

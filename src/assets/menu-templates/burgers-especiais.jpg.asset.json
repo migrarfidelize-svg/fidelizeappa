@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "7223428b-3b09-49de-871c-0a7f29efa722",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/7223428b-3b09-49de-871c-0a7f29efa722/burgers-especiais.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/7223428b-3b09-49de-871c-0a7f29efa722/burgers-especiais.jpg",
-  "original_filename": "burgers-especiais.jpg",
-  "size": 75615,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-25T17:36:35Z"
+  "created_at": "2026-07-25T17:36:35Z",
+  "original_filename": "burgers-especiais.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/7223428b-3b09-49de-871c-0a7f29efa722/burgers-especiais.jpg",
+  "size": 75615,
+  "url": "/__l5e/assets-v1/7223428b-3b09-49de-871c-0a7f29efa722/burgers-especiais.jpg",
+  "version": 1
 }

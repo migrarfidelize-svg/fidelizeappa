@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "c27cb50e-7004-4bfe-9c73-e5ba0bc96f3e",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/c27cb50e-7004-4bfe-9c73-e5ba0bc96f3e/foto-eventos.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/c27cb50e-7004-4bfe-9c73-e5ba0bc96f3e/foto-eventos.jpg",
-  "original_filename": "foto-eventos.jpg",
-  "size": 88767,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:51:27Z"
+  "created_at": "2026-07-26T23:51:27Z",
+  "original_filename": "foto-eventos.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/c27cb50e-7004-4bfe-9c73-e5ba0bc96f3e/foto-eventos.jpg",
+  "size": 88767,
+  "url": "/__l5e/assets-v1/c27cb50e-7004-4bfe-9c73-e5ba0bc96f3e/foto-eventos.jpg",
+  "version": 1
 }

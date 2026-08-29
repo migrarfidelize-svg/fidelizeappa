@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "16e67d6a-aa3e-4bf2-9f3c-0ac674fc9f8f",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/16e67d6a-aa3e-4bf2-9f3c-0ac674fc9f8f/estetica-facial.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/16e67d6a-aa3e-4bf2-9f3c-0ac674fc9f8f/estetica-facial.jpg",
-  "original_filename": "estetica-facial.jpg",
-  "size": 54629,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:51:08Z"
+  "created_at": "2026-07-26T23:51:08Z",
+  "original_filename": "estetica-facial.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/16e67d6a-aa3e-4bf2-9f3c-0ac674fc9f8f/estetica-facial.jpg",
+  "size": 54629,
+  "url": "/__l5e/assets-v1/16e67d6a-aa3e-4bf2-9f3c-0ac674fc9f8f/estetica-facial.jpg",
+  "version": 1
 }

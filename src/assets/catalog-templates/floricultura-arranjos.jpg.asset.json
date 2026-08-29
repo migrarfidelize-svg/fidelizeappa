@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "2ccd2544-ed32-4268-bdf5-7baf80abfff0",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/2ccd2544-ed32-4268-bdf5-7baf80abfff0/floricultura-arranjos.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/2ccd2544-ed32-4268-bdf5-7baf80abfff0/floricultura-arranjos.jpg",
-  "original_filename": "floricultura-arranjos.jpg",
-  "size": 92346,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:24:14Z"
+  "created_at": "2026-07-26T23:24:14Z",
+  "original_filename": "floricultura-arranjos.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/2ccd2544-ed32-4268-bdf5-7baf80abfff0/floricultura-arranjos.jpg",
+  "size": 92346,
+  "url": "/__l5e/assets-v1/2ccd2544-ed32-4268-bdf5-7baf80abfff0/floricultura-arranjos.jpg",
+  "version": 1
 }

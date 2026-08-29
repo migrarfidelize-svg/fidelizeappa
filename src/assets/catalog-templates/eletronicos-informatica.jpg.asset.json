@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "dea66286-f8d7-4898-846b-05aa6201bf3f",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/dea66286-f8d7-4898-846b-05aa6201bf3f/eletronicos-informatica.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/dea66286-f8d7-4898-846b-05aa6201bf3f/eletronicos-informatica.jpg",
-  "original_filename": "eletronicos-informatica.jpg",
-  "size": 49305,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:24:08Z"
+  "created_at": "2026-07-26T23:24:08Z",
+  "original_filename": "eletronicos-informatica.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/dea66286-f8d7-4898-846b-05aa6201bf3f/eletronicos-informatica.jpg",
+  "size": 49305,
+  "url": "/__l5e/assets-v1/dea66286-f8d7-4898-846b-05aa6201bf3f/eletronicos-informatica.jpg",
+  "version": 1
 }

@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "8573600e-7973-41a4-a62f-4a7c284b23d6",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/8573600e-7973-41a4-a62f-4a7c284b23d6/otica-servicos.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/8573600e-7973-41a4-a62f-4a7c284b23d6/otica-servicos.jpg",
-  "original_filename": "otica-servicos.jpg",
-  "size": 88668,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:24:50Z"
+  "created_at": "2026-07-26T23:24:50Z",
+  "original_filename": "otica-servicos.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/8573600e-7973-41a4-a62f-4a7c284b23d6/otica-servicos.jpg",
+  "size": 88668,
+  "url": "/__l5e/assets-v1/8573600e-7973-41a4-a62f-4a7c284b23d6/otica-servicos.jpg",
+  "version": 1
 }

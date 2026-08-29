@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "01dbb58a-d126-42a7-8c72-aabbd44fc1f4",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/01dbb58a-d126-42a7-8c72-aabbd44fc1f4/moda-acessorios.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/01dbb58a-d126-42a7-8c72-aabbd44fc1f4/moda-acessorios.jpg",
-  "original_filename": "moda-acessorios.jpg",
-  "size": 62358,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:24:34Z"
+  "created_at": "2026-07-26T23:24:34Z",
+  "original_filename": "moda-acessorios.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/01dbb58a-d126-42a7-8c72-aabbd44fc1f4/moda-acessorios.jpg",
+  "size": 62358,
+  "url": "/__l5e/assets-v1/01dbb58a-d126-42a7-8c72-aabbd44fc1f4/moda-acessorios.jpg",
+  "version": 1
 }

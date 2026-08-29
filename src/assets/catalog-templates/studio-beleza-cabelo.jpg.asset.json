@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "54654227-4450-4d37-9dbb-8567dc6505b2",
-  "project_id": "6fbe0482-baab-4f96-abc8-c1c72bc2e46e",
-  "url": "/__l5e/assets-v1/54654227-4450-4d37-9dbb-8567dc6505b2/studio-beleza-cabelo.jpg",
-  "r2_key": "a/v1/6fbe0482-baab-4f96-abc8-c1c72bc2e46e/54654227-4450-4d37-9dbb-8567dc6505b2/studio-beleza-cabelo.jpg",
-  "original_filename": "studio-beleza-cabelo.jpg",
-  "size": 101912,
   "content_type": "image/jpeg",
-  "created_at": "2026-07-26T23:50:46Z"
+  "created_at": "2026-07-26T23:50:46Z",
+  "original_filename": "studio-beleza-cabelo.jpg",
+  "project_id": "117447d7-f883-449b-9de8-6983a13fec58",
+  "r2_key": "a/v1/117447d7-f883-449b-9de8-6983a13fec58/54654227-4450-4d37-9dbb-8567dc6505b2/studio-beleza-cabelo.jpg",
+  "size": 101912,
+  "url": "/__l5e/assets-v1/54654227-4450-4d37-9dbb-8567dc6505b2/studio-beleza-cabelo.jpg",
+  "version": 1
 }
