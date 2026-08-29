@@ -52,7 +52,7 @@ function AccessPage() {
       const { data: current } = await supabase.auth.getSession();
       if (current.session) { setStatus("signed"); return; }
       if (!token || !mail) { setStatus("manual"); return; }
-      const { error } = await supabase.auth.verifyOtp({ email: mail, token_hash: token, type: "magiclink" });
+      const { error } = await supabase.auth.verifyOtp({ token_hash: token, type: "magiclink" });
       setStatus(error ? "manual" : "signed");
     })();
   }, []);
