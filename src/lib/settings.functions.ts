@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { randomBytes, scryptSync, timingSafeEqual, createHash } from "crypto";
 
 // ---------- helpers ----------
 async function assertRole(supabase: any, userId: string, estId: string, min: "staff" | "manager" | "owner") {
@@ -14,14 +13,16 @@ async function audit(supabase: any, estId: string, userId: string, action: strin
     establishment_id: estId, actor_id: userId, action, entity_type: entity, entity_id: entityId, details,
   });
 }
-function hashPin(pin: string) {
+async function hashPin(pin: string) {
+  const { randomBytes, scryptSync } = await import("node:crypto");
   const salt = randomBytes(16).toString("hex");
   const derived = scryptSync(pin, salt, 32).toString("hex");
   return `${salt}$${derived}`;
 }
-function verifyPin(pin: string, stored: string) {
+async function verifyPin(pin: string, stored: string) {
   const [salt, hash] = stored.split("$");
   if (!salt || !hash) return false;
+  const { scryptSync, timingSafeEqual } = await import("node:crypto");
   const derived = scryptSync(pin, salt, 32);
   const a = Buffer.from(hash, "hex");
   return a.length === derived.length && timingSafeEqual(a, derived);
@@ -208,6 +209,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     await assertRole(supabase, userId, data.establishment_id, "manager");
     const { enforceLimit } = await import("@/lib/plans.functions");
     await enforceLimit(supabase, data.establishment_id, "employees", 1);
+    const { randomBytes } = await import("node:crypto");
     const token = randomBytes(24).toString("hex");
     const { data: inv, error } = await supabase.from("team_invites").insert({
       establishment_id: data.establishment_id,
@@ -240,6 +242,7 @@ export const resendInvite = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "manager");
+    const { randomBytes } = await import("node:crypto");
     const token = randomBytes(24).toString("hex");
     const expires_at = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString();
     const { data: inv, error } = await supabase.from("team_invites")
@@ -315,7 +318,7 @@ export const setMyPin = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const hash = hashPin(data.pin);
+    const hash = await hashPin(data.pin);
     const { error } = await supabase.from("establishment_members").update({ pin_hash: hash })
       .eq("establishment_id", data.establishment_id).eq("user_id", userId);
     if (error) throw new Error(error.message);
@@ -341,7 +344,7 @@ export const verifyMyPin = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: m } = await supabase.from("establishment_members").select("pin_hash").eq("establishment_id", data.establishment_id).eq("user_id", userId).maybeSingle();
     if (!m?.pin_hash) return { ok: true, required: false };
-    const ok = verifyPin(data.pin, m.pin_hash);
+    const ok = await verifyPin(data.pin, m.pin_hash);
     if (ok) await supabase.from("establishment_members").update({ last_pin_used_at: new Date().toISOString() }).eq("establishment_id", data.establishment_id).eq("user_id", userId);
     return { ok, required: true };
   });
@@ -476,6 +479,7 @@ export const processDataRequest = createServerFn({ method: "POST" })
       return { ok: true, payload };
     } else {
       // Anonymize customer + delete cards/consents
+      const { createHash } = await import("node:crypto");
       const anonPhone = `deleted_${createHash("sha256").update(req.customer_id).digest("hex").slice(0, 10)}`;
       await (supabaseAdmin.from("customers") as any).update({
         name: "Cliente removido", phone: anonPhone, email: null,

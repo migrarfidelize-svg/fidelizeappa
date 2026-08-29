@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { createHash } from "crypto";
+
 import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { assertFeature } from "@/lib/plans.functions";
@@ -147,6 +147,7 @@ export const submitPublicReview = createServerFn({ method: "POST" })
     }
 
     // cooldown via device hash (per form)
+    const { createHash } = await import("node:crypto");
     const deviceHash = createHash("sha256").update(`${form.id}:${data.device_id}`).digest("hex");
     if (!form.allow_multiple && form.cooldown_hours > 0) {
       const since = new Date(Date.now() - form.cooldown_hours * 3600_000).toISOString();

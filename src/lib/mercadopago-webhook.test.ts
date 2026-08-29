@@ -21,81 +21,81 @@ function signManifest(dataId: string, requestId: string, ts: string, secret = SE
 const noReplay = { maxAgeMs: 0 };
 
 describe("verifyMercadoPagoSignature", () => {
-  it("accepts a well-formed signature matching the manifest", () => {
+  it("accepts a well-formed signature matching the manifest", async () => {
     const dataId = "1234567890";
     const requestId = "abcd-1234";
     const ts = "1737300000";
     const header = signManifest(dataId, requestId, ts);
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay }),
     ).toBe(true);
   });
 
-  it("normaliza data.id para lowercase antes de verificar", () => {
+  it("normaliza data.id para lowercase antes de verificar", async () => {
     const requestId = "abcd-1234";
     const ts = "1737300000";
     // Assinatura gerada com id lowercase; header recebido com id em uppercase → ainda válido.
     const header = signManifest("abc123", requestId, ts);
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId: "ABC123", secret: SECRET, ...noReplay }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId: "ABC123", secret: SECRET, ...noReplay }),
     ).toBe(true);
   });
 
-  it("rejects when the payload id is tampered with", () => {
+  it("rejects when the payload id is tampered with", async () => {
     const requestId = "abcd-1234";
     const ts = "1737300000";
     const header = signManifest("1234567890", requestId, ts);
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId: "9999999999", secret: SECRET, ...noReplay }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId: "9999999999", secret: SECRET, ...noReplay }),
     ).toBe(false);
   });
 
-  it("rejects when signed with a different secret", () => {
+  it("rejects when signed with a different secret", async () => {
     const dataId = "1", requestId = "r", ts = "10";
     const header = signManifest(dataId, requestId, ts, "other_secret");
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay }),
     ).toBe(false);
   });
 
-  it("rejects when the signature header is missing pieces", () => {
-    expect(verifyMercadoPagoSignature({ signatureHeader: null, requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
-    expect(verifyMercadoPagoSignature({ signatureHeader: "ts=1", requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
-    expect(verifyMercadoPagoSignature({ signatureHeader: "v1=abc", requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
+  it("rejects when the signature header is missing pieces", async () => {
+    expect(await verifyMercadoPagoSignature({ signatureHeader: null, requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
+    expect(await verifyMercadoPagoSignature({ signatureHeader: "ts=1", requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
+    expect(await verifyMercadoPagoSignature({ signatureHeader: "v1=abc", requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
   });
 
-  it("rejects when secret is empty (production safety)", () => {
+  it("rejects when secret is empty (production safety)", async () => {
     const header = signManifest("1", "r", "10");
-    expect(verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: "", ...noReplay })).toBe(false);
+    expect(await verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: "", ...noReplay })).toBe(false);
   });
 
-  it("tolerates additional key/value pairs in the header", () => {
+  it("tolerates additional key/value pairs in the header", async () => {
     const dataId = "1", requestId = "r", ts = "10";
     const v1 = createHmac("sha256", SECRET).update(`id:${dataId};request-id:${requestId};ts:${ts};`).digest("hex");
     const header = `ts=${ts},v1=${v1},extra=zzz`;
-    expect(verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay })).toBe(true);
+    expect(await verifyMercadoPagoSignature({ signatureHeader: header, requestId, dataId, secret: SECRET, ...noReplay })).toBe(true);
   });
 
-  it("does not crash on invalid hex in v1", () => {
+  it("does not crash on invalid hex in v1", async () => {
     const header = "ts=1,v1=zzznothex";
-    expect(verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
+    expect(await verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, ...noReplay })).toBe(false);
   });
 
-  it("rejeita ts fora da janela (replay guard)", () => {
+  it("rejeita ts fora da janela (replay guard)", async () => {
     const now = 1_737_300_000_000;
     const stale = String(now - 30 * 60 * 1000); // 30 min no passado
     const header = signManifest("1", "r", stale);
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, now: () => now }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, now: () => now }),
     ).toBe(false);
   });
 
-  it("aceita ts dentro da janela padrão", () => {
+  it("aceita ts dentro da janela padrão", async () => {
     const now = 1_737_300_000_000;
     const ts = String(now - 60 * 1000); // 1 min atrás
     const header = signManifest("1", "r", ts);
     expect(
-      verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, now: () => now }),
+      await verifyMercadoPagoSignature({ signatureHeader: header, requestId: "r", dataId: "1", secret: SECRET, now: () => now }),
     ).toBe(true);
   });
 });
@@ -108,7 +108,7 @@ describe("mapMpStatusToPaymentStatus (billing state machine)", () => {
     expect(mapMpStatusToPaymentStatus(s)).toBe(s);
   });
 
-  it("falls back to pending for unknown / missing status", () => {
+  it("falls back to pending for unknown / missing status", async () => {
     expect(mapMpStatusToPaymentStatus("wobble")).toBe("pending");
     expect(mapMpStatusToPaymentStatus(null)).toBe("pending");
     expect(mapMpStatusToPaymentStatus(undefined)).toBe("pending");
@@ -116,7 +116,7 @@ describe("mapMpStatusToPaymentStatus (billing state machine)", () => {
 });
 
 describe("mapMpMethod", () => {
-  it("maps credit_card / ticket / everything else", () => {
+  it("maps credit_card / ticket / everything else", async () => {
     expect(mapMpMethod("credit_card")).toBe("credit_card");
     expect(mapMpMethod("ticket")).toBe("boleto");
     expect(mapMpMethod("pix")).toBe("pix");
@@ -128,7 +128,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
   const REAL_UA = "MercadoPago WebHook v1.0 (Java/17)";
   const SIM_UA = "restclient-node/0.1.0";
 
-  it("live_mode:true vindo do simulador do painel (UA restclient-node) → mode=test, regra=panel_simulator_ua", () => {
+  it("live_mode:true vindo do simulador do painel (UA restclient-node) → mode=test, regra=panel_simulator_ua", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment",
       action: "payment.updated",
@@ -142,7 +142,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
     expect(c.reason).toMatch(/restclient-node/i);
   });
 
-  it("live_mode:true vindo de evento real (UA MercadoPago) → mode=live, regra=live_mode_true", () => {
+  it("live_mode:true vindo de evento real (UA MercadoPago) → mode=live, regra=live_mode_true", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment",
       action: "payment.created",
@@ -155,7 +155,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
     expect(c.detection).toBe("live_mode_true");
   });
 
-  it('body com type:"test" tem precedência sobre live_mode:true', () => {
+  it('body com type:"test" tem precedência sobre live_mode:true', async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "test",
       action: null,
@@ -167,7 +167,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
     expect(c.detection).toBe("explicit_type_test");
   });
 
-  it('action:"test.created" é reconhecido como handshake', () => {
+  it('action:"test.created" é reconhecido como handshake', async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment",
       action: "test.created",
@@ -179,7 +179,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
     expect(c.isTest).toBe(true);
   });
 
-  it('payload dummy do sandbox (live_mode:false + data.id:"123456") é teste', () => {
+  it('payload dummy do sandbox (live_mode:false + data.id:"123456") é teste', async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment",
       action: null,
@@ -190,7 +190,7 @@ describe("classifyMercadoPagoRequest — detecção do simulador vs evento real"
     expect(c.detection).toBe("sandbox_dummy_id");
   });
 
-  it("sem live_mode, sem UA, sem type:test → unknown", () => {
+  it("sem live_mode, sem UA, sem type:test → unknown", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment",
       action: null,
@@ -208,12 +208,12 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
   const REAL_UA = "MercadoPago WebHook v1.0 (Java/17)";
   const SIM_UA = "restclient-node/0.1.0";
 
-  it("simulador do painel (live_mode:true, sem HMAC) é aceito sem assinatura", () => {
+  it("simulador do painel (live_mode:true, sem HMAC) é aceito sem assinatura", async () => {
     const dataId = "1234567890";
     const c = classifyMercadoPagoRequest({
       eventType: "payment", action: "payment.updated", liveMode: true, dataId, userAgent: SIM_UA,
     });
-    const signatureValid = verifyMercadoPagoSignature({
+    const signatureValid = await verifyMercadoPagoSignature({
       signatureHeader: null, requestId: null, dataId, secret: SECRET,
     });
     const security = evaluateMercadoPagoWebhookSecurity({
@@ -223,7 +223,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     expect(c.isTest).toBe(true);
   });
 
-  it("evento live real com HMAC válido é aceito e processado", () => {
+  it("evento live real com HMAC válido é aceito e processado", async () => {
     const dataId = "9876543210";
     const requestId = "req-real-1";
     const ts = String(Date.now());
@@ -234,7 +234,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     const c = classifyMercadoPagoRequest({
       eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
     });
-    const signatureValid = verifyMercadoPagoSignature({ signatureHeader, requestId, dataId, secret: SECRET });
+    const signatureValid = await verifyMercadoPagoSignature({ signatureHeader, requestId, dataId, secret: SECRET });
 
     expect(c.mode).toBe("live");
     expect(signatureValid).toBe(true);
@@ -244,12 +244,12 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     expect(security.accepted).toBe(true);
   });
 
-  it("evento live real SEM HMAC é rejeitado com 401", () => {
+  it("evento live real SEM HMAC é rejeitado com 401", async () => {
     const dataId = "9876543210";
     const c = classifyMercadoPagoRequest({
       eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
     });
-    const signatureValid = verifyMercadoPagoSignature({
+    const signatureValid = await verifyMercadoPagoSignature({
       signatureHeader: null, requestId: null, dataId, secret: SECRET,
     });
     expect(c.mode).toBe("live");
@@ -263,7 +263,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
   });
 
-  it("evento live real com HMAC inválida (secret errado) é rejeitado", () => {
+  it("evento live real com HMAC inválida (secret errado) é rejeitado", async () => {
     const dataId = "9876543210";
     const requestId = "req-real-2";
     const ts = String(Date.now());
@@ -273,7 +273,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     const c = classifyMercadoPagoRequest({
       eventType: "payment", action: "payment.created", liveMode: true, dataId, userAgent: REAL_UA,
     });
-    const signatureValid = verifyMercadoPagoSignature({
+    const signatureValid = await verifyMercadoPagoSignature({
       signatureHeader: `ts=${ts},v1=${v1}`, requestId, dataId, secret: SECRET,
     });
     expect(c.mode).toBe("live");
@@ -286,7 +286,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
     expect(isRetryableMercadoPagoWebhookError(security.error, security.status)).toBe(false);
   });
 
-  it("evento live real é bloqueado quando o Webhook Secret não está configurado", () => {
+  it("evento live real é bloqueado quando o Webhook Secret não está configurado", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "payment", action: "payment.created", liveMode: true, dataId: "9876543210", userAgent: REAL_UA,
     });
@@ -302,7 +302,7 @@ describe("cenários end-to-end do handler MP: HMAC obrigatória apenas em live r
 
 describe("novos processadores de webhook (order.* e subscription_preapproval)", () => {
   const REAL_UA = "MercadoPago Webhook v1.0";
-  it("order.processed em live exige HMAC válido para ser aceito", () => {
+  it("order.processed em live exige HMAC válido para ser aceito", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "order", action: "order.processed", liveMode: true, dataId: "ORD-123", userAgent: REAL_UA,
     });
@@ -314,7 +314,7 @@ describe("novos processadores de webhook (order.* e subscription_preapproval)", 
     expect(security.error).toBe("invalid_signature");
   });
 
-  it("subscription_preapproval em live com HMAC válido é aceito", () => {
+  it("subscription_preapproval em live com HMAC válido é aceito", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "subscription_preapproval", action: null, liveMode: true, dataId: "PRE-987", userAgent: REAL_UA,
     });
@@ -325,7 +325,7 @@ describe("novos processadores de webhook (order.* e subscription_preapproval)", 
     expect(security.accepted).toBe(true);
   });
 
-  it("order.created sem live_mode e sem UA real é classificado como teste (handshake)", () => {
+  it("order.created sem live_mode e sem UA real é classificado como teste (handshake)", async () => {
     const c = classifyMercadoPagoRequest({
       eventType: "order", action: "order.created", liveMode: null, dataId: "ORD-XYZ",
       userAgent: "restclient-node/5.3.0",
