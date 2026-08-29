@@ -320,6 +320,20 @@ async function activatePlan(establishmentId: string, planSlug: string, mpPayment
     metadata: { from_plan: fromTier, to_plan: toTier, mp_payment_id: mpPaymentId, provider: "mercadopago" } as any,
   });
 
+  // Sincroniza ciclo de vida com o parceiro de origem (ex.: Ronnei)
+  if (fromTier !== toTier) {
+    const RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3, business: 4 };
+    const { safeNotifyOriginPartner } = await import("@/lib/integrations/lifecycle-sync.server");
+    await safeNotifyOriginPartner({
+      tenantId: establishmentId,
+      event: (RANK[toTier] ?? 0) < (RANK[fromTier] ?? 0) ? "subscription.downgraded" : "subscription.upgraded",
+      fromPlan: fromTier,
+      toPlan: toTier,
+      origin: "payment_webhook",
+    });
+  }
+
+
   // Enfileira e-mail de confirmação (Resend via email_queue)
   const { data: owner } = await supabaseAdmin
     .from("establishment_members")
