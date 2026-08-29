@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { randomBytes, scryptSync, timingSafeEqual, createHash } from "crypto";
 
 // ---------- helpers ----------
 async function assertRole(supabase: any, userId: string, estId: string, min: "staff" | "manager" | "owner") {
@@ -14,14 +13,16 @@ async function audit(supabase: any, estId: string, userId: string, action: strin
     establishment_id: estId, actor_id: userId, action, entity_type: entity, entity_id: entityId, details,
   });
 }
-function hashPin(pin: string) {
+async function hashPin(pin: string) {
+  const { randomBytes, scryptSync } = await import("node:crypto");
   const salt = randomBytes(16).toString("hex");
   const derived = scryptSync(pin, salt, 32).toString("hex");
   return `${salt}$${derived}`;
 }
-function verifyPin(pin: string, stored: string) {
+async function verifyPin(pin: string, stored: string) {
   const [salt, hash] = stored.split("$");
   if (!salt || !hash) return false;
+  const { scryptSync, timingSafeEqual } = await import("node:crypto");
   const derived = scryptSync(pin, salt, 32);
   const a = Buffer.from(hash, "hex");
   return a.length === derived.length && timingSafeEqual(a, derived);
