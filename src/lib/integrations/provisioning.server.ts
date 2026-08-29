@@ -368,19 +368,19 @@ export async function resendProvisionedAccess(
     return { ok: false, status: 500, code: "password_reset_failed", message: pwErr.message };
   }
 
-  const { getPublicAppUrl } = await import("@/lib/app-url");
-  const loginUrl = `${getPublicAppUrl()}/auth?email=${encodeURIComponent(email)}`;
+  const loginUrl = await buildAccessUrl(email, temporaryPassword);
 
   try {
     const { enqueueEmail } = await import("@/lib/email.server");
     await enqueueEmail({
       to: email,
       subject: `Seus dados de acesso — ${tenant.name}`,
-      html: `<p>Olá!</p><p>Seguem seus dados de acesso a <strong>${tenant.name}</strong>:</p>
-<p><strong>E-mail:</strong> ${email}<br/><strong>Senha temporária:</strong> ${temporaryPassword}</p>
-<p>Acesse: <a href="${loginUrl}">${loginUrl}</a></p>
+      html: `<p>Olá!</p><p>Seu acesso a <strong>${tenant.name}</strong> está pronto.</p>
+<p><strong>E-mail:</strong> ${email}</p>
+<p><a href="${loginUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#5b3fa8;color:#fff;text-decoration:none;font-weight:600">Entrar automaticamente</a></p>
+<p>O botão faz o login automático e mostra sua senha temporária (oculta, clique para revelar). O link é de uso único.</p>
 <p>Recomendamos alterar a senha no primeiro acesso.</p>`,
-      text: `Acesso ${tenant.name}\nE-mail: ${email}\nSenha temporária: ${temporaryPassword}\n${loginUrl}`,
+      text: `Acesso ${tenant.name}\nE-mail: ${email}\nEntre por: ${loginUrl}`,
       template: "provisioning_resend_access",
       establishment_id: tenantId,
     });
