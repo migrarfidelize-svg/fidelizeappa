@@ -11,6 +11,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { listActivePlans, changeEstablishmentPlan, getMyPlanUsage } from "@/lib/plans.functions";
 import { getMyEstablishments } from "@/lib/loyalty.functions";
+import { getSubscriptionOriginNotice } from "@/lib/integrations/lifecycle-sync.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
