@@ -832,7 +832,7 @@ export const createEstablishment = createServerFn({ method: "POST" })
     const { data: est, error } = await supabase.from("establishments").insert({
       slug: data.slug, name: data.name, segment: data.segment, description: data.description, address: data.address, phone: data.phone, whatsapp: data.whatsapp,
       primary_color: data.primary_color, accent_color: data.accent_color, logo_url: data.logo_url, created_by: userId,
-    }).select("*").single();
+    }).select("id, slug").single();
     if (error) {
       if (error.code === "23505") throw new Error("Este endereço já está em uso, escolha outro.");
       throw new Error("Não foi possível criar a empresa. Tente novamente em instantes.");
