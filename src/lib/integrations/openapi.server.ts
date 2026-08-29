@@ -97,6 +97,93 @@ export function buildOpenApiDocument(origin: string) {
           },
         },
       },
+      "/change-plan": {
+        post: {
+          summary: "Altera o plano de um tenant",
+          description: "Requer escopo `provisioning`. Reativa os módulos do plano e renova o período por 30 dias.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["tenant_id", "plan"],
+                  properties: {
+                    tenant_id: { type: "string", format: "uuid" },
+                    plan: { type: "string", enum: ["starter", "pro", "premium"] },
+                  },
+                },
+                example: { tenant_id: "1f2e...", plan: "pro" },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Plano alterado",
+              content: {
+                "application/json": {
+                  example: { success: true, tenant_id: "1f2e...", plan: "pro", tier: "pro", modules: ["loyalty_card", "digital_menu", "linktree"], status: "active" },
+                },
+              },
+            },
+            "404": { description: "Tenant não encontrado", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
+      "/suspend-account": {
+        post: {
+          summary: "Suspende uma conta",
+          description: "Requer escopo `provisioning`. Desativa o tenant e cancela a assinatura ativa.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["tenant_id"],
+                  properties: {
+                    tenant_id: { type: "string", format: "uuid" },
+                    reason: { type: "string", maxLength: 200 },
+                  },
+                },
+                example: { tenant_id: "1f2e...", reason: "inadimplência" },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Conta suspensa",
+              content: { "application/json": { example: { success: true, tenant_id: "1f2e...", status: "suspended", reason: "inadimplência" } } },
+            },
+            "404": { description: "Tenant não encontrado", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
+      "/reactivate-account": {
+        post: {
+          summary: "Reativa uma conta suspensa",
+          description: "Requer escopo `provisioning`. Reativa o tenant e a assinatura mais recente por mais 30 dias.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: { type: "object", required: ["tenant_id"], properties: { tenant_id: { type: "string", format: "uuid" } } },
+                example: { tenant_id: "1f2e..." },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Conta reativada",
+              content: { "application/json": { example: { success: true, tenant_id: "1f2e...", status: "active" } } },
+            },
+            "404": { description: "Tenant não encontrado", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
       "/provisioning/{tenantId}": {
         get: {
           summary: "Consulta uma conta provisionada",
