@@ -37,8 +37,8 @@ import { Route as CardapioSlugRouteImport } from './routes/cardapio.$slug'
 import { Route as CTokenRouteImport } from './routes/c.$token'
 import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
-import { Route as AuthRecuperarRouteImport } from './routes/auth.recuperar'
-import { Route as AuthNovaSenhaRouteImport } from './routes/auth.nova-senha'
+import { Route as AuthRecuperarRouteImport } from './routes/auth_.recuperar'
+import { Route as AuthNovaSenhaRouteImport } from './routes/auth_.nova-senha'
 import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
@@ -300,14 +300,14 @@ const AvaliacoesSlugRoute = AvaliacoesSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
-  id: '/recuperar',
-  path: '/recuperar',
-  getParentRoute: () => AuthRoute,
+  id: '/auth_/recuperar',
+  path: '/auth/recuperar',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
-  id: '/nova-senha',
-  path: '/nova-senha',
-  getParentRoute: () => AuthRoute,
+  id: '/auth_/nova-senha',
+  path: '/auth/nova-senha',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
   id: '/api/test-turnstile',
@@ -996,7 +996,7 @@ const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
@@ -1147,7 +1147,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
@@ -1295,7 +1295,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
   '/onboarding': typeof OnboardingRoute
@@ -1312,8 +1312,8 @@ export interface FileRoutesById {
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
-  '/auth/nova-senha': typeof AuthNovaSenhaRoute
-  '/auth/recuperar': typeof AuthRecuperarRoute
+  '/auth_/nova-senha': typeof AuthNovaSenhaRoute
+  '/auth_/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
   '/avaliar/$slug': typeof AvaliarSlugRoute
   '/c/$token': typeof CTokenRoute
@@ -1763,8 +1763,8 @@ export interface FileRouteTypes {
     | '/_authenticated/hash'
     | '/_authenticated/lgpd'
     | '/api/test-turnstile'
-    | '/auth/nova-senha'
-    | '/auth/recuperar'
+    | '/auth_/nova-senha'
+    | '/auth_/recuperar'
     | '/avaliacoes/$slug'
     | '/avaliar/$slug'
     | '/c/$token'
@@ -1899,7 +1899,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
+  AuthRoute: typeof AuthRoute
   BaixarMigratorRoute: typeof BaixarMigratorRoute
   CriativosRoute: typeof CriativosRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -1912,6 +1912,8 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
   ApiTestTurnstileRoute: typeof ApiTestTurnstileRoute
+  AuthNovaSenhaRoute: typeof AuthNovaSenhaRoute
+  AuthRecuperarRoute: typeof AuthRecuperarRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
   AvaliarSlugRoute: typeof AvaliarSlugRoute
   CTokenRoute: typeof CTokenRoute
@@ -2156,19 +2158,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvaliacoesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth/recuperar': {
-      id: '/auth/recuperar'
-      path: '/recuperar'
+    '/auth_/recuperar': {
+      id: '/auth_/recuperar'
+      path: '/auth/recuperar'
       fullPath: '/auth/recuperar'
       preLoaderRoute: typeof AuthRecuperarRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/auth/nova-senha': {
-      id: '/auth/nova-senha'
-      path: '/nova-senha'
+    '/auth_/nova-senha': {
+      id: '/auth_/nova-senha'
+      path: '/auth/nova-senha'
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/test-turnstile': {
       id: '/api/test-turnstile'
@@ -3272,18 +3274,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface AuthRouteChildren {
-  AuthNovaSenhaRoute: typeof AuthNovaSenhaRoute
-  AuthRecuperarRoute: typeof AuthRecuperarRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthNovaSenhaRoute: AuthNovaSenhaRoute,
-  AuthRecuperarRoute: AuthRecuperarRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 interface ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteChildren {
   ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute: typeof ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute
 }
@@ -3302,7 +3292,7 @@ const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
+  AuthRoute: AuthRoute,
   BaixarMigratorRoute: BaixarMigratorRoute,
   CriativosRoute: CriativosRoute,
   OnboardingRoute: OnboardingRoute,
@@ -3315,6 +3305,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
   ApiTestTurnstileRoute: ApiTestTurnstileRoute,
+  AuthNovaSenhaRoute: AuthNovaSenhaRoute,
+  AuthRecuperarRoute: AuthRecuperarRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
   AvaliarSlugRoute: AvaliarSlugRoute,
   CTokenRoute: CTokenRoute,

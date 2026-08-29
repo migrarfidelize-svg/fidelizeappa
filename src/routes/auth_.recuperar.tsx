@@ -9,7 +9,7 @@ import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { Mail, ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/auth/recuperar")({
+export const Route = createFileRoute("/auth_/recuperar")({
   ssr: false,
   head: () => ({ meta: [{ title: "Recuperar senha — Fidelize" }] }),
   component: RecoverPage,

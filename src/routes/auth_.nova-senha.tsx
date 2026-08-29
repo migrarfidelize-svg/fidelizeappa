@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/auth/nova-senha")({
+export const Route = createFileRoute("/auth_/nova-senha")({
   ssr: false,
   head: () => ({ meta: [{ title: "Nova senha — Fidelize" }] }),
   component: NewPasswordPage,
