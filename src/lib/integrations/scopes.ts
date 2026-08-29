@@ -15,7 +15,7 @@ export type ApiScope = (typeof API_SCOPES)[number];
 
 export const API_SCOPE_LABELS: Record<ApiScope, string> = {
   "customers.read": "Ler clientes",
-  "customers.write": "Criar/editar clientes",
+  "customers.write": "Criar e editar clientes",
   "points.manage": "Gerenciar pontos",
   "stats.read": "Ler estatísticas",
   provisioning: "Provisionar contas",
