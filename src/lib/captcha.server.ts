@@ -55,9 +55,11 @@ export function resolveTurnstile(): ResolvedTurnstile {
 
   const siteKey = (process.env.TURNSTILE_SITE_KEY ?? "").trim();
   const secretKey = (process.env.TURNSTILE_SECRET_KEY ?? "").trim();
+  // Chaves ausentes ou placeholder (ex.: após remix do projeto): não bloqueia o login.
+  const keysValid = TURNSTILE_KEY_RE.test(siteKey) && TURNSTILE_KEY_RE.test(secretKey);
   return {
     mode,
-    enabled: Boolean(siteKey && secretKey),
+    enabled: keysValid,
     siteKey,
     secretKey,
     usingCloudflareTestKeys: false,
