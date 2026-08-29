@@ -65,7 +65,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         name: data.name,
         prefix,
         key_hash: hash,
-        scopes: ["customers:read", "customers:write", "points:write"],
+        scopes,
         allowed_origins: data.allowed_origins,
         rate_limit_per_minute: data.rate_limit_per_minute,
       })
