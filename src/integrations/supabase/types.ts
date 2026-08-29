@@ -269,6 +269,7 @@ export type Database = {
           establishment_id: string
           id: string
           key_hash: string
+          key_type: string
           last_used_at: string | null
           name: string
           prefix: string
@@ -285,6 +286,7 @@ export type Database = {
           establishment_id: string
           id?: string
           key_hash: string
+          key_type?: string
           last_used_at?: string | null
           name: string
           prefix: string
@@ -301,6 +303,7 @@ export type Database = {
           establishment_id?: string
           id?: string
           key_hash?: string
+          key_type?: string
           last_used_at?: string | null
           name?: string
           prefix?: string
