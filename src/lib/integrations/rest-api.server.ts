@@ -644,6 +644,11 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
           user_id: "00000000-0000-4000-8000-000000000001",
           temporary_password: "sandbox-temp-password",
           login_url: `${new URL(request.url).origin}/auth`,
+          autologin_url: `${new URL(request.url).origin}/auth/autologin?token=sandbox-token`,
+          autologin_token: "sandbox-token",
+          autologin_expires_at: new Date(Date.now() + 300_000).toISOString(),
+          autologin_expires_in: 300,
+
           slug: "sandbox-tenant",
           plan,
           modules: ["loyalty", "menu", "linktree"],
