@@ -137,7 +137,12 @@ export const adminProvisioningAction = createServerFn({ method: "POST" })
           : await resendProvisionedAccess(data.tenant_id, meta);
 
     if (!res.ok) throw new Error(res.message);
-    return res.data as Record<string, unknown>;
+    const payload = (res.data ?? {}) as Record<string, unknown>;
+    return {
+      ok: true,
+      temporary_password: payload["temporary_password"] ? String(payload["temporary_password"]) : null,
+      login_url: payload["login_url"] ? String(payload["login_url"]) : null,
+    };
   });
 
 /** Detalhe do tenant + trilha de auditoria completa. */
@@ -158,13 +163,13 @@ export const adminProvisioningDetail = createServerFn({ method: "GET" })
       .limit(200);
 
     return {
-      account: lookup.ok ? (lookup.data as Record<string, unknown>) : null,
+      account_json: lookup.ok ? JSON.stringify(lookup.data, null, 2) : null,
       error: lookup.ok ? null : lookup.message,
       audit: ((audits ?? []) as AuditRow[]).map((a) => ({
         id: a.id,
         action: a.action,
         ip: a.ip,
-        metadata: a.metadata,
+        metadata_json: a.metadata ? JSON.stringify(a.metadata, null, 2) : null,
         created_at: a.created_at,
       })),
     };
@@ -369,11 +374,16 @@ export const adminApiAuditLogs = createServerFn({ method: "GET" })
 
     const { data: rows, count, error } = await query;
     if (error) throw new Error(error.message);
+    type LogRow = {
+      id: string; api_key_id: string | null; key_prefix: string | null; method: string; path: string;
+      status_code: number; ip: string | null; origin: string | null; duration_ms: number | null;
+      error_code: string | null; created_at: string;
+    };
 
     const { data: keys } = await supabaseAdmin.from("api_keys").select("id, name").limit(500);
 
     return {
-      rows: (rows ?? []) as Array<Record<string, unknown>>,
+      rows: (rows ?? []) as LogRow[],
       total: count ?? 0,
       page: data.page,
       page_size: data.page_size,
