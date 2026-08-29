@@ -233,11 +233,12 @@ async function findCustomerByPhone(estId: string, phone: string) {
 /** Cartão de fidelidade da campanha ativa (cria se necessário). */
 async function ensureActiveCard(estId: string, customerId: string, campaignId?: string) {
   const db = await admin();
-  let campaign: { id: string; stamps_required: number; reward_validity_days: number | null } | null = null;
+  type Campaign = { id: string; stamps_required: number; reward_validity_days: number | null };
+  type Card = { id: string; stamps: number; cycle: number };
 
   const q = db.from("campaigns").select("id, stamps_required, reward_validity_days").eq("establishment_id", estId).eq("active", true);
   const { data: camps } = campaignId ? await q.eq("id", campaignId).limit(1) : await q.order("created_at", { ascending: true }).limit(1);
-  campaign = (camps?.[0] as typeof campaign) ?? null;
+  const campaign = ((camps ?? [])[0] ?? null) as Campaign | null;
   if (!campaign) return null;
 
   const { data: existing } = await db
