@@ -529,6 +529,26 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     return jsonResponse(result.data);
   }
 
+  // POST /password-reset — dispara o e-mail personalizado de redefinição de senha
+  if (a === "password-reset" && !b) {
+    if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
+    if (!can("provisioning")) return deny("provisioning");
+    const body = await readJson(request);
+    if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
+    const email = (str(body.email, 120) ?? "").toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return errorResponse(422, "invalid_email", "Informe um e-mail válido.");
+    }
+    const redirectTo = str(body.redirect_to, 300) ?? `${new URL(request.url).origin}/auth/nova-senha`;
+
+    if (sandbox) return jsonResponse({ success: true, sandbox: true, email });
+
+    const { sendPasswordRecoveryEmail } = await import("@/lib/email.server");
+    await sendPasswordRecoveryEmail(email, redirectTo);
+    // Resposta neutra: nunca revela se o e-mail existe.
+    return jsonResponse({ success: true, email, message: "Se o e-mail existir, o link de redefinição foi enviado." });
+  }
+
   // POST /provision-account — cria empresa + admin + plano + módulos
   if (a === "provision-account" && !b) {
     if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
