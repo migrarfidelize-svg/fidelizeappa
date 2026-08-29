@@ -63,7 +63,7 @@ export const Route = createFileRoute("/")({
     }
   },
   loader: () => getLandingPublic(),
-  errorComponent: () => <Landing />,
+  errorComponent: () => <Landing disableLiveSync />,
   component: Landing,
 });
 
@@ -119,10 +119,10 @@ function LandingLiveSync() {
   return null;
 }
 
-function Landing() {
+function Landing({ disableLiveSync = false }: { disableLiveSync?: boolean }) {
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground pb-24 md:pb-0">
-      <LandingLiveSync />
+      {!disableLiveSync && <LandingLiveSync />}
       <ScrollProgress />
       <SiteHeader />
       <main>
