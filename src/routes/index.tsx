@@ -63,7 +63,7 @@ export const Route = createFileRoute("/")({
     }
   },
   loader: () => getLandingPublic(),
-  errorComponent: () => <Landing />,
+  errorComponent: () => <Landing disableLiveSync />,
   component: Landing,
 });
 
