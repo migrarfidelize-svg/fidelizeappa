@@ -5,14 +5,14 @@ import { API_SCOPES, DEFAULT_API_SCOPES, normalizeScopes } from "@/lib/integrati
 
 const estInput = z.object({ establishment_id: z.string().uuid() });
 
-async function assertManager(supabase: any, userId: string, estId: string) {
-  const { data, error } = await supabase.rpc("has_establishment_role", {
-    _user: userId,
-    _est: estId,
-    _min_role: "manager",
-  });
+/**
+ * A gestão de chaves/logs de API é exclusiva dos administradores da
+ * plataforma — donos de estabelecimento e equipe não têm acesso.
+ */
+async function assertManager(supabase: any, userId: string, _estId: string) {
+  const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
   if (error) throw new Error("Falha ao validar permissões.");
-  if (!data) throw new Error("Você não tem permissão para gerenciar chaves de API deste estabelecimento.");
+  if (data !== true) throw new Error("Acesso restrito aos administradores da plataforma.");
 }
 
 export const listApiKeys = createServerFn({ method: "GET" })
