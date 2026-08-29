@@ -124,6 +124,7 @@ import { Route as ApiPublicWebhooksAsaasRouteImport } from './routes/api/public/
 import { Route as ApiPublicTPlanRouteImport } from './routes/api/public/t/plan'
 import { Route as ApiPublicTEventRouteImport } from './routes/api/public/t/event'
 import { Route as ApiPublicMercadopagoPublicKeyRouteImport } from './routes/api/public/mercadopago/public-key'
+import { Route as ApiPublicIntegrationsSplatRouteImport } from './routes/api/public/integrations/$'
 import { Route as ApiPublicHooksWalletSyncRouteImport } from './routes/api/public/hooks/wallet-sync'
 import { Route as ApiPublicHooksSponsoredAdsLifecycleRouteImport } from './routes/api/public/hooks/sponsored-ads-lifecycle'
 import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
@@ -782,6 +783,12 @@ const ApiPublicMercadopagoPublicKeyRoute =
     path: '/api/public/mercadopago/public-key',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicIntegrationsSplatRoute =
+  ApiPublicIntegrationsSplatRouteImport.update({
+    id: '/api/public/integrations/$',
+    path: '/api/public/integrations/$',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksWalletSyncRoute =
   ApiPublicHooksWalletSyncRouteImport.update({
     id: '/api/public/hooks/wallet-sync',
@@ -1082,6 +1089,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
+  '/api/public/integrations/$': typeof ApiPublicIntegrationsSplatRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
@@ -1223,6 +1231,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
+  '/api/public/integrations/$': typeof ApiPublicIntegrationsSplatRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
@@ -1371,6 +1380,7 @@ export interface FileRoutesById {
   '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/sponsored-ads-lifecycle': typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   '/api/public/hooks/wallet-sync': typeof ApiPublicHooksWalletSyncRoute
+  '/api/public/integrations/$': typeof ApiPublicIntegrationsSplatRoute
   '/api/public/mercadopago/public-key': typeof ApiPublicMercadopagoPublicKeyRoute
   '/api/public/t/event': typeof ApiPublicTEventRoute
   '/api/public/t/plan': typeof ApiPublicTPlanRoute
@@ -1519,6 +1529,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
+    | '/api/public/integrations/$'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/t/plan'
@@ -1660,6 +1671,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
+    | '/api/public/integrations/$'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/t/plan'
@@ -1807,6 +1819,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/sponsored-ads-lifecycle'
     | '/api/public/hooks/wallet-sync'
+    | '/api/public/integrations/$'
     | '/api/public/mercadopago/public-key'
     | '/api/public/t/event'
     | '/api/public/t/plan'
@@ -1878,6 +1891,7 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicHooksSponsoredAdsLifecycleRoute: typeof ApiPublicHooksSponsoredAdsLifecycleRoute
   ApiPublicHooksWalletSyncRoute: typeof ApiPublicHooksWalletSyncRoute
+  ApiPublicIntegrationsSplatRoute: typeof ApiPublicIntegrationsSplatRoute
   ApiPublicMercadopagoPublicKeyRoute: typeof ApiPublicMercadopagoPublicKeyRoute
   ApiPublicTEventRoute: typeof ApiPublicTEventRoute
   ApiPublicTPlanRoute: typeof ApiPublicTPlanRoute
@@ -2700,6 +2714,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMercadopagoPublicKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/integrations/$': {
+      id: '/api/public/integrations/$'
+      path: '/api/public/integrations/$'
+      fullPath: '/api/public/integrations/$'
+      preLoaderRoute: typeof ApiPublicIntegrationsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/wallet-sync': {
       id: '/api/public/hooks/wallet-sync'
       path: '/api/public/hooks/wallet-sync'
@@ -3239,6 +3260,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksSponsoredAdsLifecycleRoute:
     ApiPublicHooksSponsoredAdsLifecycleRoute,
   ApiPublicHooksWalletSyncRoute: ApiPublicHooksWalletSyncRoute,
+  ApiPublicIntegrationsSplatRoute: ApiPublicIntegrationsSplatRoute,
   ApiPublicMercadopagoPublicKeyRoute: ApiPublicMercadopagoPublicKeyRoute,
   ApiPublicTEventRoute: ApiPublicTEventRoute,
   ApiPublicTPlanRoute: ApiPublicTPlanRoute,
