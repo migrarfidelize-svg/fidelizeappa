@@ -12,7 +12,7 @@ export async function processWhatsAppWebhook(rawBody: string, requestedEstablish
   } catch {
     return new Response("Unauthorized", { status: 401 });
   }
-  if (!expectedSecret || !hasValidWebhookSecret(expectedSecret, webhookSecret)) {
+  if (!expectedSecret || !(await hasValidWebhookSecret(expectedSecret, webhookSecret))) {
     return new Response("Unauthorized", { status: 401 });
   }
 
