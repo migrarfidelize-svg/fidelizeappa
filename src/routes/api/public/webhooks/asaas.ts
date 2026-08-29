@@ -189,7 +189,22 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
     entity_id: establishmentId,
     metadata: { from_plan: fromTier, to_plan: toTier, provider: "asaas", asaas_payment_id: providerPaymentId } as any,
   });
+
+  if (fromTier !== toTier) {
+    const { safeNotifyOriginPartner } = await import("@/lib/integrations/lifecycle-sync.server");
+    await safeNotifyOriginPartner({
+      tenantId: establishmentId,
+      event: (PLAN_SYNC_RANK[toTier] ?? 0) < (PLAN_SYNC_RANK[fromTier] ?? 0)
+        ? "subscription.downgraded"
+        : "subscription.upgraded",
+      fromPlan: fromTier,
+      toPlan: toTier,
+      origin: "payment_webhook",
+    });
+  }
 }
+
+const PLAN_SYNC_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, enterprise: 3, business: 4 };
 
 export const Route = createFileRoute("/api/public/webhooks/asaas")({
   server: {
