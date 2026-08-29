@@ -80,6 +80,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/integracoes", label: "Integrações", icon: Plug },
       { to: "/hash/api-integracoes", label: "API de Integrações", icon: Link2 },
       { to: "/hash/provisionamentos", label: "Provisionamentos", icon: ServerCog },
+      { to: "/hash/api-auditoria", label: "Auditoria da API", icon: FileClock },
 
       { to: "/hash/pixel", label: "Monitor do Pixel", icon: Activity },
       { to: "/hash/liberacoes", label: "Liberações de recursos", icon: KeyRound },

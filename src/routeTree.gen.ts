@@ -76,6 +76,7 @@ import { Route as AuthenticatedHashAvaliacoesRouteImport } from './routes/_authe
 import { Route as AuthenticatedHashAuditoriaRouteImport } from './routes/_authenticated/hash.auditoria'
 import { Route as AuthenticatedHashAssinaturasRouteImport } from './routes/_authenticated/hash.assinaturas'
 import { Route as AuthenticatedHashApiIntegracoesRouteImport } from './routes/_authenticated/hash.api-integracoes'
+import { Route as AuthenticatedHashApiAuditoriaRouteImport } from './routes/_authenticated/hash.api-auditoria'
 import { Route as AuthenticatedHashAnunciosRouteImport } from './routes/_authenticated/hash.anuncios'
 import { Route as AuthenticatedHashAlertasRouteImport } from './routes/_authenticated/hash.alertas'
 import { Route as AuthenticatedHashAjudaRouteImport } from './routes/_authenticated/hash.ajuda'
@@ -509,6 +510,12 @@ const AuthenticatedHashApiIntegracoesRoute =
   AuthenticatedHashApiIntegracoesRouteImport.update({
     id: '/api-integracoes',
     path: '/api-integracoes',
+    getParentRoute: () => AuthenticatedHashRoute,
+  } as any)
+const AuthenticatedHashApiAuditoriaRoute =
+  AuthenticatedHashApiAuditoriaRouteImport.update({
+    id: '/api-auditoria',
+    path: '/api-auditoria',
     getParentRoute: () => AuthenticatedHashRoute,
   } as any)
 const AuthenticatedHashAnunciosRoute =
@@ -1058,6 +1065,7 @@ export interface FileRoutesByFullPath {
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/hash/api-auditoria': typeof AuthenticatedHashApiAuditoriaRoute
   '/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
@@ -1203,6 +1211,7 @@ export interface FileRoutesByTo {
   '/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/hash/api-auditoria': typeof AuthenticatedHashApiAuditoriaRoute
   '/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
@@ -1355,6 +1364,7 @@ export interface FileRoutesById {
   '/_authenticated/hash/ajuda': typeof AuthenticatedHashAjudaRoute
   '/_authenticated/hash/alertas': typeof AuthenticatedHashAlertasRoute
   '/_authenticated/hash/anuncios': typeof AuthenticatedHashAnunciosRoute
+  '/_authenticated/hash/api-auditoria': typeof AuthenticatedHashApiAuditoriaRoute
   '/_authenticated/hash/api-integracoes': typeof AuthenticatedHashApiIntegracoesRoute
   '/_authenticated/hash/assinaturas': typeof AuthenticatedHashAssinaturasRoute
   '/_authenticated/hash/auditoria': typeof AuthenticatedHashAuditoriaRoute
@@ -1507,6 +1517,7 @@ export interface FileRouteTypes {
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
+    | '/hash/api-auditoria'
     | '/hash/api-integracoes'
     | '/hash/assinaturas'
     | '/hash/auditoria'
@@ -1652,6 +1663,7 @@ export interface FileRouteTypes {
     | '/hash/ajuda'
     | '/hash/alertas'
     | '/hash/anuncios'
+    | '/hash/api-auditoria'
     | '/hash/api-integracoes'
     | '/hash/assinaturas'
     | '/hash/auditoria'
@@ -1803,6 +1815,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash/ajuda'
     | '/_authenticated/hash/alertas'
     | '/_authenticated/hash/anuncios'
+    | '/_authenticated/hash/api-auditoria'
     | '/_authenticated/hash/api-integracoes'
     | '/_authenticated/hash/assinaturas'
     | '/_authenticated/hash/auditoria'
@@ -2414,6 +2427,13 @@ declare module '@tanstack/react-router' {
       path: '/api-integracoes'
       fullPath: '/hash/api-integracoes'
       preLoaderRoute: typeof AuthenticatedHashApiIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedHashRoute
+    }
+    '/_authenticated/hash/api-auditoria': {
+      id: '/_authenticated/hash/api-auditoria'
+      path: '/api-auditoria'
+      fullPath: '/hash/api-auditoria'
+      preLoaderRoute: typeof AuthenticatedHashApiAuditoriaRouteImport
       parentRoute: typeof AuthenticatedHashRoute
     }
     '/_authenticated/hash/anuncios': {
@@ -3162,6 +3182,7 @@ interface AuthenticatedHashRouteChildren {
   AuthenticatedHashAjudaRoute: typeof AuthenticatedHashAjudaRoute
   AuthenticatedHashAlertasRoute: typeof AuthenticatedHashAlertasRoute
   AuthenticatedHashAnunciosRoute: typeof AuthenticatedHashAnunciosRoute
+  AuthenticatedHashApiAuditoriaRoute: typeof AuthenticatedHashApiAuditoriaRoute
   AuthenticatedHashApiIntegracoesRoute: typeof AuthenticatedHashApiIntegracoesRoute
   AuthenticatedHashAssinaturasRoute: typeof AuthenticatedHashAssinaturasRoute
   AuthenticatedHashAuditoriaRoute: typeof AuthenticatedHashAuditoriaRoute
@@ -3197,6 +3218,7 @@ const AuthenticatedHashRouteChildren: AuthenticatedHashRouteChildren = {
   AuthenticatedHashAjudaRoute: AuthenticatedHashAjudaRoute,
   AuthenticatedHashAlertasRoute: AuthenticatedHashAlertasRoute,
   AuthenticatedHashAnunciosRoute: AuthenticatedHashAnunciosRoute,
+  AuthenticatedHashApiAuditoriaRoute: AuthenticatedHashApiAuditoriaRoute,
   AuthenticatedHashApiIntegracoesRoute: AuthenticatedHashApiIntegracoesRoute,
   AuthenticatedHashAssinaturasRoute: AuthenticatedHashAssinaturasRoute,
   AuthenticatedHashAuditoriaRoute: AuthenticatedHashAuditoriaRoute,

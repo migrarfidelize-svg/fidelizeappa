@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHero } from "@/components/PageHero";
-import { Link2 as HeroIcon, Copy, KeyRound, Trash2, ExternalLink } from "lucide-react";
+import { Link2 as HeroIcon, Copy, KeyRound, Trash2, ExternalLink, Activity, TrendingUp, Check } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,6 +14,25 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSkeleton } from "@/components/states";
+import { adminApiHealth, adminApiCommercial } from "@/lib/provisioning-admin.functions";
+import { Link } from "@tanstack/react-router";
+
+function codeExample(kind: "curl" | "node" | "php" | "fetch", origin: string, key: string) {
+  const url = `${origin}/api/public/integrations/ping-auth`;
+  if (kind === "curl") return `curl -X GET "${url}" \\\n  -H "x-api-key: ${key}"`;
+  if (kind === "node")
+    return `const res = await fetch("${url}", {\n  headers: { "x-api-key": "${key}" },\n});\nconsole.log(await res.json());`;
+  if (kind === "fetch")
+    return `fetch("${url}", { headers: { "x-api-key": "${key}" } })\n  .then((r) => r.json())\n  .then(console.log);`;
+  return `<?php\n$ch = curl_init("${url}");\ncurl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ["x-api-key: ${key}"]);\n$response = curl_exec($ch);\ncurl_close($ch);\necho $response;`;
+}
+
+function pct(n: number) {
+  return `${n.toFixed(1).replace(".", ",")}%`;
+}
+function brl(n: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
+}
 
 export const Route = createFileRoute("/_authenticated/hash/api-integracoes")({
   head: () => ({
@@ -37,6 +56,8 @@ function ApiPage() {
   const revoke = useServerFn(revokeApiKey);
   const logs = useServerFn(listApiRequestLogs);
   const stats = useServerFn(getIntegrationsStats);
+  const health = useServerFn(adminApiHealth);
+  const commercial = useServerFn(adminApiCommercial);
 
 
   const { data: memberships } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
@@ -80,6 +101,10 @@ function ApiPage() {
     queryFn: () => stats({ data: { establishment_id: est!.id } }),
     enabled: !!est?.id,
   });
+
+  const healthQ = useQuery({ queryKey: ["api-health"], queryFn: () => health(), refetchInterval: 60_000 });
+  const [commDays, setCommDays] = useState(30);
+  const commQ = useQuery({ queryKey: ["api-commercial", commDays], queryFn: () => commercial({ data: { days: commDays } }) });
 
   const docsUrl = typeof window !== "undefined" ? `${window.location.origin}/api/public/integrations/docs` : "";
 
@@ -227,6 +252,9 @@ function ApiPage() {
                 Documentação Swagger <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
+            <Link to="/hash/api-auditoria" className="text-sm underline">
+              Auditoria avançada da API
+            </Link>
           </div>
 
           {secret && (
@@ -303,6 +331,128 @@ function ApiPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Activity className="h-4 w-4" /> Saúde da integração</CardTitle>
+          <CardDescription>Disponibilidade, autenticação e desempenho da API de integrações.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {healthQ.isLoading || !healthQ.data ? (
+            <LoadingSkeleton />
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {[
+                  [healthQ.data.online, "API online"],
+                  [healthQ.data.auth_ok, "Autenticação válida"],
+                  [healthQ.data.provisioning_ok, "Provisionamento operacional"],
+                  [healthQ.data.sandbox_keys > 0, `Sandbox (${healthQ.data.sandbox_keys} chave(s))`],
+                  [!!healthQ.data.last_call_at, `Última chamada: ${healthQ.data.last_call_at ? new Date(healthQ.data.last_call_at).toLocaleString("pt-BR") : "—"}`],
+                  [healthQ.data.avg_response_ms != null, `Tempo médio: ${healthQ.data.avg_response_ms ?? "—"} ms`],
+                ].map(([ok, label]) => (
+                  <div key={String(label)} className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                    <Badge variant={ok ? "default" : "secondary"}>{ok ? "OK" : "—"}</Badge>
+                    <span className="text-muted-foreground">{String(label)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  ["Requisições 24h", healthQ.data.requests_24h],
+                  ["Requisições 7 dias", healthQ.data.requests_7d],
+                  ["Erros 24h", healthQ.data.errors_24h],
+                  ["Erros 7 dias", healthQ.data.errors_7d],
+                  ["Tempo médio 24h", healthQ.data.avg_response_ms_24h != null ? `${healthQ.data.avg_response_ms_24h} ms` : "—"],
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="rounded-md border p-3">
+                    <p className="text-xs text-muted-foreground">{String(label)}</p>
+                    <p className="metric-number text-2xl">{String(value)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground break-all">
+                Último erro:{" "}
+                {healthQ.data.last_error
+                  ? `${healthQ.data.last_error.method} ${healthQ.data.last_error.path} · ${healthQ.data.last_error.status_code} ${healthQ.data.last_error.error_code ?? ""} · ${new Date(healthQ.data.last_error.created_at).toLocaleString("pt-BR")}`
+                  : "nenhum registrado"}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Dashboard comercial da API</CardTitle>
+          <CardDescription>Receita estimada por plano, origens de provisionamento e evolução temporal.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex gap-2">
+            {[30, 90].map((d) => (
+              <Button key={d} size="sm" variant={commDays === d ? "default" : "outline"} onClick={() => setCommDays(d)}>
+                Últimos {d} dias
+              </Button>
+            ))}
+          </div>
+
+          {commQ.isLoading || !commQ.data ? (
+            <LoadingSkeleton />
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {commQ.data.by_plan.map((p) => (
+                  <div key={p.plan} className="rounded-md border p-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">{p.plan}</p>
+                    <p className="metric-number text-2xl">{p.accounts} contas</p>
+                    <p className="text-xs text-muted-foreground">
+                      {pct(p.percent)} do total · {brl(p.revenue)} /mês
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm">
+                Receita estimada total: <span className="metric-number">{brl(commQ.data.revenue_total)}</span>
+              </p>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Origens de provisionamento</p>
+                {commQ.data.by_source.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Nenhuma origem registrada.</p>
+                ) : (
+                  commQ.data.by_source.map((s) => (
+                    <div key={s.source} className="flex items-center justify-between rounded-md border p-2 text-sm">
+                      <span className="capitalize">{s.source}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {s.count} · {pct(s.percent)} · evolução {s.trend >= 0 ? "+" : ""}{pct(s.trend)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Provisionamentos por dia</p>
+                <div className="flex h-24 items-end gap-[2px]">
+                  {commQ.data.series.map((d) => {
+                    const max = Math.max(1, ...commQ.data!.series.map((x) => x.count));
+                    return (
+                      <div
+                        key={d.date}
+                        title={`${new Date(d.date).toLocaleDateString("pt-BR")}: ${d.count}`}
+                        className="flex-1 rounded-t bg-primary/70"
+                        style={{ height: `${Math.max(2, (d.count / max) * 100)}%` }}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Chaves ativas</CardTitle>
           <CardDescription>Envie a chave no cabeçalho <code>x-api-key</code>.</CardDescription>
         </CardHeader>
@@ -322,7 +472,8 @@ function ApiPage() {
                     <div className="flex flex-wrap gap-1">
                       {(k.scopes ?? []).map((s: string) => (
                         <Badge key={s} variant="outline" className="text-[10px]">
-                          {s}
+                          <Check className="mr-1 h-3 w-3" />
+                          {API_SCOPE_LABELS[s as ApiScope] ?? s}
                         </Badge>
                       ))}
                     </div>
@@ -336,6 +487,31 @@ function ApiPage() {
                           : "todas as origens"} ·{" "}
                       {k.last_used_at ? `último uso ${new Date(k.last_used_at).toLocaleString("pt-BR")}` : "nunca usada"}
                     </p>
+                    <p className="text-xs text-muted-foreground break-all">
+                      último IP {k.last_ip ?? "—"} · último endpoint {k.last_endpoint ?? "—"}
+                    </p>
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {([
+                        ["curl", "CURL"],
+                        ["node", "Node.js"],
+                        ["php", "PHP"],
+                        ["fetch", "JS Fetch"],
+                      ] as const).map(([kind, label]) => (
+                        <Button
+                          key={kind}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            const origin = typeof window !== "undefined" ? window.location.origin : "";
+                            navigator.clipboard.writeText(codeExample(kind, origin, `fdz_${k.prefix}_SUA_CHAVE`));
+                            toast.success(`Exemplo ${label} copiado.`);
+                          }}
+                        >
+                          Copiar {label}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">{k.key_type === "server" ? "Server-to-Server" : "Browser"}</Badge>
