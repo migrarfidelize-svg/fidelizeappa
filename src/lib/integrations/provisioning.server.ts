@@ -65,6 +65,27 @@ export function generateTemporaryPassword(): string {
   return `${out}#1`;
 }
 
+/**
+ * URL de acesso com login automático (magic link de uso único) e a senha
+ * temporária no fragmento (#) — o fragmento nunca é enviado ao servidor;
+ * a página `/acesso` exibe a senha oculta com botão de revelar/copiar.
+ * Se o magic link falhar, cai no login normal com o e-mail pré-preenchido.
+ */
+export async function buildAccessUrl(email: string, temporaryPassword: string): Promise<string> {
+  const { getPublicAppUrl } = await import("@/lib/app-url");
+  const base = getPublicAppUrl();
+  const secret = Buffer.from(temporaryPassword, "utf8").toString("base64url");
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email });
+    const tokenHash = data?.properties?.hashed_token;
+    if (error || !tokenHash) throw new Error(error?.message ?? "magic link indisponível");
+    return `${base}/acesso?t=${encodeURIComponent(tokenHash)}&e=${encodeURIComponent(email)}#p=${secret}`;
+  } catch {
+    return `${base}/acesso?e=${encodeURIComponent(email)}#p=${secret}`;
+  }
+}
+
 export async function provisionAccount(input: ProvisionInput, meta: {
   apiKeyId: string;
   apiKeyEstablishmentId: string;
