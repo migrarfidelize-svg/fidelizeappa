@@ -359,9 +359,13 @@ export async function getProvisionedAccount(tenantId: string): Promise<Provision
             source: (subRow.metadata ?? {})["source"] ?? null,
           }
         : null,
-      modules: ((overrides ?? []) as Array<{ feature_key: string; enabled: boolean }>)
-        .filter((o) => o.enabled)
-        .map((o) => o.feature_key),
+      modules: Array.from(new Set([
+        ...planModules,
+        ...((overrides ?? []) as Array<{ feature_key: string; enabled: boolean }>)
+          .filter((o) => o.enabled)
+          .map((o) => o.feature_key),
+      ])),
+      plan_modules: planModules,
       admin_user: adminUser,
       status: estRow.active && subRow?.status === "active" ? "active" : estRow.active ? "pending" : "inactive",
     },
