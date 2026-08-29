@@ -475,6 +475,44 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     return errorResponse(405, "method_not_allowed", "Método não permitido para este recurso.");
   }
 
+  // POST /change-plan | /suspend-account | /reactivate-account
+  if ((a === "change-plan" || a === "suspend-account" || a === "reactivate-account") && !b) {
+    if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
+    if (!can("provisioning")) return deny("provisioning");
+    const body = await readJson(request);
+    if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
+    const tenantId = str(body.tenant_id, 40) ?? "";
+    if (!UUID_RE.test(tenantId)) return errorResponse(422, "invalid_tenant_id", "tenant_id inválido.");
+
+    const plan = a === "change-plan" ? str(body.plan, 20) : null;
+    if (a === "change-plan" && plan !== "starter" && plan !== "pro" && plan !== "premium") {
+      return errorResponse(422, "invalid_plan", "plan deve ser starter, pro ou premium.");
+    }
+
+    if (sandbox) {
+      return jsonResponse({
+        success: true,
+        sandbox: true,
+        tenant_id: tenantId,
+        ...(a === "change-plan"
+          ? { plan, status: "active" }
+          : { status: a === "suspend-account" ? "suspended" : "active" }),
+      });
+    }
+
+    const mod = await import("./provisioning.server");
+    const meta = { apiKeyId: ctx.key.id, apiKeyEstablishmentId: estId, ip: clientIp(request) };
+    const result =
+      a === "change-plan"
+        ? await mod.changeAccountPlan(tenantId, plan as "starter" | "pro" | "premium", meta)
+        : a === "suspend-account"
+          ? await mod.suspendAccount(tenantId, str(body.reason, 200), meta)
+          : await mod.reactivateAccount(tenantId, meta);
+
+    if (!result.ok) return errorResponse(result.status, result.code, result.message);
+    return jsonResponse(result.data);
+  }
+
   // POST /provision-account — cria empresa + admin + plano + módulos
   if (a === "provision-account" && !b) {
     if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
