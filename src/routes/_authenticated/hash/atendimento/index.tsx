@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   getCRMStats,
@@ -35,6 +35,23 @@ function AtendimentoCRM() {
   const [selectedFlow, setSelectedFlow] = useState<any>(null);
   const establishments = useQuery({ queryKey: ["crm-establishments"], queryFn: () => getCRMEstablishments() });
   const [selectedEstablishmentId, setSelectedEstablishmentId] = useState("");
+
+  // Seleção automática: o CRM nunca deve exigir escolha manual de conta.
+  // Restaura a última conta usada e, na ausência dela, assume a primeira ativa.
+  useEffect(() => {
+    const list = establishments.data as Array<{ id: string }> | undefined;
+    if (!list?.length || selectedEstablishmentId) return;
+    let stored: string | null = null;
+    try { stored = localStorage.getItem("crm:establishmentId"); } catch { /* noop */ }
+    const next = list.find((item) => item.id === stored)?.id ?? list[0].id;
+    setSelectedEstablishmentId(next);
+  }, [establishments.data, selectedEstablishmentId]);
+
+  useEffect(() => {
+    if (!selectedEstablishmentId) return;
+    try { localStorage.setItem("crm:establishmentId", selectedEstablishmentId); } catch { /* noop */ }
+  }, [selectedEstablishmentId]);
+
   const establishmentId = selectedEstablishmentId;
   useCRMRealtime(establishmentId);
   
