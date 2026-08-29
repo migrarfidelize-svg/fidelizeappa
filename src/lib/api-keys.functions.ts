@@ -37,6 +37,7 @@ export const createApiKey = createServerFn({ method: "POST" })
         name: z.string().trim().min(2).max(60),
         rate_limit_per_minute: z.number().int().min(10).max(6000).default(120),
         allowed_origins: z.array(z.string().trim().min(3).max(200)).max(20).default([]),
+        provisioning: z.boolean().default(false),
       })
       .parse(d)
   )
