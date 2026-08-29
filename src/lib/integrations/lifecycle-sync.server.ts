@@ -184,6 +184,12 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
             "x-fidelize-delivery": deliveryId,
             "x-fidelize-timestamp": timestamp,
             ...(signature ? { "x-fidelize-signature": signature } : {}),
+            // Compatibilidade com os métodos aceitos pelo Ronnei (shared secret).
+            // O padrão definitivo continua sendo o HMAC x-fidelize-signature.
+            ...(cfg.secret
+              ? { "x-api-key": cfg.secret, authorization: `Bearer ${cfg.secret}` }
+              : {}),
+            origin: "https://fidelizeapp.lovable.app",
           },
           body,
           signal: controller.signal,
