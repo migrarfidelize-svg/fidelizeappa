@@ -558,7 +558,8 @@ export const exportEstablishmentData = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertRole(supabase, userId, data.establishment_id, "owner");
-    const { data: est } = await supabase.from("establishments").select("*").eq("id", data.establishment_id).single();
+    const { supabaseAdmin: adminForExport } = await import("@/integrations/supabase/client.server");
+    const { data: est } = await adminForExport.from("establishments").select("*").eq("id", data.establishment_id).single();
     const { data: customers } = await supabase.from("customers").select("*").eq("establishment_id", data.establishment_id);
     const { data: campaigns } = await supabase.from("campaigns").select("*").eq("establishment_id", data.establishment_id);
     const { data: cards } = await supabase.from("loyalty_cards").select("*").eq("establishment_id", data.establishment_id);
