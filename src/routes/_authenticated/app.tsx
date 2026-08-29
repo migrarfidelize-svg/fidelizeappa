@@ -218,12 +218,6 @@ const NAV_GROUPS: (NavGroup | NavItem)[] = [
 
 
   {
-    key: "integracoes",
-    icon: Link2,
-    label: "Integrações",
-    items: [{ to: "/app/api", label: "API de integrações", icon: Link2 }],
-  },
-  {
     key: "financeiro",
     icon: Wallet,
     label: "Financeiro",
