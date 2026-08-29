@@ -418,6 +418,51 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
   const method = request.method.toUpperCase();
   const [a, b, c] = segments;
 
+  // POST /provision-account — cria empresa + admin + plano + módulos
+  if (a === "provision-account" && !b) {
+    if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
+    if (!(ctx.key.scopes ?? []).includes("provisioning")) {
+      return errorResponse(403, "scope_required", "Esta API Key não possui o escopo \"provisioning\".");
+    }
+    const body = await readJson(request);
+    if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
+
+    const name = str(body.name, 80);
+    const email = (str(body.email, 120) ?? "").toLowerCase();
+    const plan = str(body.plan, 20);
+    const phoneRaw = body.phone ? normalizePhone(String(body.phone)) : "";
+
+    if (!name || name.length < 2) return errorResponse(422, "invalid_name", "Informe o nome da empresa/responsável.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return errorResponse(422, "invalid_email", "Informe um e-mail válido.");
+    if (plan !== "starter" && plan !== "pro" && plan !== "premium") {
+      return errorResponse(422, "invalid_plan", "plan deve ser starter, pro ou premium.");
+    }
+    if (phoneRaw && (phoneRaw.length < 10 || phoneRaw.length > 13)) {
+      return errorResponse(422, "invalid_phone", "Telefone inválido.");
+    }
+
+    const { provisionAccount } = await import("./provisioning.server");
+    const result = await provisionAccount(
+      { name, email, phone: phoneRaw || null, plan, source: str(body.source, 60) },
+      { apiKeyId: ctx.key.id, apiKeyEstablishmentId: estId, ip: clientIp(request) },
+    );
+
+    if (!result.ok) return errorResponse(result.status, result.code, result.message);
+    return jsonResponse(
+      {
+        success: true,
+        tenant_id: result.tenant_id,
+        user_id: result.user_id,
+        temporary_password: result.temporary_password,
+        login_url: result.login_url,
+        slug: result.slug,
+        plan: result.plan,
+        modules: result.modules,
+      },
+      201,
+    );
+  }
+
   // GET /customer/:id  |  PUT /customer/:id  |  GET /customer/:id/stats
   if (a === "customer" && b && UUID_RE.test(b)) {
     const customer = await findCustomerById(estId, b);
