@@ -185,7 +185,9 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
       const body = JSON.stringify(candidatePayload);
       const timestamp = Math.floor(Date.now() / 1000).toString();
       const signature = cfg.secret
-        ? `sha256=${createHmac("sha256", cfg.secret).update(`${timestamp}.${body}`).digest("hex")}`
+        // Contrato do parceiro: HMAC-SHA256 do corpo bruto (sem prefixo de timestamp).
+        ? `sha256=${createHmac("sha256", cfg.secret).update(body).digest("hex")}`
+
         : null;
 
       for (let i = 0; i < 3 && !delivered; i++) {
