@@ -21,6 +21,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as CriativosRouteImport } from './routes/criativos'
 import { Route as BaixarMigratorRouteImport } from './routes/baixar-migrator'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AcessoRouteImport } from './routes/acesso'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
@@ -218,6 +219,11 @@ const BaixarMigratorRoute = BaixarMigratorRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AcessoRoute = AcessoRouteImport.update({
+  id: '/acesso',
+  path: '/acesso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -996,6 +1002,7 @@ const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdSerialRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/acesso': typeof AcessoRoute
   '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
@@ -1147,6 +1154,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/acesso': typeof AcessoRoute
   '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
@@ -1295,6 +1303,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/acesso': typeof AcessoRoute
   '/auth': typeof AuthRoute
   '/baixar-migrator': typeof BaixarMigratorRoute
   '/criativos': typeof CriativosRoute
@@ -1448,6 +1457,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/acesso'
     | '/auth'
     | '/baixar-migrator'
     | '/criativos'
@@ -1599,6 +1609,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/acesso'
     | '/auth'
     | '/baixar-migrator'
     | '/criativos'
@@ -1746,6 +1757,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/acesso'
     | '/auth'
     | '/baixar-migrator'
     | '/criativos'
@@ -1899,6 +1911,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AcessoRoute: typeof AcessoRoute
   AuthRoute: typeof AuthRoute
   BaixarMigratorRoute: typeof BaixarMigratorRoute
   CriativosRoute: typeof CriativosRoute
@@ -2044,6 +2057,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/acesso': {
+      id: '/acesso'
+      path: '/acesso'
+      fullPath: '/acesso'
+      preLoaderRoute: typeof AcessoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -3292,6 +3312,7 @@ const ApiPublicWalletV1DevicesDeviceIdRegistrationsPassTypeIdRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AcessoRoute: AcessoRoute,
   AuthRoute: AuthRoute,
   BaixarMigratorRoute: BaixarMigratorRoute,
   CriativosRoute: CriativosRoute,

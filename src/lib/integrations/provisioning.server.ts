@@ -65,6 +65,27 @@ export function generateTemporaryPassword(): string {
   return `${out}#1`;
 }
 
+/**
+ * URL de acesso com login automático (magic link de uso único) e a senha
+ * temporária no fragmento (#) — o fragmento nunca é enviado ao servidor;
+ * a página `/acesso` exibe a senha oculta com botão de revelar/copiar.
+ * Se o magic link falhar, cai no login normal com o e-mail pré-preenchido.
+ */
+export async function buildAccessUrl(email: string, temporaryPassword: string): Promise<string> {
+  const { getPublicAppUrl } = await import("@/lib/app-url");
+  const base = getPublicAppUrl();
+  const secret = Buffer.from(temporaryPassword, "utf8").toString("base64url");
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email });
+    const tokenHash = data?.properties?.hashed_token;
+    if (error || !tokenHash) throw new Error(error?.message ?? "magic link indisponível");
+    return `${base}/acesso?t=${encodeURIComponent(tokenHash)}&e=${encodeURIComponent(email)}#p=${secret}`;
+  } catch {
+    return `${base}/acesso?e=${encodeURIComponent(email)}#p=${secret}`;
+  }
+}
+
 export async function provisionAccount(input: ProvisionInput, meta: {
   apiKeyId: string;
   apiKeyEstablishmentId: string;
@@ -215,8 +236,7 @@ export async function provisionAccount(input: ProvisionInput, meta: {
     } as never);
   } catch { /* auditoria nunca bloqueia */ }
 
-  const { getPublicAppUrl } = await import("@/lib/app-url");
-  const loginUrl = `${getPublicAppUrl()}/auth?email=${encodeURIComponent(email)}`;
+  const loginUrl = await buildAccessUrl(email, temporaryPassword);
 
   return {
     ok: true,
@@ -348,19 +368,19 @@ export async function resendProvisionedAccess(
     return { ok: false, status: 500, code: "password_reset_failed", message: pwErr.message };
   }
 
-  const { getPublicAppUrl } = await import("@/lib/app-url");
-  const loginUrl = `${getPublicAppUrl()}/auth?email=${encodeURIComponent(email)}`;
+  const loginUrl = await buildAccessUrl(email, temporaryPassword);
 
   try {
     const { enqueueEmail } = await import("@/lib/email.server");
     await enqueueEmail({
       to: email,
       subject: `Seus dados de acesso — ${tenant.name}`,
-      html: `<p>Olá!</p><p>Seguem seus dados de acesso a <strong>${tenant.name}</strong>:</p>
-<p><strong>E-mail:</strong> ${email}<br/><strong>Senha temporária:</strong> ${temporaryPassword}</p>
-<p>Acesse: <a href="${loginUrl}">${loginUrl}</a></p>
+      html: `<p>Olá!</p><p>Seu acesso a <strong>${tenant.name}</strong> está pronto.</p>
+<p><strong>E-mail:</strong> ${email}</p>
+<p><a href="${loginUrl}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#5b3fa8;color:#fff;text-decoration:none;font-weight:600">Entrar automaticamente</a></p>
+<p>O botão faz o login automático e mostra sua senha temporária (oculta, clique para revelar). O link é de uso único.</p>
 <p>Recomendamos alterar a senha no primeiro acesso.</p>`,
-      text: `Acesso ${tenant.name}\nE-mail: ${email}\nSenha temporária: ${temporaryPassword}\n${loginUrl}`,
+      text: `Acesso ${tenant.name}\nE-mail: ${email}\nEntre por: ${loginUrl}`,
       template: "provisioning_resend_access",
       establishment_id: tenantId,
     });
