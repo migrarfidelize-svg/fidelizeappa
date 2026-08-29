@@ -73,6 +73,56 @@ export function buildOpenApiDocument(origin: string) {
       schemas: { Customer: customerSchema, Error: errorSchema },
     },
     paths: {
+      "/provision-account": {
+        post: {
+          summary: "Provisiona uma conta completa (empresa + admin + plano + módulos)",
+          description:
+            "Cria a empresa (tenant), o usuário administrador com senha temporária, ativa a assinatura do plano informado e libera os módulos Cartão Fidelidade, Cardápio Digital e Árvore de Links. Requer API Key com escopo `provisioning`.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name", "email", "plan"],
+                  properties: {
+                    name: { type: "string", maxLength: 80 },
+                    email: { type: "string", format: "email" },
+                    phone: { type: "string" },
+                    plan: { type: "string", enum: ["starter", "pro", "premium"] },
+                    source: { type: "string", description: "Origem do provisionamento (ex.: ronnei)." },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Conta provisionada",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      tenant_id: { type: "string", format: "uuid" },
+                      user_id: { type: "string", format: "uuid" },
+                      temporary_password: { type: "string" },
+                      login_url: { type: "string", format: "uri" },
+                      slug: { type: "string" },
+                      plan: { type: "string" },
+                      modules: { type: "array", items: { type: "string" } },
+                    },
+                  },
+                },
+              },
+            },
+            "409": { description: "E-mail já em uso ou plano indisponível", content: { "application/json": { schema: errorSchema } } },
+            "422": { description: "Dados inválidos", content: { "application/json": { schema: errorSchema } } },
+            ...commonResponses,
+          },
+        },
+      },
       "/customer/{id}": {
         get: {
           summary: "Retorna dados completos do cliente",
