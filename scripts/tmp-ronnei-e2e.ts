@@ -3,7 +3,7 @@ const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 const { provisionAccount, changeAccountPlan, suspendAccount, reactivateAccount } = await import("@/lib/integrations/provisioning.server");
 const { notifyOriginPartner, getProvisionOrigin } = await import("@/lib/integrations/lifecycle-sync.server");
 
-const { data: key } = await supabaseAdmin.from("api_keys").select("id, name, establishment_id").ilike("name", "%Ronnei%").eq("is_active", true).limit(1).maybeSingle();
+const { data: key } = await supabaseAdmin.from("api_keys").select("id, name, establishment_id").eq("id","b62d403c-0ee1-4ade-916f-e518114c139c").limit(1).maybeSingle();
 console.log("API KEY:", key?.name, key?.id);
 const meta = { apiKeyId: key!.id as string, apiKeyEstablishmentId: key!.establishment_id as string, ip: "127.0.0.1" };
 
