@@ -60,13 +60,24 @@ export const synthesizeGlobalEleven = createServerFn({ method: "POST" })
       throw new Error("ElevenLabs global: chave de API não configurada.");
     }
 
-    // Decrypt API Key before use using robust AES-256-GCM
+    // Decrypt API Key before use using robust AES-256-GCM.
+    // Falha de descriptografia não pode derrubar a UI: retornamos um aviso.
     const encryptedKey = config.apiKey;
     let apiKey = encryptedKey;
     if (encryptedKey) {
       const { decryptSecret } = await import("./integrations/crypt.server");
-      apiKey = await decryptSecret(encryptedKey);
+      try {
+        apiKey = await decryptSecret(encryptedKey);
+      } catch (err) {
+        console.error("Voice: falha ao descriptografar a chave ElevenLabs.", err);
+        return {
+          audio: null,
+          error:
+            "A chave da ElevenLabs foi salva com outra chave de criptografia. Regrave-a no Voice Studio / painel de integrações.",
+        };
+      }
     }
+
 
     // Process template if event is provided
     let textToSpeak = data.text;
