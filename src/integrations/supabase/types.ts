@@ -9968,6 +9968,41 @@ export type Database = {
           },
         ]
       }
+      view_public_courier_reviews: {
+        Row: {
+          author_name: string | null
+          comment: string | null
+          courier_id: string | null
+          created_at: string | null
+          id: string | null
+          rating: number | null
+        }
+        Insert: {
+          author_name?: string | null
+          comment?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+        }
+        Update: {
+          author_name?: string | null
+          comment?: string | null
+          courier_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_reviews_courier_id_fkey"
+            columns: ["courier_id"]
+            isOneToOne: false
+            referencedRelation: "couriers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       view_public_establishments_v2: {
         Row: {
           accent_color: string | null
