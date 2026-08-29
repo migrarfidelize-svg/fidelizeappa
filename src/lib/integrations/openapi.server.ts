@@ -126,7 +126,63 @@ export function buildOpenApiDocument(origin: string) {
           },
         },
       },
+      "/magic-link": {
+        post: {
+          summary: "Gera link de login automático (SSO)",
+          description:
+            "Requer escopo `provisioning`. Devolve uma URL de autologin de uso único, válida por 5 minutos, vinculada ao usuário e ao tenant. Após o uso o token é invalidado imediatamente.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["email"],
+                  properties: {
+                    email: { type: "string", format: "email", example: "dono@empresa.com" },
+                    source: { type: "string", example: "ronnei" },
+                  },
+                },
+                example: { email: "dono@empresa.com", source: "ronnei" },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Link gerado",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      email: { type: "string" },
+                      user_id: { type: "string", format: "uuid" },
+                      magic_link: { type: "string", format: "uri" },
+                      autologin_url: { type: "string", format: "uri" },
+                      autologin_token: { type: "string" },
+                      expires_at: { type: "string", format: "date-time" },
+                      expires_in: { type: "integer", example: 300 },
+                    },
+                  },
+                  example: {
+                    success: true,
+                    email: "dono@empresa.com",
+                    user_id: "7c9e...",
+                    magic_link: "https://fidelizeapp.lovable.app/auth/autologin?token=abc123",
+                    autologin_url: "https://fidelizeapp.lovable.app/auth/autologin?token=abc123",
+                    autologin_token: "abc123",
+                    expires_in: 300,
+                  },
+                },
+              },
+            },
+            ...commonResponses,
+          },
+        },
+      },
       "/password-reset": {
+
         post: {
           summary: "Envia o e-mail de redefinição de senha",
           description:
