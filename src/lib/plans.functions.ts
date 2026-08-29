@@ -350,6 +350,23 @@ export const changeEstablishmentPlan = createServerFn({ method: "POST" })
       metadata: { from_plan: fromTier, to_plan: toTier, plan_id: newPlan.id, plan_name: newPlan.name } as never,
     });
 
+    // 4.1) Sincronização de ciclo de vida com o parceiro de origem (ex.: Ronnei)
+    {
+      const { safeNotifyOriginPartner } = await import("@/lib/integrations/lifecycle-sync.server");
+      await safeNotifyOriginPartner({
+        tenantId: data.establishment_id,
+        event:
+          kind === "upgrade" ? "subscription.upgraded"
+          : kind === "downgrade" ? "subscription.downgraded"
+          : "subscription.changed",
+        fromPlan: fromTier,
+        toPlan: toTier,
+        actorUserId: userId,
+        origin: "app",
+      });
+    }
+
+
     // 5) Feature-unlock notifications (e.g. Avaliações públicas)
     try {
       const reviewsAfter = await hasFeature(supabase, data.establishment_id, "public_reviews");
