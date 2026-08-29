@@ -248,7 +248,7 @@ async function ensureActiveCard(estId: string, customerId: string, campaignId?: 
     .eq("campaign_id", campaign.id)
     .maybeSingle();
 
-  if (existing) return { card: existing, campaign };
+  if (existing) return { card: existing as Card, campaign };
 
   const { data: created, error } = await db
     .from("loyalty_cards")
@@ -256,7 +256,7 @@ async function ensureActiveCard(estId: string, customerId: string, campaignId?: 
     .select("id, stamps, cycle, campaign_id, customer_id, establishment_id")
     .single();
   if (error || !created) return null;
-  return { card: created, campaign };
+  return { card: created as Card, campaign };
 }
 
 async function addPoints(estId: string, customer: CustomerRow, quantity: number, campaignId?: string) {
