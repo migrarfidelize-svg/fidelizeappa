@@ -293,11 +293,16 @@ export async function getProvisionedAccount(tenantId: string): Promise<Provision
 
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
-    .select("id, tier, status, provider, current_period_start, current_period_end, metadata, created_at")
+    .select("id, plan_id, tier, status, provider, current_period_start, current_period_end, metadata, created_at")
     .eq("establishment_id", tenantId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  const planModules = (sub as { plan_id?: string | null } | null)?.plan_id
+    ? await listPlanModules(supabaseAdmin as never, (sub as { plan_id: string }).plan_id)
+    : [];
+
 
   const { data: overrides } = await supabaseAdmin
     .from("establishment_feature_overrides")
