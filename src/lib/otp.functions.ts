@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequest } from "@tanstack/react-start/server";
-import { randomBytes, timingSafeEqual } from "node:crypto";
 
 const sendOtpSchema = z.object({
   whatsapp: z.string().min(10).max(25),
@@ -184,6 +183,7 @@ export async function ensureWhatsAppWebhookSecret(establishmentId: string) {
 
   const { encryptSecret } = await import("./integrations/crypt.server");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { randomBytes } = await import("node:crypto");
   const secret = randomBytes(32).toString("base64url");
   const encryptedSecret = await encryptSecret(secret);
   const { data: integration, error } = await supabaseAdmin.from("integrations")
@@ -208,8 +208,9 @@ export async function ensureWhatsAppWebhookSecret(establishmentId: string) {
   return secret;
 }
 
-export function hasValidWebhookSecret(expected: string, received: string | null | undefined) {
+export async function hasValidWebhookSecret(expected: string, received: string | null | undefined) {
   if (!received || !expected) return false;
+  const { timingSafeEqual } = await import("node:crypto");
   const expectedBytes = Buffer.from(expected);
   const receivedBytes = Buffer.from(received);
   return expectedBytes.length === receivedBytes.length && timingSafeEqual(expectedBytes, receivedBytes);
