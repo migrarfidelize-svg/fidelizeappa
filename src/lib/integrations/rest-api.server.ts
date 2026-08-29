@@ -123,15 +123,16 @@ export async function authenticateApiRequest(request: Request): Promise<AuthResu
     }
   }
 
-  // Rate limit por minuto
+  // Rate limit por minuto (janela deslizante de 60s)
   const since = new Date(Date.now() - 60_000).toISOString();
-  const { count } = await supabaseAdmin
+  const { data: recent } = await supabaseAdmin
     .from("api_request_logs")
-    .select("id", { count: "exact", head: true })
+    .select("id")
     .eq("api_key_id", key.id)
-    .gte("created_at", since);
+    .gte("created_at", since)
+    .limit(key.rate_limit_per_minute + 1);
 
-  if ((count ?? 0) >= key.rate_limit_per_minute) {
+  if ((recent?.length ?? 0) >= key.rate_limit_per_minute) {
     return { ok: false, status: 429, code: "rate_limit_exceeded", message: `Limite de ${key.rate_limit_per_minute} requisições por minuto atingido.`, keyId: key.id, establishmentId: key.establishment_id, prefix };
   }
 
