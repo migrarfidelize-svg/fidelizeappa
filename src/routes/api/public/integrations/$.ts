@@ -24,7 +24,13 @@ async function dispatch(request: Request, splat: string | undefined): Promise<Re
     logApiRequest,
     errorResponse,
     jsonResponse,
+    healthResponse,
   } = await import("@/lib/integrations/rest-api.server");
+
+  // Endpoint de saúde (público, sem API Key)
+  if (request.method === "GET" && segments[0] === "health" && segments.length === 1) {
+    return healthResponse();
+  }
 
   // Documentação pública (sem API Key)
   if (request.method === "GET" && (segments[0] === "openapi.json" || segments[0] === "docs")) {
