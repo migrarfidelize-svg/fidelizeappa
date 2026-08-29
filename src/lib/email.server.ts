@@ -384,3 +384,50 @@ export function maskApiKey(key: string): string {
   const tail = key.slice(-4);
   return `${"•".repeat(Math.max(8, Math.min(20, key.length - 4)))}${tail}`;
 }
+
+/**
+ * Envia o e-mail personalizado de redefinição de senha (template `password_recovery`).
+ * Nunca revela se o e-mail existe — o resultado é sempre `{ ok: true }`.
+ * Usado pelo fluxo "Esqueci minha senha" do app e pela API de integrações.
+ */
+export async function sendPasswordRecoveryEmail(
+  email: string,
+  redirectTo?: string,
+): Promise<{ ok: true; sent: boolean }> {
+  let actionLink: string | null = null;
+  let userName = "";
+  try {
+    const { data: link } = await (supabaseAdmin.auth.admin as any).generateLink({
+      type: "recovery",
+      email,
+      options: redirectTo ? { redirectTo } : undefined,
+    });
+    actionLink = link?.properties?.action_link ?? null;
+    userName = (link?.user?.user_metadata as any)?.full_name ?? "";
+  } catch {
+    // Silencioso — evita enumeração de usuários
+  }
+
+  if (!actionLink) return { ok: true, sent: false };
+
+  const variables = { name: userName || "cliente", action_link: actionLink };
+  try {
+    await sendTemplateEmail({ to: email, template: "password_recovery", variables });
+  } catch (err: any) {
+    try {
+      const rendered = await renderTemplate("password_recovery", variables);
+      await enqueueEmail({
+        to: email,
+        subject: rendered.subject,
+        html: rendered.html,
+        text: rendered.text ?? undefined,
+        template: "password_recovery",
+        variables,
+        last_error: err?.message ?? "Falha inicial",
+      });
+    } catch {
+      return { ok: true, sent: false };
+    }
+  }
+  return { ok: true, sent: true };
+}
