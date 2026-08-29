@@ -452,7 +452,7 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
       const db = await admin();
       const { data, error } = await db
         .from("customers")
-        .update(patch)
+        .update(patch as never)
         .eq("id", customer.id)
         .eq("establishment_id", estId)
         .select(CUSTOMER_COLUMNS)

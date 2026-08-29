@@ -99,7 +99,7 @@ function ApiPage() {
       <PageHero
         icon={HeroIcon}
         title="API de integrações"
-        description="Conecte sistemas externos ao Fidelize com chaves de API seguras, limite de requisições e auditoria."
+        subtitle="Conecte sistemas externos ao Fidelize com chaves de API seguras, limite de requisições e auditoria."
       />
 
       <Card>
