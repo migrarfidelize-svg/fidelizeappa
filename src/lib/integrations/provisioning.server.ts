@@ -383,3 +383,211 @@ export async function resendProvisionedAccess(
     data: { success: true, tenant_id: tenantId, user_id: admin.user_id, email, temporary_password: temporaryPassword, login_url: loginUrl },
   };
 }
+
+// ------------------------------------------------- ciclo de vida da conta
+
+async function writeLifecycleAudit(params: {
+  tenantId: string;
+  action: string;
+  ip: string | null;
+  apiKeyId: string;
+  apiKeyEstablishmentId?: string | null;
+  payload: Record<string, unknown>;
+  response: Record<string, unknown>;
+}) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("audit_logs").insert({
+      establishment_id: params.tenantId,
+      action: params.action,
+      entity_type: "establishment",
+      entity_id: params.tenantId,
+      ip: params.ip,
+      metadata: {
+        api_key_id: params.apiKeyId,
+        called_by_establishment: params.apiKeyEstablishmentId ?? null,
+        payload: params.payload,
+        response: params.response,
+        at: new Date().toISOString(),
+      },
+    } as never);
+  } catch { /* auditoria nunca bloqueia */ }
+}
+
+export type LifecycleMeta = { apiKeyId: string; apiKeyEstablishmentId?: string | null; ip: string | null };
+
+/** POST /change-plan — troca o plano do tenant e reativa os módulos. */
+export async function changeAccountPlan(
+  tenantId: string,
+  plan: PlanKey,
+  meta: LifecycleMeta,
+): Promise<ProvisionLookupResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const tier = PLAN_TIER[plan];
+
+  const { data: est } = await supabaseAdmin
+    .from("establishments")
+    .select("id, name, slug")
+    .eq("id", tenantId)
+    .maybeSingle();
+  if (!est) return { ok: false, status: 404, code: "tenant_not_found", message: "Tenant não encontrado." };
+
+  const { data: planRow } = await supabaseAdmin
+    .from("plans")
+    .select("id, tier, name")
+    .eq("tier", tier as never)
+    .eq("is_active", true)
+    .order("display_order", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (!planRow) return { ok: false, status: 409, code: "plan_unavailable", message: `Plano "${plan}" indisponível.` };
+
+  const now = new Date();
+  const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const { data: sub } = await supabaseAdmin
+    .from("subscriptions")
+    .select("id")
+    .eq("establishment_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (sub) {
+    const { error } = await supabaseAdmin
+      .from("subscriptions")
+      .update({
+        plan_id: (planRow as { id: string }).id,
+        tier,
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+      } as never)
+      .eq("id", (sub as { id: string }).id);
+    if (error) return { ok: false, status: 500, code: "plan_change_failed", message: error.message };
+  } else {
+    const { error } = await supabaseAdmin.from("subscriptions").insert({
+      establishment_id: tenantId,
+      plan_id: (planRow as { id: string }).id,
+      tier,
+      status: "active",
+      provider: "api_provisioning",
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      metadata: { api_key_id: meta.apiKeyId, source: "api_change_plan" },
+    } as never);
+    if (error) return { ok: false, status: 500, code: "plan_change_failed", message: error.message };
+  }
+
+  await supabaseAdmin.from("establishments").update({ plan: tier } as never).eq("id", tenantId);
+
+  const modules = [...PROVISION_MODULES];
+  await supabaseAdmin.from("establishment_feature_overrides").upsert(
+    modules.map((feature_key) => ({
+      establishment_id: tenantId,
+      feature_key,
+      enabled: true,
+      note: `Alteração de plano via API (${plan})`,
+    })) as never,
+    { onConflict: "establishment_id,feature_key" },
+  );
+
+  const response = { success: true, tenant_id: tenantId, plan, tier, modules, status: "active" };
+  await writeLifecycleAudit({
+    tenantId,
+    action: "api_change_plan",
+    ip: meta.ip,
+    apiKeyId: meta.apiKeyId,
+    apiKeyEstablishmentId: meta.apiKeyEstablishmentId ?? null,
+    payload: { tenant_id: tenantId, plan },
+    response,
+  });
+  return { ok: true, data: response };
+}
+
+/** POST /suspend-account — desativa o tenant e coloca a assinatura em pausa. */
+export async function suspendAccount(
+  tenantId: string,
+  reason: string | null,
+  meta: LifecycleMeta,
+): Promise<ProvisionLookupResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: est } = await supabaseAdmin
+    .from("establishments")
+    .select("id, active")
+    .eq("id", tenantId)
+    .maybeSingle();
+  if (!est) return { ok: false, status: 404, code: "tenant_not_found", message: "Tenant não encontrado." };
+
+  const { error } = await supabaseAdmin.from("establishments").update({ active: false } as never).eq("id", tenantId);
+  if (error) return { ok: false, status: 500, code: "suspend_failed", message: error.message };
+
+  await supabaseAdmin
+    .from("subscriptions")
+    .update({ status: "canceled" } as never)
+    .eq("establishment_id", tenantId)
+    .eq("status", "active");
+
+  const response = { success: true, tenant_id: tenantId, status: "suspended", reason: reason ?? null };
+  await writeLifecycleAudit({
+    tenantId,
+    action: "api_suspend_account",
+    ip: meta.ip,
+    apiKeyId: meta.apiKeyId,
+    apiKeyEstablishmentId: meta.apiKeyEstablishmentId ?? null,
+    payload: { tenant_id: tenantId, reason },
+    response,
+  });
+  return { ok: true, data: response };
+}
+
+/** POST /reactivate-account — reativa o tenant e a assinatura mais recente. */
+export async function reactivateAccount(
+  tenantId: string,
+  meta: LifecycleMeta,
+): Promise<ProvisionLookupResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: est } = await supabaseAdmin
+    .from("establishments")
+    .select("id, active")
+    .eq("id", tenantId)
+    .maybeSingle();
+  if (!est) return { ok: false, status: 404, code: "tenant_not_found", message: "Tenant não encontrado." };
+
+  const { error } = await supabaseAdmin.from("establishments").update({ active: true } as never).eq("id", tenantId);
+  if (error) return { ok: false, status: 500, code: "reactivate_failed", message: error.message };
+
+  const now = new Date();
+  const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const { data: sub } = await supabaseAdmin
+    .from("subscriptions")
+    .select("id")
+    .eq("establishment_id", tenantId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (sub) {
+    await supabaseAdmin
+      .from("subscriptions")
+      .update({
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+      } as never)
+      .eq("id", (sub as { id: string }).id);
+  }
+
+  const response = { success: true, tenant_id: tenantId, status: "active" };
+  await writeLifecycleAudit({
+    tenantId,
+    action: "api_reactivate_account",
+    ip: meta.ip,
+    apiKeyId: meta.apiKeyId,
+    apiKeyEstablishmentId: meta.apiKeyEstablishmentId ?? null,
+    payload: { tenant_id: tenantId },
+    response,
+  });
+  return { ok: true, data: response };
+}
