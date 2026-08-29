@@ -1,0 +1,1 @@
+GRANT SELECT (cnpj, razao_social, average_ticket) ON public.establishments TO authenticated;
