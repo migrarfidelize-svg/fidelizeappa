@@ -40,6 +40,7 @@ import { Route as AvaliarSlugRouteImport } from './routes/avaliar.$slug'
 import { Route as AvaliacoesSlugRouteImport } from './routes/avaliacoes.$slug'
 import { Route as AuthRecuperarRouteImport } from './routes/auth_.recuperar'
 import { Route as AuthNovaSenhaRouteImport } from './routes/auth_.nova-senha'
+import { Route as AuthAutologinRouteImport } from './routes/auth_.autologin'
 import { Route as ApiTestTurnstileRouteImport } from './routes/api/test-turnstile'
 import { Route as AuthenticatedLgpdRouteImport } from './routes/_authenticated/lgpd'
 import { Route as AuthenticatedHashRouteImport } from './routes/_authenticated/hash'
@@ -313,6 +314,11 @@ const AuthRecuperarRoute = AuthRecuperarRouteImport.update({
 const AuthNovaSenhaRoute = AuthNovaSenhaRouteImport.update({
   id: '/auth_/nova-senha',
   path: '/auth/nova-senha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthAutologinRoute = AuthAutologinRouteImport.update({
+  id: '/auth_/autologin',
+  path: '/auth/autologin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTestTurnstileRoute = ApiTestTurnstileRouteImport.update({
@@ -1020,6 +1026,7 @@ export interface FileRoutesByFullPath {
   '/hash': typeof AuthenticatedHashRouteWithChildren
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
+  '/auth/autologin': typeof AuthAutologinRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -1169,6 +1176,7 @@ export interface FileRoutesByTo {
   '/videos': typeof VideosRoute
   '/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
+  '/auth/autologin': typeof AuthAutologinRoute
   '/auth/nova-senha': typeof AuthNovaSenhaRoute
   '/auth/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -1321,6 +1329,7 @@ export interface FileRoutesById {
   '/_authenticated/hash': typeof AuthenticatedHashRouteWithChildren
   '/_authenticated/lgpd': typeof AuthenticatedLgpdRoute
   '/api/test-turnstile': typeof ApiTestTurnstileRoute
+  '/auth_/autologin': typeof AuthAutologinRoute
   '/auth_/nova-senha': typeof AuthNovaSenhaRoute
   '/auth_/recuperar': typeof AuthRecuperarRoute
   '/avaliacoes/$slug': typeof AvaliacoesSlugRoute
@@ -1475,6 +1484,7 @@ export interface FileRouteTypes {
     | '/hash'
     | '/lgpd'
     | '/api/test-turnstile'
+    | '/auth/autologin'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1624,6 +1634,7 @@ export interface FileRouteTypes {
     | '/videos'
     | '/lgpd'
     | '/api/test-turnstile'
+    | '/auth/autologin'
     | '/auth/nova-senha'
     | '/auth/recuperar'
     | '/avaliacoes/$slug'
@@ -1775,6 +1786,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hash'
     | '/_authenticated/lgpd'
     | '/api/test-turnstile'
+    | '/auth_/autologin'
     | '/auth_/nova-senha'
     | '/auth_/recuperar'
     | '/avaliacoes/$slug'
@@ -1925,6 +1937,7 @@ export interface RootRouteChildren {
   TermosRoute: typeof TermosRoute
   VideosRoute: typeof VideosRoute
   ApiTestTurnstileRoute: typeof ApiTestTurnstileRoute
+  AuthAutologinRoute: typeof AuthAutologinRoute
   AuthNovaSenhaRoute: typeof AuthNovaSenhaRoute
   AuthRecuperarRoute: typeof AuthRecuperarRoute
   AvaliacoesSlugRoute: typeof AvaliacoesSlugRoute
@@ -2190,6 +2203,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/nova-senha'
       fullPath: '/auth/nova-senha'
       preLoaderRoute: typeof AuthNovaSenhaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth_/autologin': {
+      id: '/auth_/autologin'
+      path: '/auth/autologin'
+      fullPath: '/auth/autologin'
+      preLoaderRoute: typeof AuthAutologinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/test-turnstile': {
@@ -3326,6 +3346,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermosRoute: TermosRoute,
   VideosRoute: VideosRoute,
   ApiTestTurnstileRoute: ApiTestTurnstileRoute,
+  AuthAutologinRoute: AuthAutologinRoute,
   AuthNovaSenhaRoute: AuthNovaSenhaRoute,
   AuthRecuperarRoute: AuthRecuperarRoute,
   AvaliacoesSlugRoute: AvaliacoesSlugRoute,
