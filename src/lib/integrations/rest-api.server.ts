@@ -549,6 +549,71 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
     return jsonResponse({ success: true, email, message: "Se o e-mail existir, o link de redefinição foi enviado." });
   }
 
+  // POST /magic-link — link de login automático (uso único, 5 min) por e-mail
+  if ((a === "magic-link" || a === "autologin-link") && !b) {
+    if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
+    if (!can("provisioning")) return deny("provisioning");
+    const body = await readJson(request);
+    if (!body) return errorResponse(400, "invalid_body", "Corpo JSON inválido.");
+    const email = (str(body.email, 120) ?? "").toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      return errorResponse(422, "invalid_email", "Informe um e-mail válido.");
+    }
+
+    if (sandbox) {
+      const exp = new Date(Date.now() + 300_000).toISOString();
+      return jsonResponse({
+        success: true,
+        sandbox: true,
+        email,
+        magic_link: `${new URL(request.url).origin}/auth/autologin?token=sandbox-token`,
+        autologin_url: `${new URL(request.url).origin}/auth/autologin?token=sandbox-token`,
+        autologin_token: "sandbox-token",
+        expires_at: exp,
+        expires_in: 300,
+      });
+    }
+
+    const db = await admin();
+    const { data: userList } = await db.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const user = (userList?.users ?? []).find((u) => (u.email ?? "").toLowerCase() === email);
+    if (!user) return errorResponse(404, "user_not_found", "Usuário não encontrado.");
+
+    const { data: membership } = await db
+      .from("establishment_users")
+      .select("establishment_id")
+      .eq("user_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    try {
+      const { issueAutologinToken } = await import("./autologin.server");
+      const issued = await issueAutologinToken({
+        userId: user.id,
+        email,
+        establishmentId: (membership as { establishment_id?: string } | null)?.establishment_id ?? null,
+        apiKeyId: ctx.key.id,
+        source: str(body.source, 60),
+        ip: clientIp(request),
+      });
+      return jsonResponse({
+        success: true,
+        email,
+        user_id: user.id,
+        magic_link: issued.url,
+        autologin_url: issued.url,
+        autologin_token: issued.token,
+        expires_at: issued.expires_at,
+        expires_in: issued.expires_in,
+      });
+    } catch (e) {
+      console.error("[integrations-api] falha ao emitir magic link", e);
+      return errorResponse(500, "magic_link_failed", "Não foi possível gerar o link de acesso.");
+    }
+  }
+
+
+
   // POST /provision-account — cria empresa + admin + plano + módulos
   if (a === "provision-account" && !b) {
     if (method !== "POST") return errorResponse(405, "method_not_allowed", "Use POST neste endpoint.");
