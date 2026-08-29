@@ -221,6 +221,11 @@ function MerchantPlansPage() {
                     Ao fazer downgrade você poderá perder acesso a recursos e ficar acima dos limites do novo plano.
                   </div>
                 )}
+                {originNotice?.notice && (
+                  <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-foreground">
+                    <strong>Atenção:</strong> {originNotice.notice}
+                  </div>
+                )}
                 <div className="text-xs text-muted-foreground">A alteração é registrada em histórico de assinaturas e auditoria.</div>
               </div>
             </AlertDialogDescription>
