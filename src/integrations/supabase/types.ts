@@ -263,6 +263,7 @@ export type Database = {
       }
       api_keys: {
         Row: {
+          allowed_origins: string[]
           created_at: string
           created_by: string | null
           establishment_id: string
@@ -271,10 +272,12 @@ export type Database = {
           last_used_at: string | null
           name: string
           prefix: string
+          rate_limit_per_minute: number
           revoked_at: string | null
           scopes: string[]
         }
         Insert: {
+          allowed_origins?: string[]
           created_at?: string
           created_by?: string | null
           establishment_id: string
@@ -283,10 +286,12 @@ export type Database = {
           last_used_at?: string | null
           name: string
           prefix: string
+          rate_limit_per_minute?: number
           revoked_at?: string | null
           scopes?: string[]
         }
         Update: {
+          allowed_origins?: string[]
           created_at?: string
           created_by?: string | null
           establishment_id?: string
@@ -295,6 +300,7 @@ export type Database = {
           last_used_at?: string | null
           name?: string
           prefix?: string
+          rate_limit_per_minute?: number
           revoked_at?: string | null
           scopes?: string[]
         }
@@ -315,6 +321,86 @@ export type Database = {
           },
           {
             foreignKeyName: "api_keys_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_request_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          establishment_id: string | null
+          id: string
+          ip: string | null
+          key_prefix: string | null
+          metadata: Json
+          method: string
+          origin: string | null
+          path: string
+          status_code: number
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          establishment_id?: string | null
+          id?: string
+          ip?: string | null
+          key_prefix?: string | null
+          metadata?: Json
+          method: string
+          origin?: string | null
+          path: string
+          status_code: number
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          establishment_id?: string | null
+          id?: string
+          ip?: string | null
+          key_prefix?: string | null
+          metadata?: Json
+          method?: string
+          origin?: string | null
+          path?: string
+          status_code?: number
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_request_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_request_logs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_request_logs_establishment_id_fkey"
+            columns: ["establishment_id"]
+            isOneToOne: false
+            referencedRelation: "view_establishments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_request_logs_establishment_id_fkey"
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_public_establishments_v2"
