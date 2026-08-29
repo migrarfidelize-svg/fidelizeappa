@@ -52,6 +52,7 @@ function AutologinPage() {
           type: "magiclink",
         });
         if (error) {
+          console.error("[autologin] verifyOtp", error);
           setStatus("error");
           setMessage("Não foi possível abrir a sessão automática. Entre com e-mail e senha.");
           return;
