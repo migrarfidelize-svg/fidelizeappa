@@ -1,11 +1,9 @@
-import { createHmac, timingSafeEqual } from "crypto";
-
 /**
  * Verify Mercado Pago's `x-signature` header.
  * Manifest template (per MP docs): `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
  * HMAC-SHA256 with the app's webhook secret, compared as hex in constant time.
  */
-export function verifyMercadoPagoSignature(opts: {
+export async function verifyMercadoPagoSignature(opts: {
   signatureHeader: string | null;
   requestId: string | null;
   dataId: string | null;
