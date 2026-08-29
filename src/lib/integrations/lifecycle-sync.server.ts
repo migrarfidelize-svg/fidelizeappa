@@ -124,15 +124,25 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
     .maybeSingle();
 
   const deliveryId = randomUUID();
+  const newPlan = input.toPlan ?? (est as { plan?: string } | null)?.plan ?? null;
   const payload = {
-    id: deliveryId,
+    // Contrato acordado com o Ronnei
     event: input.event,
+    event_id: deliveryId,
+    data: {
+      email: (est as { email?: string } | null)?.email ?? null,
+      tenant_id: input.tenantId,
+      previous_plan: input.fromPlan ?? null,
+      new_plan: newPlan,
+      source: originInfo.source ?? cfg.key,
+    },
+    // Campos auxiliares (compatibilidade/auditoria)
+    id: deliveryId,
     occurred_at: new Date().toISOString(),
     source_system: "fidelize",
     /** A partir deste evento a Fidelize é a fonte da verdade da assinatura. */
     subscription_owner: "fidelize",
-    cancel_recurring_billing:
-      input.event !== "subscription.reactivated",
+    cancel_recurring_billing: input.event !== "subscription.reactivated",
     tenant: {
       id: input.tenantId,
       name: (est as { name?: string } | null)?.name ?? null,
@@ -141,10 +151,7 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
       phone: (est as { phone?: string } | null)?.phone ?? null,
       active: (est as { active?: boolean } | null)?.active ?? null,
     },
-    plan: {
-      from: input.fromPlan ?? null,
-      to: input.toPlan ?? (est as { plan?: string } | null)?.plan ?? null,
-    },
+    plan: { from: input.fromPlan ?? null, to: newPlan },
     provisioning_source: originInfo.source,
     reason: input.reason ?? null,
     actor_user_id: input.actorUserId ?? null,
