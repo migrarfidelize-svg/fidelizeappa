@@ -413,6 +413,15 @@ export function buildOpenApiDocument(origin: string) {
                       user_id: { type: "string", format: "uuid" },
                       temporary_password: { type: "string" },
                       login_url: { type: "string", format: "uri" },
+                      autologin_url: {
+                        type: "string",
+                        format: "uri",
+                        description: "Login automático (SSO): uso único, expira em 5 minutos.",
+                      },
+                      autologin_token: { type: "string" },
+                      autologin_expires_at: { type: "string", format: "date-time" },
+                      autologin_expires_in: { type: "integer", example: 300 },
+
                       slug: { type: "string" },
                       plan: { type: "string" },
                       modules: { type: "array", items: { type: "string" } },
