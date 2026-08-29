@@ -452,6 +452,20 @@ export async function handleApiRoute(request: Request, segments: string[], ctx: 
   // GET /health (também aceito autenticado)
   if (a === "health" && !b) return healthResponse();
 
+  // GET /ping-auth — valida autenticação sem tocar em dados de negócio
+  if (a === "ping-auth" && !b) {
+    if (method !== "GET") return errorResponse(405, "method_not_allowed", "Use GET neste endpoint.");
+    return jsonResponse({
+      success: true,
+      authenticated: true,
+      api_key_valid: true,
+      scopes: ctx.key.scopes,
+      sandbox,
+      key_type: ctx.key.key_type ?? "server",
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   // GET /provisioning/:tenantId | POST /provisioning/:tenantId/resend-access
   if (a === "provisioning" && b) {
     if (!can("provisioning")) return deny("provisioning");
