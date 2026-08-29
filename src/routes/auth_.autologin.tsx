@@ -47,7 +47,6 @@ function AutologinPage() {
           return;
         }
         const { error } = await supabase.auth.verifyOtp({
-          email: res.email,
           token_hash: res.token_hash,
           type: "magiclink",
         });
