@@ -215,8 +215,7 @@ export async function provisionAccount(input: ProvisionInput, meta: {
     } as never);
   } catch { /* auditoria nunca bloqueia */ }
 
-  const { getPublicAppUrl } = await import("@/lib/app-url");
-  const loginUrl = `${getPublicAppUrl()}/auth?email=${encodeURIComponent(email)}`;
+  const loginUrl = await buildAccessUrl(email, temporaryPassword);
 
   return {
     ok: true,
