@@ -479,6 +479,7 @@ export const processDataRequest = createServerFn({ method: "POST" })
       return { ok: true, payload };
     } else {
       // Anonymize customer + delete cards/consents
+      const { createHash } = await import("node:crypto");
       const anonPhone = `deleted_${createHash("sha256").update(req.customer_id).digest("hex").slice(0, 10)}`;
       await (supabaseAdmin.from("customers") as any).update({
         name: "Cliente removido", phone: anonPhone, email: null,
