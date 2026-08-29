@@ -91,6 +91,9 @@ export async function decryptSecret(data: string): Promise<string> {
     
     return decrypted.toString("utf8");
   } catch (cause) {
-    throw new Error("Não foi possível descriptografar a credencial da integração.", { cause });
+    const detail = !process.env.INTEGRATIONS_ENCRYPTION_KEY
+      ? " A chave de criptografia do servidor não está configurada."
+      : " A credencial foi salva com outra chave de criptografia — regrave-a no painel de integrações.";
+    throw new Error(`Não foi possível descriptografar a credencial da integração.${detail}`, { cause });
   }
 }
