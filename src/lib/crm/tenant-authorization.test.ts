@@ -20,3 +20,14 @@ describe("autorização explícita do CRM", () => {
     await expect(assertActiveCRMAssignee(client, "tenant-a", "operator-b")).rejects.toThrow(/não é um operador ativo/i);
   });
 });
+
+describe("CRM é exclusivo da plataforma", () => {
+  it("nega owner/manager do estabelecimento", async () => {
+    const client = {
+      rpc: vi.fn(async () => ({ data: false, error: null })),
+      from: vi.fn(() => chain({ data: { role: "owner" }, error: null })),
+    };
+    await expect(authorizeCRMEstablishment(client, "lojista", "tenant-a")).rejects.toThrow(/apenas administradores da plataforma/i);
+    expect(client.from).not.toHaveBeenCalled();
+  });
+});
