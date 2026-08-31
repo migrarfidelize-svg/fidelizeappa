@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VisuallyHidden } from "@/components/ui/visually-hidden";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Inbox, Kanban, Users, Bot, BarChart3, Settings2, Search, PanelRight } from "lucide-react";
 import { ConversationList } from "@/components/crm/inbox/ConversationList";
@@ -296,8 +296,8 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
                   queues={setup.data?.queues ?? []}
                   closeReasons={setup.data?.closeReasons ?? []}
                   busy={sendMutation.isPending || actionMutation.isPending}
-                  onSend={(body, isNote) => sendMutation.mutateAsync({ body, isNote })}
-                  onAction={(payload) => actionMutation.mutateAsync(payload)}
+                  onSend={async (body, isNote) => { await sendMutation.mutateAsync({ body, isNote }); }}
+                  onAction={async (payload) => { await actionMutation.mutateAsync(payload); }}
                   onPriority={(p) => priorityMutation.mutate(p)}
                 />
               </div>
