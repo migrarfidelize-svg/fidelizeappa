@@ -10,27 +10,18 @@ async function assertSuperAdmin(supabase: any, userId: string) {
 }
 
 export async function authorizeCRMEstablishment(supabase: any, userId: string, establishmentId: string): Promise<string> {
+  // Regra definitiva: o CRM de Atendimento é exclusivo da plataforma (super admin).
+  // Lojista, owner, manager e staff não têm acesso, nem via UI nem via ServerFn.
   const { data: isAdmin, error: adminError } = await supabase.rpc("is_super_admin", { _user: userId });
   if (adminError) throw new Error(adminError.message);
-  if (isAdmin) {
-    const { data: establishment, error } = await supabase.from("establishments").select("id").eq("id", establishmentId).maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!establishment) throw new Error("Estabelecimento selecionado não existe.");
-    return establishmentId;
-  }
-  const { data: membership, error } = await supabase
-    .from("establishment_members")
-    .select("role")
-    .eq("user_id", userId)
-    .eq("establishment_id", establishmentId)
-    .eq("active", true)
-    .maybeSingle();
+  if (!isAdmin) throw new Error("Acesso restrito: apenas administradores da plataforma.");
+
+  const { data: establishment, error } = await supabase.from("establishments").select("id").eq("id", establishmentId).maybeSingle();
   if (error) throw new Error(error.message);
-  if (!membership || (membership.role !== "owner" && membership.role !== "manager")) {
-    throw new Error("Acesso ao CRM exige perfil de gerente ou proprietário.");
-  }
+  if (!establishment) throw new Error("Estabelecimento selecionado não existe.");
   return establishmentId;
 }
+
 
 const tenantSchema = z.object({ establishmentId: z.string().uuid() });
 
