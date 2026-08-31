@@ -1846,6 +1846,36 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_agent_presence: {
+        Row: {
+          capacity: number
+          establishment_id: string
+          id: string
+          last_seen_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capacity?: number
+          establishment_id: string
+          id?: string
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capacity?: number
+          establishment_id?: string
+          id?: string
+          last_seen_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       crm_agent_settings: {
         Row: {
           config: Json
@@ -2093,6 +2123,33 @@ export type Database = {
           },
         ]
       }
+      crm_close_reasons: {
+        Row: {
+          active: boolean
+          created_at: string
+          establishment_id: string
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          establishment_id: string
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       crm_contact_tags: {
         Row: {
           contact_id: string
@@ -2227,6 +2284,53 @@ export type Database = {
           },
         ]
       }
+      crm_conversation_events: {
+        Row: {
+          actor_id: string | null
+          conversation_id: string
+          created_at: string
+          establishment_id: string
+          event: string
+          from_status: string | null
+          id: string
+          metadata: Json
+          source: string
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          conversation_id: string
+          created_at?: string
+          establishment_id: string
+          event: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          source?: string
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          conversation_id?: string
+          created_at?: string
+          establishment_id?: string
+          event?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json
+          source?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_conversation_events_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "crm_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_conversation_locks: {
         Row: {
           conversation_id: string
@@ -2321,49 +2425,83 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_to: string | null
+          bot_paused: boolean
+          close_note: string | null
+          close_reason_id: string | null
           closed_at: string | null
           contact_id: string | null
           created_at: string
           customer_phone: string
           establishment_id: string
+          first_response_at: string | null
           id: string
           last_message_at: string
           metadata: Json
+          paused_at: string | null
           priority: Database["public"]["Enums"]["crm_priority"]
+          queue_id: string | null
+          sla_due_at: string | null
           status: Database["public"]["Enums"]["crm_conversation_status_v2"]
+          unread_count: number
           updated_at: string
+          waiting_since: string | null
         }
         Insert: {
           assigned_at?: string | null
           assigned_to?: string | null
+          bot_paused?: boolean
+          close_note?: string | null
+          close_reason_id?: string | null
           closed_at?: string | null
           contact_id?: string | null
           created_at?: string
           customer_phone: string
           establishment_id: string
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
           metadata?: Json
+          paused_at?: string | null
           priority?: Database["public"]["Enums"]["crm_priority"]
+          queue_id?: string | null
+          sla_due_at?: string | null
           status?: Database["public"]["Enums"]["crm_conversation_status_v2"]
+          unread_count?: number
           updated_at?: string
+          waiting_since?: string | null
         }
         Update: {
           assigned_at?: string | null
           assigned_to?: string | null
+          bot_paused?: boolean
+          close_note?: string | null
+          close_reason_id?: string | null
           closed_at?: string | null
           contact_id?: string | null
           created_at?: string
           customer_phone?: string
           establishment_id?: string
+          first_response_at?: string | null
           id?: string
           last_message_at?: string
           metadata?: Json
+          paused_at?: string | null
           priority?: Database["public"]["Enums"]["crm_priority"]
+          queue_id?: string | null
+          sla_due_at?: string | null
           status?: Database["public"]["Enums"]["crm_conversation_status_v2"]
+          unread_count?: number
           updated_at?: string
+          waiting_since?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "crm_conversations_close_reason_id_fkey"
+            columns: ["close_reason_id"]
+            isOneToOne: false
+            referencedRelation: "crm_close_reasons"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "crm_conversations_contact_id_fkey"
             columns: ["contact_id"]
@@ -2390,6 +2528,13 @@ export type Database = {
             columns: ["establishment_id"]
             isOneToOne: false
             referencedRelation: "view_public_establishments_v2"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_conversations_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "crm_queues"
             referencedColumns: ["id"]
           },
         ]
@@ -2658,6 +2803,86 @@ export type Database = {
             referencedColumns: ["id", "establishment_id"]
           },
         ]
+      }
+      crm_queue_members: {
+        Row: {
+          created_at: string
+          establishment_id: string
+          id: string
+          queue_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          establishment_id: string
+          id?: string
+          queue_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          queue_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_queue_members_queue_id_fkey"
+            columns: ["queue_id"]
+            isOneToOne: false
+            referencedRelation: "crm_queues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_queues: {
+        Row: {
+          active: boolean
+          business_hours: Json
+          capacity: number | null
+          color: string
+          created_at: string
+          establishment_id: string
+          id: string
+          is_default: boolean
+          name: string
+          priority: number
+          sla_first_response_min: number
+          sla_resolution_min: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          business_hours?: Json
+          capacity?: number | null
+          color?: string
+          created_at?: string
+          establishment_id: string
+          id?: string
+          is_default?: boolean
+          name: string
+          priority?: number
+          sla_first_response_min?: number
+          sla_resolution_min?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          business_hours?: Json
+          capacity?: number | null
+          color?: string
+          created_at?: string
+          establishment_id?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          priority?: number
+          sla_first_response_min?: number
+          sla_resolution_min?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       crm_quick_replies: {
         Row: {

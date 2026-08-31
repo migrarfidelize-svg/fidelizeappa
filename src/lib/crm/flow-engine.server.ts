@@ -177,7 +177,7 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   if (conversationResult.error || !conversationResult.data) throw conversationResult.error ?? new Error("CRM_CONVERSATION_NOT_FOUND");
   const conv = conversationResult.data;
   
-  if (conv.status !== "bot" || (conv.metadata as any)?.support?.active) return { ok: true, action: "ignored" };
+  if (conv.status !== "bot" || (conv as any).bot_paused === true || (conv.metadata as any)?.support?.active) return { ok: true, action: "ignored" };
 
   const input = messageBody.trim().toLocaleLowerCase("pt-BR");
 

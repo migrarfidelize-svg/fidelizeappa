@@ -4,6 +4,7 @@
 
 export type PermissionAction =
   | "stamping.use"
+  | "inbox.use"
   | "customers.view"
   | "customers.edit"
   | "customers.import"
@@ -43,6 +44,7 @@ export type PermissionEntry = {
 export const PERMISSION_CATALOG: PermissionEntry[] = [
   // Operação
   { action: "stamping.use",       group: "operacao", label: "Carimbar clientes",         description: "Adicionar/remover carimbos e resgatar recompensas." },
+  { action: "inbox.use",          group: "comunicacao", label: "Central de Atendimento", description: "Responder conversas do WhatsApp, assumir e finalizar atendimentos." },
   { action: "customers.view",     group: "operacao", label: "Ver base de clientes",      description: "Consultar clientes, histórico e cartões." },
   { action: "customers.edit",     group: "operacao", label: "Editar clientes",           description: "Criar, editar e excluir clientes." },
   { action: "customers.import",   group: "operacao", label: "Importar CSV",              description: "Importar clientes em massa via planilha." },
@@ -103,6 +105,7 @@ export function defaultPreset(role: MemberRole, action: PermissionAction): boole
   // staff
   return (
     action === "stamping.use" ||
+    action === "inbox.use" ||
     action === "customers.view" ||
     action === "customers.edit" ||
     action === "reviews.view" ||
@@ -127,6 +130,7 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/catalogo":     "menu.manage",
   "/app/pedidos":      "menu.manage",
 
+  "/app/atendimento":  "inbox.use",
   "/app/notificacoes": "push.send",
   "/app/promocoes":    "promotions.manage",
   "/app/mensagens":    "messages.manage",
