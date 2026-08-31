@@ -130,7 +130,6 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/catalogo":     "menu.manage",
   "/app/pedidos":      "menu.manage",
 
-  "/app/atendimento":  "inbox.use",
   "/app/notificacoes": "push.send",
   "/app/promocoes":    "promotions.manage",
   "/app/mensagens":    "messages.manage",
