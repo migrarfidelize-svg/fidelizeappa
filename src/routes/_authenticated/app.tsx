@@ -207,7 +207,6 @@ const NAV_GROUPS: (NavGroup | NavItem)[] = [
     icon: Megaphone,
     label: "Comunicação",
     items: [
-      { to: "/app/atendimento", label: "Atendimento", icon: MessageSquare },
       { to: "/app/retencao", label: "Retenção", icon: HeartHandshake },
       { to: "/app/notificacoes", label: "Notificações", icon: Bell },
       { to: "/app/promocoes", label: "Promoções", icon: Megaphone },
