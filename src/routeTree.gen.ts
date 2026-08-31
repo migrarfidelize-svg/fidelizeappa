@@ -27,6 +27,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as SuporteMeusRouteImport } from './routes/suporte.meus'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as PreviewCrmVariantRouteImport } from './routes/preview-crm.$variant'
 import { Route as LinksSlugRouteImport } from './routes/links.$slug'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
@@ -249,6 +250,11 @@ const SuporteMeusRoute = SuporteMeusRouteImport.update({
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewCrmVariantRoute = PreviewCrmVariantRouteImport.update({
+  id: '/preview-crm/$variant',
+  path: '/preview-crm/$variant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LinksSlugRoute = LinksSlugRouteImport.update({
@@ -1040,6 +1046,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
+  '/preview-crm/$variant': typeof PreviewCrmVariantRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -1190,6 +1197,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
+  '/preview-crm/$variant': typeof PreviewCrmVariantRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda': typeof AjudaIndexRoute
@@ -1343,6 +1351,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/l/$slug': typeof LSlugRoute
   '/links/$slug': typeof LinksSlugRoute
+  '/preview-crm/$variant': typeof PreviewCrmVariantRoute
   '/r/$code': typeof RCodeRoute
   '/suporte/meus': typeof SuporteMeusRoute
   '/ajuda/': typeof AjudaIndexRoute
@@ -1498,6 +1507,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/links/$slug'
+    | '/preview-crm/$variant'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -1648,6 +1658,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/links/$slug'
+    | '/preview-crm/$variant'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda'
@@ -1800,6 +1811,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/l/$slug'
     | '/links/$slug'
+    | '/preview-crm/$variant'
     | '/r/$code'
     | '/suporte/meus'
     | '/ajuda/'
@@ -1951,6 +1963,7 @@ export interface RootRouteChildren {
   InviteTokenRoute: typeof InviteTokenRoute
   LSlugRoute: typeof LSlugRoute
   LinksSlugRoute: typeof LinksSlugRoute
+  PreviewCrmVariantRoute: typeof PreviewCrmVariantRoute
   RCodeRoute: typeof RCodeRoute
   SuporteMeusRoute: typeof SuporteMeusRoute
   AjudaIndexRoute: typeof AjudaIndexRoute
@@ -2112,6 +2125,13 @@ declare module '@tanstack/react-router' {
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-crm/$variant': {
+      id: '/preview-crm/$variant'
+      path: '/preview-crm/$variant'
+      fullPath: '/preview-crm/$variant'
+      preLoaderRoute: typeof PreviewCrmVariantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/links/$slug': {
@@ -3360,6 +3380,7 @@ const rootRouteChildren: RootRouteChildren = {
   InviteTokenRoute: InviteTokenRoute,
   LSlugRoute: LSlugRoute,
   LinksSlugRoute: LinksSlugRoute,
+  PreviewCrmVariantRoute: PreviewCrmVariantRoute,
   RCodeRoute: RCodeRoute,
   SuporteMeusRoute: SuporteMeusRoute,
   AjudaIndexRoute: AjudaIndexRoute,
