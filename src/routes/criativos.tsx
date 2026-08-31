@@ -313,7 +313,7 @@ function CreativeOne() {
 
 
         <div className="mt-12 flex items-center justify-between border-t border-white/10 pt-7 text-[21px] text-white/55">
-          <span>fidelizeapp.lovable.app</span>
+          <span>afidelize.app</span>
           <span className="text-violet-200">A partir de R$ 29,90/mês</span>
         </div>
       </div>

@@ -203,7 +203,7 @@ async function sendTestEvent(version: string, pixelId: string, token: string, te
         event_name: "PageView",
         event_time: Math.floor(Date.now() / 1000),
         action_source: "website",
-        event_source_url: "https://fidelizeapp.lovable.app/",
+        event_source_url: "https://afidelize.app/",
         user_data: {
           // hash fixo de teste (sha256 de "teste@fidelize.app") — nenhum dado real de usuário.
           em: ["6a1f0a3c9fbb1a8d94b0a2f2f4b1f5f2f3b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"],

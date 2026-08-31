@@ -87,7 +87,7 @@ export const resyncWalletPasses = createServerFn({ method: "POST" })
     });
     if (!allowed) throw new Error("Sem permissão.");
 
-    let origin = process.env.PUBLISHED_APP_URL || "https://fidelizeapp.lovable.app";
+    let origin = process.env.PUBLISHED_APP_URL || "https://afidelize.app";
     try { const u = new URL(data.origin); origin = `${u.protocol}//${u.host}`; } catch { /* usa padrão */ }
 
     const { syncEstablishmentWallets } = await import("@/lib/wallet-sync.server");

@@ -24,7 +24,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { askFaqAI, getFaqAIStatus } from "@/lib/faq-ai.functions";
 import { getLandingPublic } from "@/lib/landing-content.functions";
 
-const SITE_URL = "https://warm-hug-genie.lovable.app";
+const SITE_URL = "https://afidelize.app";
 const PAGE_TITLE = "Fidelize — Cartão fidelidade digital para clientes fiéis";
 const PAGE_DESC = "Crie cartões fidelidade digitais com QR Code, painel de análise em tempo real e campanhas que fazem seus clientes voltarem sempre. Planos a partir de {useFromPrice()}/mês.";
 

@@ -72,7 +72,7 @@ export function defaultWalletOrigin(): string {
   return (
     process.env.PUBLISHED_APP_URL ||
     process.env.PUBLIC_APP_URL ||
-    "https://fidelizeapp.lovable.app"
+    "https://afidelize.app"
   ).replace(/\/+$/, "");
 }
 

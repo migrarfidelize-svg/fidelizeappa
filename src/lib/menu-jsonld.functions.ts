@@ -102,7 +102,7 @@ export const adminGetMenuJsonLd = createServerFn({ method: "POST" })
       items = its ?? [];
     }
 
-    const url = `https://fidelizeapp.lovable.app/cardapio/${data.slug}`;
+    const url = `https://afidelize.app/cardapio/${data.slug}`;
     const name = est.name;
     const description =
       (menu as any)?.tagline ||
@@ -112,7 +112,7 @@ export const adminGetMenuJsonLd = createServerFn({ method: "POST" })
     const absImage = image
       ? image.startsWith("http")
         ? image
-        : `https://fidelizeapp.lovable.app${image}`
+        : `https://afidelize.app${image}`
       : null;
 
     const jsonLd = buildMenuJsonLd({

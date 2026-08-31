@@ -23,7 +23,7 @@ export const asaasProvider: PaymentProvider = {
           access_token: token,
           accept: "application/json",
           // Asaas exige User-Agent no cabeçalho (erro user_agent_not_informed).
-          "User-Agent": "Fidelize/1.0 (+https://fidelizeapp.lovable.app)",
+          "User-Agent": "Fidelize/1.0 (+https://afidelize.app)",
         },
       });
 

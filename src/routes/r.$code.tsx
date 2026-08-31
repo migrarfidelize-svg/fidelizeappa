@@ -9,11 +9,11 @@ import { useEffect } from "react";
 
 export const Route = createFileRoute("/r/$code")({
   head: ({ params }) => {
-    const url = `https://fidelizeapp.lovable.app/r/${params.code}`;
+    const url = `https://afidelize.app/r/${params.code}`;
     const title = "Você ganhou uma indicação — Fidelize";
     const description =
       "Aceite a indicação de um amigo, crie seu cartão fidelidade digital e ganhe carimbos-bônus na hora.";
-    const image = "https://fidelizeapp.lovable.app/logo-mark.svg";
+    const image = "https://afidelize.app/logo-mark.svg";
     return {
       meta: [
         { title },

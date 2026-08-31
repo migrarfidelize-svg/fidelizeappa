@@ -15,7 +15,7 @@ function safeOrigin(input: string): string {
     const u = new URL(input);
     return `${u.protocol}//${u.host}`;
   } catch {
-    return process.env.PUBLISHED_APP_URL || process.env.PUBLIC_APP_URL || "https://fidelizeapp.lovable.app";
+    return process.env.PUBLISHED_APP_URL || process.env.PUBLIC_APP_URL || "https://afidelize.app";
   }
 }
 

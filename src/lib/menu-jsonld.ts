@@ -1,7 +1,7 @@
 // Builder puro de JSON-LD do cardápio. Client + server safe.
 // Reutilizado em `/cardapio/$slug` e no painel admin de validação.
 
-const ABS_HOST = "https://fidelizeapp.lovable.app";
+const ABS_HOST = "https://afidelize.app";
 
 export type MenuJsonLdInput = {
   loaderData: any;

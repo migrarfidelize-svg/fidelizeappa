@@ -174,7 +174,7 @@ export async function generateMenuPdf(data: MenuData, slug: string): Promise<voi
     doc.setTextColor(...muted);
     doc.setFont("helvetica", "normal");
     doc.text(
-      `${data.establishment.name} · fidelizeapp.lovable.app/cardapio/${slug}`,
+      `${data.establishment.name} · afidelize.app/cardapio/${slug}`,
       marginX,
       pageH - 8,
     );

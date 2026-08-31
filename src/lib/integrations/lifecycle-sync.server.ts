@@ -209,7 +209,7 @@ export async function notifyOriginPartner(input: LifecycleSyncInput): Promise<Li
               ...(cfg.secret
                 ? { "x-api-key": cfg.secret, authorization: `Bearer ${cfg.secret}` }
                 : {}),
-              origin: "https://fidelizeapp.lovable.app",
+              origin: "https://afidelize.app",
             },
             body,
             signal: controller.signal,
