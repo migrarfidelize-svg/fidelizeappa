@@ -10601,7 +10601,12 @@ export type Database = {
         | "criminal_record"
         | "other"
       courier_status: "pending" | "approved" | "rejected" | "suspended"
-      crm_conversation_status: "bot" | "waiting" | "assigned" | "closed"
+      crm_conversation_status:
+        | "bot"
+        | "waiting"
+        | "assigned"
+        | "closed"
+        | "paused"
       crm_conversation_status_v2: "bot" | "waiting" | "assigned" | "closed"
       crm_message_type:
         | "text"
@@ -10829,7 +10834,13 @@ export const Constants = {
         "other",
       ],
       courier_status: ["pending", "approved", "rejected", "suspended"],
-      crm_conversation_status: ["bot", "waiting", "assigned", "closed"],
+      crm_conversation_status: [
+        "bot",
+        "waiting",
+        "assigned",
+        "closed",
+        "paused",
+      ],
       crm_conversation_status_v2: ["bot", "waiting", "assigned", "closed"],
       crm_message_type: [
         "text",
