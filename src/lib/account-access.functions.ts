@@ -7,10 +7,6 @@ export const getAuthenticatedAccountAccess = createServerFn({ method: "GET" })
     const { userId } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Resolve o tipo de conta no servidor, sem depender de uma segunda RPC
-    // autenticada no browser. Isso evita que uma falha transitória do JWT/gate
-    // seja interpretada como "não possui estabelecimento" e mande o usuário
-    // indevidamente para o onboarding.
     const [
       { data: adminRole, error: adminRoleError },
       { data: profile, error: profileError },
@@ -49,14 +45,19 @@ export const getAuthenticatedAccountAccess = createServerFn({ method: "GET" })
     const hasEstablishment = Boolean(membership);
     const declaredAccountType = profile?.account_type;
 
-    // Um lojista novo pode ainda não possuir establishment_members porque o
-    // vínculo só nasce ao concluir o onboarding. Nesse caso profiles.account_type
-    // preserva a intenção de conta do cadastro.
+    // profiles.account_type é a identidade principal da conta e, portanto,
+    // define a superfície padrão. establishment_members é autorização/vínculo
+    // e não deve transformar silenciosamente um cliente em lojista.
+    // Se o perfil estiver ausente (legado), o vínculo ativo é usado como fallback.
     const accountType: "super_admin" | "establishment" | "customer" = isSuperAdmin
       ? "super_admin"
-      : hasEstablishment || declaredAccountType === "establishment"
+      : declaredAccountType === "establishment"
         ? "establishment"
-        : "customer";
+        : declaredAccountType === "customer"
+          ? "customer"
+          : hasEstablishment
+            ? "establishment"
+            : "customer";
 
     return {
       userId,
