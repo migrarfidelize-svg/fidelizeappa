@@ -10,5 +10,5 @@ export function getPublicLinkTreeUrl(slug: string, browserOrigin?: string): stri
   const configured = String(import.meta.env.VITE_APP_URL ?? "").trim();
   const candidate = configured || browserOrigin || PRODUCTION_ORIGIN;
   const origin = isLocalOrPreview(candidate) ? PRODUCTION_ORIGIN : candidate.replace(/\/+$/, "");
-  return `${origin}/links/${slug.trim().toLowerCase()}`;
+  return `${origin}/${slug.trim().toLowerCase()}`;
 }

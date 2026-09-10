@@ -44,36 +44,7 @@ export async function authorizeInbox(
     return { establishmentId: first.id, isSuper: true, role: "super" };
   }
 
-  let target = establishmentId ?? null;
-  let role: "owner" | "manager" | "staff" | null = null;
-
-  if (target) {
-    const { data: membership } = await supabase
-      .from("establishment_members")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("establishment_id", target)
-      .eq("active", true)
-      .maybeSingle();
-    if (!membership) throw new Error("Você não tem acesso a este estabelecimento.");
-    role = membership.role;
-  } else {
-    const { data: membership } = await supabase
-      .from("establishment_members")
-      .select("establishment_id, role")
-      .eq("user_id", userId)
-      .eq("active", true)
-      .limit(1)
-      .maybeSingle();
-    if (!membership?.establishment_id) throw new Error("Nenhum estabelecimento vinculado à sua conta.");
-    target = membership.establishment_id;
-    role = membership.role;
-  }
-
-  const { data: allowed } = await supabase.rpc("member_can", { _user: userId, _est: target, _action: "inbox.use" });
-  if (!allowed) throw new Error("Você não tem permissão para usar o Atendimento.");
-
-  return { establishmentId: target!, isSuper: false, role: role ?? "staff" };
+  throw new Error("Acesso restrito: apenas administradores da plataforma podem usar o Atendimento.");
 }
 
 async function assertManage(supabase: any, userId: string, establishmentId: string) {

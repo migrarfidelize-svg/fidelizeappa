@@ -47,35 +47,69 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
     throw new PublicLandingError("NOT_FOUND");
   }
 
-  // 1. Buscar estabelecimento (bypassing RLS for public read)
-  const { data: establishment, error: estError } = await supabaseAdmin
-    .from("establishments")
-    .select(
-      "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
-    )
-    .eq("slug", normalizedSlug)
+  // Primeiro tenta o slug público específico da Árvore.
+  const { data: customPage, error: customPageError } = await (supabaseAdmin as any)
+    .from("link_tree_pages")
+    .select("id, establishment_id, title, description, theme, logo_url, cover_url, updated_at, published")
+    .eq("public_slug", normalizedSlug)
     .maybeSingle();
 
-  if (estError) {
-    console.error("[getPublicLandingBySlug] establishment lookup error:", estError);
+  if (customPageError) {
+    console.error("[getPublicLandingBySlug] public_slug lookup error:", customPageError);
     throw new PublicLandingError("DATABASE_ERROR");
   }
+
+  let establishment: any = null;
+  let page: any = customPage ?? null;
+
+  if (customPage?.establishment_id) {
+    const { data, error } = await supabaseAdmin
+      .from("establishments")
+      .select(
+        "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
+      )
+      .eq("id", customPage.establishment_id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[getPublicLandingBySlug] establishment lookup error:", error);
+      throw new PublicLandingError("DATABASE_ERROR");
+    }
+    establishment = data;
+  } else {
+    // Compatibilidade: mantém /links/{slug-antigo-do-estabelecimento}.
+    const { data, error } = await supabaseAdmin
+      .from("establishments")
+      .select(
+        "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
+      )
+      .eq("slug", normalizedSlug)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[getPublicLandingBySlug] legacy establishment lookup error:", error);
+      throw new PublicLandingError("DATABASE_ERROR");
+    }
+    establishment = data;
+
+    if (establishment) {
+      const { data: legacyPage, error: legacyPageError } = await (supabaseAdmin as any)
+        .from("link_tree_pages")
+        .select("id, establishment_id, title, description, theme, logo_url, cover_url, updated_at, published")
+        .eq("establishment_id", establishment.id)
+        .maybeSingle();
+
+      if (legacyPageError) {
+        console.error("[getPublicLandingBySlug] legacy page lookup error:", legacyPageError);
+        throw new PublicLandingError("DATABASE_ERROR");
+      }
+      page = legacyPage;
+    }
+  }
+
   if (!establishment) throw new PublicLandingError("NOT_FOUND");
   if (establishment.active !== true) throw new PublicLandingError("INACTIVE");
-
-  // 2. Buscar landing page (link_tree_pages) publicada
-  const { data: page, error: pageError } = await supabaseAdmin
-    .from("link_tree_pages")
-    .select("id, title, description, theme, logo_url, cover_url, updated_at")
-    .eq("establishment_id", establishment.id)
-    .eq("published", true)
-    .maybeSingle();
-
-  if (pageError) {
-    console.error("[getPublicLandingBySlug] page lookup error:", pageError);
-    throw new PublicLandingError("DATABASE_ERROR");
-  }
-  if (!page) throw new PublicLandingError("UNPUBLISHED");
+  if (!page || page.published !== true) throw new PublicLandingError("UNPUBLISHED");
 
   // 3. Buscar links ativos
   const { data: links, error: linksError } = await supabaseAdmin

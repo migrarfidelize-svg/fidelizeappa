@@ -49,23 +49,23 @@ export function pickUtm(url: URL) {
 export async function resolveEstablishmentIdBySlug(slug: string): Promise<string | null> {
   const s = String(slug ?? "").trim().toLowerCase();
   if (!s || !/^[a-z0-9][a-z0-9-]{1,60}$/.test(s)) return null;
-  const { createClient } = await import("@supabase/supabase-js");
-  const url = process.env.SUPABASE_URL!;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  const sb = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) {
-          h.delete("Authorization");
-        }
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
-      },
-    },
-  });
-  const { data } = await sb.from("establishments").select("id").eq("slug", s).maybeSingle();
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: customPage } = await (supabaseAdmin as any)
+    .from("link_tree_pages")
+    .select("establishment_id")
+    .eq("public_slug", s)
+    .maybeSingle();
+
+  if (customPage?.establishment_id) return customPage.establishment_id;
+
+  const { data } = await supabaseAdmin
+    .from("establishments")
+    .select("id")
+    .eq("slug", s)
+    .maybeSingle();
+
   return data?.id ?? null;
 }
 

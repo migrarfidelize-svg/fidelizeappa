@@ -65,6 +65,17 @@ const uid = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2) + Date.now().toString(36));
 
+function sanitizePublicSlug(value: string) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
 const KIND_META: Record<LinkKind, { label: string; icon: any; placeholder: string; isBlock?: boolean }> = {
   whatsapp: { label: "WhatsApp", icon: MessageCircle, placeholder: "5511999999999" },
   instagram: { label: "Instagram", icon: Instagram, placeholder: "@seuperfil" },
@@ -194,6 +205,7 @@ function LinkTreeEditor() {
   const [buttonStyle, setButtonStyle] = useState<"solid" | "outline" | "glass">("solid");
   const [rounded, setRounded] = useState<"sm" | "md" | "lg" | "xl" | "full">("xl");
   const [published, setPublished] = useState(false);
+  const [publicSlug, setPublicSlug] = useState("");
   const [links, setLinks] = useState<LinkRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [mobileEditIdx, setMobileEditIdx] = useState<number | null>(null);
@@ -207,6 +219,7 @@ function LinkTreeEditor() {
         setLogoUrl(est.logo_url ?? "");
         setPrimary(est.primary_color);
         setAccent(est.accent_color);
+        setPublicSlug(sanitizePublicSlug(est.slug));
       }
       return;
     }
@@ -222,6 +235,9 @@ function LinkTreeEditor() {
     setButtonStyle((t.button_style as any) ?? "solid");
     setRounded((t.rounded as any) ?? "xl");
     setPublished(!!p.published);
+    setPublicSlug(
+      sanitizePublicSlug((p as any).public_slug ?? est?.slug ?? ""),
+    );
     setLinks(
       (q.data?.links ?? []).map((l: any) => ({
         id: l.id, _uid: l.id ?? uid(), kind: l.kind, label: l.label, url: l.url,
@@ -232,7 +248,10 @@ function LinkTreeEditor() {
   }, [q.data, est]);
 
   const publicUrl = est
-    ? getPublicLinkTreeUrl(est.slug, typeof window !== "undefined" ? window.location.origin : undefined)
+    ? getPublicLinkTreeUrl(
+        publicSlug || sanitizePublicSlug(est.slug),
+        typeof window !== "undefined" ? window.location.origin : undefined,
+      )
     : "";
 
   function addLink(kind: LinkKind) {
@@ -297,6 +316,14 @@ function LinkTreeEditor() {
 
   async function save(publish?: boolean) {
     if (!est) return;
+
+    const normalizedPublicSlug = sanitizePublicSlug(publicSlug);
+    if (normalizedPublicSlug.length < 3) {
+      toast.error("Escolha um link personalizado com pelo menos 3 caracteres.");
+      return;
+    }
+    setPublicSlug(normalizedPublicSlug);
+
     // basic validation
     for (const [i, l] of links.entries()) {
       const meta = KIND_META[l.kind];
@@ -339,6 +366,7 @@ function LinkTreeEditor() {
       const res = await saveFn({
         data: {
           establishment_id: est.id,
+          public_slug: normalizedPublicSlug,
           title: title.trim() || null,
           description: description.trim() || null,
           logo_url: logoUrl.trim() || null,
@@ -350,7 +378,11 @@ function LinkTreeEditor() {
         },
       });
       if (typeof publish === "boolean") setPublished(!!res.published);
+      if ((res as any).public_slug) {
+        setPublicSlug((res as any).public_slug);
+      }
       await queryClient.invalidateQueries({ queryKey: ["public-linktree", est.slug] });
+      await queryClient.invalidateQueries({ queryKey: ["public-linktree", normalizedPublicSlug] });
       toast.success(publish === true ? "Página publicada!" : publish === false ? "Página despublicada." : "Alterações salvas.");
       q.refetch();
     } catch (e) {
@@ -405,7 +437,28 @@ function LinkTreeEditor() {
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border bg-card p-3 text-sm">
         <span className={`inline-flex h-2 w-2 shrink-0 rounded-full ${published ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
         <span className="font-medium shrink-0 text-xs sm:text-sm">{published ? "Publicada em:" : "Endereço público:"}</span>
-        <code className="min-w-0 flex-1 basis-full sm:basis-auto truncate rounded bg-muted px-2 py-1 text-xs">{publicUrl}</code>
+
+        <div className="basis-full space-y-1.5 sm:basis-auto sm:flex-1">
+          <Label htmlFor="public-link-slug" className="text-xs text-muted-foreground">
+            Personalize seu link
+          </Label>
+          <div className="flex min-w-0 items-center rounded-md border bg-background">
+            <span className="shrink-0 pl-3 text-xs text-muted-foreground">afidelize.app/</span>
+            <Input
+              id="public-link-slug"
+              value={publicSlug}
+              onChange={(e) => setPublicSlug(sanitizePublicSlug(e.target.value))}
+              placeholder="minha-marca"
+              maxLength={60}
+              className="border-0 pl-0 shadow-none focus-visible:ring-0"
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            Use letras, números e hífen. O endereço precisa ser único na Fidelize.
+          </p>
+        </div>
+
+        <code className="basis-full truncate rounded bg-muted px-2 py-1 text-xs">{publicUrl}</code>
         <div className="flex items-center gap-1 ml-auto">
           <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copiado!"); }}>
             <Copy className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">Copiar</span>

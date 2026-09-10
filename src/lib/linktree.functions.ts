@@ -5,6 +5,33 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 import { hasFeature } from "@/lib/plans.functions";
 
+const RESERVED_PUBLIC_SLUGS = new Set(["app", "admin", "api", "auth", "hash", "links", "ajuda", "acesso", "onboarding", "carteira", "cardapio", "cartao", "catalogo", "checkout", "q", "qr", "review", "reviews", "avaliacao", "avaliacoes", "login", "logout", "planos", "termos", "privacidade", "suporte", "webhooks", "assets", "favicon", "robots", "sitemap", "manifest", "preview-crm"]);
+
+function normalizePublicSlug(value: string) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/-{2,}/g, "-");
+}
+
+function validatePublicSlug(value: string) {
+  const slug = normalizePublicSlug(value);
+  if (slug.length < 3 || slug.length > 60) {
+    throw new Error("O link personalizado deve ter entre 3 e 60 caracteres.");
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error("Use apenas letras, números e hífen no link personalizado.");
+  }
+  if (RESERVED_PUBLIC_SLUGS.has(slug)) {
+    throw new Error("Este endereço é reservado pela Fidelize. Escolha outro.");
+  }
+  return slug;
+}
+
 const LinkKind = z.enum([
   "whatsapp", "instagram", "facebook", "tiktok", "youtube",
   "site", "google", "maps", "email", "phone", "wifi", "pix", "cardapio", "cartao", "custom",
@@ -70,6 +97,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     establishment_id: z.string().uuid(),
+    public_slug: z.string().trim().min(3).max(60).optional(),
     title: z.string().trim().max(120).nullable().optional(),
     description: z.string().trim().max(1000).nullable().optional(),
     // Aceita URLs longas e data-URLs base64 do recorte de logo.
@@ -82,6 +110,24 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertActiveSubscription(context.supabase, (data as any).establishment_id);
+
+    const publicSlug = validatePublicSlug(
+      data.public_slug || String((data as any).establishment_id),
+    );
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: slugOwner, error: slugCheckError } = await (supabaseAdmin as any)
+      .from("link_tree_pages")
+      .select("id, establishment_id")
+      .eq("public_slug", publicSlug)
+      .neq("establishment_id", data.establishment_id)
+      .maybeSingle();
+
+    if (slugCheckError) throw new Error(slugCheckError.message);
+    if (slugOwner) {
+      throw new Error("Este link personalizado já está em uso. Escolha outro.");
+    }
+
     const patch: Database["public"]["Tables"]["link_tree_pages"]["Insert"] = {
       establishment_id: data.establishment_id,
       title: data.title ?? null,
@@ -91,6 +137,8 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       theme: data.theme,
       social: data.social,
     };
+    (patch as any).public_slug = publicSlug;
+
     if (typeof data.published === "boolean") {
       patch.published = data.published;
       if (data.published) patch.published_at = new Date().toISOString();
@@ -119,7 +167,12 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       const { error: e2 } = await context.supabase.from("link_tree_links").insert(rows);
       if (e2) throw new Error(e2.message);
     }
-    return { ok: true, page_id: page.id, published: page.published };
+    return {
+      ok: true,
+      page_id: page.id,
+      published: page.published,
+      public_slug: (page as any).public_slug ?? publicSlug,
+    };
   });
 
 // ---------- Merchant: set QR destination on the establishment ----------
@@ -232,26 +285,42 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
   .inputValidator((d: { slug: string }) => z.object({ slug: z.string().min(1).max(80) }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: est } = await supabaseAdmin
-      .from("establishments")
-      .select("id")
-      .eq("slug", data.slug)
-      .eq("active", true)
+    const normalizedSlug = String(data.slug ?? "").trim().toLowerCase();
+
+    const { data: customPage } = await (supabaseAdmin as any)
+      .from("link_tree_pages")
+      .select("establishment_id")
+      .eq("public_slug", normalizedSlug)
       .maybeSingle();
-    if (!est) return { menu: [], catalog: [], reviews: [], stats: null };
+
+    let establishmentId = customPage?.establishment_id ?? null;
+
+    if (!establishmentId) {
+      const { data: legacyEst } = await supabaseAdmin
+        .from("establishments")
+        .select("id")
+        .eq("slug", normalizedSlug)
+        .eq("active", true)
+        .maybeSingle();
+      establishmentId = legacyEst?.id ?? null;
+    }
+
+    if (!establishmentId) {
+      return { menu: [], catalog: [], reviews: [], stats: null };
+    }
 
     // Cardápio publicado
     const { data: menuRow } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id")
-      .eq("establishment_id", est.id)
+      .eq("establishment_id", establishmentId)
       .eq("kind", "menu")
       .eq("status", "published")
       .maybeSingle();
     const { data: catalogRow } = await supabaseAdmin
       .from("restaurant_menus")
       .select("id")
-      .eq("establishment_id", est.id)
+      .eq("establishment_id", establishmentId)
       .eq("kind", "catalog")
       .eq("status", "published")
       .maybeSingle();
@@ -271,7 +340,7 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     const { data: reviewsRaw } = await supabaseAdmin
       .from("customer_reviews")
       .select("id, rating, comment, customer_name, merchant_reply, submitted_at, anonymous")
-      .eq("establishment_id", est.id)
+      .eq("establishment_id", establishmentId)
       .eq("public_hidden", false)
       .order("submitted_at", { ascending: false })
       .limit(20);
