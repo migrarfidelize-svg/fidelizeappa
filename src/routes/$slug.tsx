@@ -20,7 +20,7 @@ export const Route = createFileRoute("/$slug")({
         (data as any).establishment?.updated_at,
         (data as any).establishment?.logo_url,
         (data as any).links?.length,
-        "bio-commerce-v3",
+        "bio-commerce-v4",
       ],
     });
     return data;
