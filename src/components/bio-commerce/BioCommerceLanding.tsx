@@ -4,4 +4,4 @@ export {
   type BioCommerceLandingData,
   type BioCommerceProduct,
   type BioCommerceReview,
-} from "./BioCommerceLandingV8";
+} from "./BioCommerceLandingV9";
