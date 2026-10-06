@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { BioCommercePublicPage } from "@/components/bio-commerce/BioCommercePublicPage";
+import { BioCommercePublicPageV3 } from "@/components/bio-commerce/BioCommercePublicPageV3";
 import { getPublicLinkTreeBySlug } from "@/lib/linktree.functions";
 
 const opts = (slug: string) =>
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/links/$slug")({
         (data as any).establishment?.updated_at,
         (data as any).establishment?.logo_url,
         (data as any).links?.length,
-        "bio-commerce-v2",
+        "bio-commerce-v3",
       ],
     });
     return data;
@@ -54,23 +54,13 @@ export const Route = createFileRoute("/links/$slug")({
 function BioCommerceRoute() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(opts(slug));
-  return <BioCommercePublicPage data={data! as any} slug={slug} />;
+  return <BioCommercePublicPageV3 data={data! as any} slug={slug} />;
 }
 
 function BioCommerceError({ error }: { error: Error }) {
   const msg = error instanceof Error ? error.message : String(error);
-  const title =
-    msg === "INACTIVE"
-      ? "Estabelecimento indisponível"
-      : msg === "UNPUBLISHED"
-        ? "Bio Commerce em construção"
-        : "Ops! Algo deu errado";
-  const description =
-    msg === "INACTIVE"
-      ? "Esta página está temporariamente desativada."
-      : msg === "UNPUBLISHED"
-        ? "Este estabelecimento ainda não publicou seu Bio Commerce."
-        : "Não foi possível carregar esta página. Tente novamente em instantes.";
+  const title = msg === "INACTIVE" ? "Estabelecimento indisponível" : msg === "UNPUBLISHED" ? "Bio Commerce em construção" : "Ops! Algo deu errado";
+  const description = msg === "INACTIVE" ? "Esta página está temporariamente desativada." : msg === "UNPUBLISHED" ? "Este estabelecimento ainda não publicou seu Bio Commerce." : "Não foi possível carregar esta página. Tente novamente em instantes.";
   return <StatusPage title={title} description={description} />;
 }
 
@@ -79,13 +69,5 @@ function BioCommerceNotFound() {
 }
 
 function StatusPage({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="grid min-h-dvh place-items-center bg-neutral-950 p-6 text-center text-white">
-      <div>
-        <h1 className="font-display text-3xl font-bold">{title}</h1>
-        <p className="mt-2 text-white/60">{description}</p>
-        <Link to="/" className="mt-6 inline-block underline underline-offset-4">Voltar</Link>
-      </div>
-    </div>
-  );
+  return <div className="grid min-h-dvh place-items-center bg-neutral-950 p-6 text-center text-white"><div><h1 className="font-display text-3xl font-bold">{title}</h1><p className="mt-2 text-white/60">{description}</p><Link to="/" className="mt-6 inline-block underline underline-offset-4">Voltar</Link></div></div>;
 }
