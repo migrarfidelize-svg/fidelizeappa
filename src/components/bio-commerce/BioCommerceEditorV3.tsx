@@ -62,7 +62,6 @@ import {
   defaultPresentationForKind,
   defaultPresetForNiche,
   getBioCommercePreset,
-  inferBioCommerceNiche,
   resolveBioCommerceLandingTheme,
   type BioCommerceNicheId,
   type BioCommercePresentation,
@@ -94,6 +93,8 @@ type ThemeState = {
   product_style: "carousel" | "grid" | "editorial";
   social_style: "icons" | "buttons" | "compact";
 };
+
+type PaletteValue = { primary: string; accent: string; background: string; text: string };
 
 const STAGES: Array<{ id: Stage; label: string; helper: string }> = [
   { id: "negocio", label: "Negócio", helper: "Identidade e nicho" },
@@ -212,7 +213,7 @@ export function BioCommerceEditorV3() {
     setDescription(page?.description ?? est.description ?? "");
     setLogoUrl(page?.logo_url ?? est.logo_url ?? "");
     setCoverUrl(page?.cover_url ?? est.cover_url ?? "");
-    setPublicSlug(sanitizeSlug(page?.public_slug ?? est.slug ?? ""));
+    setPublicSlug(sanitizeSlug((page as any)?.public_slug ?? est.slug ?? ""));
     setPublished(!!page?.published);
     const resolved = resolveBioCommerceLandingTheme((page?.theme ?? {}) as BioCommerceTheme, { links: loadedLinks, establishment: est, cover: page?.cover_url ?? est.cover_url });
     setTheme(themeFromResolved(resolved));
@@ -339,8 +340,8 @@ export function BioCommerceEditorV3() {
 
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_460px]">
       <main className="min-w-0"><AnimatePresence mode="wait" initial={false}><motion.div key={stage} initial={reduced ? false : { opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} exit={reduced ? { opacity: 1 } : { opacity: 0, x: -10 }} transition={{ duration: reduced ? 0 : .2 }}>
-        {stage === "negocio" && <BusinessStage title={title} setTitle={setTitle} description={description} setDescription={setDescription} logoUrl={logoUrl} setLogoUrl={setLogoUrl} coverUrl={coverUrl} setCoverUrl={setCoverUrl} slug={publicSlug} setSlug={(value) => setPublicSlug(sanitizeSlug(value))} niche={theme.niche_id} chooseNiche={chooseNiche} />}
-        {stage === "tema" && <ThemeStage niche={theme.niche_id} preset={theme.preset_id} applyPreset={applyPreset} logoUrl={logoUrl} onPalette={(palette) => setTheme((current) => ({ ...current, primary: palette.primary, accent: palette.accent, background: palette.background, text: palette.text }))} />}
+        {stage === "negocio" && <BusinessStage title={title} setTitle={setTitle} description={description} setDescription={setDescription} logoUrl={logoUrl} setLogoUrl={setLogoUrl} coverUrl={coverUrl} setCoverUrl={setCoverUrl} slug={publicSlug} setSlug={(value: string) => setPublicSlug(sanitizeSlug(value))} niche={theme.niche_id} chooseNiche={chooseNiche} />}
+        {stage === "tema" && <ThemeStage niche={theme.niche_id} preset={theme.preset_id} applyPreset={applyPreset} logoUrl={logoUrl} onPalette={(palette: PaletteValue) => setTheme((current) => ({ ...current, primary: palette.primary, accent: palette.accent, background: palette.background, text: palette.text }))} />}
         {stage === "conteudo" && <ContentStage links={links} editing={editing} setEditing={setEditing} addLink={addLink} updateLink={updateLink} removeLink={removeLink} moveLink={moveLink} />}
         {stage === "aparencia" && <AppearanceStage theme={theme} setTheme={setTheme} />}
         {stage === "publicar" && <PublishStage publicUrl={publicUrl} published={published} saving={saving} onSave={() => save()} onPublish={() => save(true)} onUnpublish={() => save(false)} />}
