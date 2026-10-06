@@ -44,9 +44,9 @@ const MERCHANT_TOUR_STEPS: TourStep[] = [
   { preview: "qrcodes", title: "QR Code e materiais gráficos", description: "Gere cartazes prontos para Instagram, Story, balcão e mesa (7x10cm). Baixe em alta resolução e escolha o destino do QR." },
   { preview: "campaigns", title: "Cardápio digital", description: "Monte seu cardápio online com fotos, categorias, preços e QR por mesa ou balcão — tudo com link público próprio." },
   { preview: "customers", title: "Avaliações", description: "Receba avaliações dos clientes após o atendimento, acompanhe a nota média e responda quem avaliou." },
-  { preview: "qrcodes", title: "Árvore de links", description: "Uma página única com seus links: WhatsApp, redes sociais, cardápio, promoções e cartão fidelidade." },
+  { preview: "qrcodes", title: "Bio Commerce", description: "Sua vitrine digital com WhatsApp, produtos, avaliações, redes sociais, cardápio, promoções e fidelidade em uma experiência premium." },
   { preview: "campaigns", title: "Notificações e retenção", description: "Envie push segmentado, veja a prévia do público antes de disparar e ative rotinas de aniversário, inatividade e níveis." },
-  { preview: "dashboard", title: "Analytics", description: "Veja de onde vêm os acessos (cardápio, árvore de links, avaliações, cartão), evolução de carimbos e engajamento." },
+  { preview: "dashboard", title: "Analytics", description: "Veja de onde vêm os acessos (cardápio, Bio Commerce, avaliações, cartão), evolução de carimbos e engajamento." },
   { preview: "customers", title: "Equipe e permissões", description: "Convide atendentes, defina o que cada um pode acessar e acompanhe tudo pelos logs de auditoria." },
   { preview: "dashboard", title: "Configurações", description: "Dados do negócio, logo, horários, integrações, e-mails e preferências ficam centralizados nas Configurações." },
   { preview: "plans", title: "Seu plano e suporte", description: "Acompanhe o uso do plano, faça upgrade quando precisar e abra chamados no Help Desk direto pelo painel." },
@@ -167,8 +167,8 @@ const NAV_GROUPS: (NavGroup | NavItem)[] = [
   {
     key: "linktree",
     icon: Link2,
-    label: "Árvore de links",
-    items: [{ to: "/app/linktree", label: "Árvore de links", icon: Link2 }],
+    label: "Bio Commerce",
+    items: [{ to: "/app/linktree", label: "Bio Commerce", icon: Link2 }],
   },
   {
     key: "avaliacoes",
