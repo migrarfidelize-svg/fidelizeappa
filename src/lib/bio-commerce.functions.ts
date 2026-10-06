@@ -5,6 +5,7 @@ import { assertActiveSubscription } from "@/lib/subscription-guard";
 
 const AdvancedThemeInput = z.object({
   preset_id: z.string().trim().max(60).optional(),
+  niche_id: z.enum(["food", "beauty", "fashion", "fitness", "pet", "events", "health", "services"]).optional(),
   layout: z.enum(["classic", "commerce", "editorial", "bento"]).optional(),
   hero_style: z.enum(["brand", "immersive", "minimal", "split"]).optional(),
   card_style: z.enum(["elevated", "glass", "outline", "soft"]).optional(),
