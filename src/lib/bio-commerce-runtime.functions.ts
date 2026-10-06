@@ -2,10 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 /**
- * Dados públicos ricos usados pela Bio Commerce V4.
+ * Dados públicos ricos usados pela Bio Commerce.
  *
- * Mantemos esse carregamento separado do renderer legado para que a página
- * pública possa evoluir sem alterar o contrato das árvores antigas/editor.
+ * Além dos produtos, entregamos as categorias publicadas de Cardápio/Catálogo.
+ * Isso permite que a landing ofereça navegação real por "Lanches", "Bebidas",
+ * coleções etc., sem inventar conteúdo e sem alterar o cadastro do lojista.
  */
 export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ slug: z.string().trim().min(1).max(80) }).parse(input))
@@ -32,7 +33,14 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
     }
 
     if (!establishmentId) {
-      return { menu: [], catalog: [], reviews: [], stats: null };
+      return {
+        menu: [],
+        catalog: [],
+        menu_categories: [],
+        catalog_categories: [],
+        reviews: [],
+        stats: null,
+      };
     }
 
     const { data: menus } = await supabaseAdmin
@@ -46,7 +54,7 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
     const menuId = (rows as any[]).find((row) => row.kind === "menu")?.id ?? null;
     const catalogId = (rows as any[]).find((row) => row.kind === "catalog")?.id ?? null;
 
-    const select = "id, menu_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, variants, stock_status, gallery, brand, sku, position";
+    const select = "id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, variants, stock_status, gallery, brand, sku, position";
 
     const fetchItems = async (id: string | null) => {
       if (!id) return [];
@@ -56,7 +64,7 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
         .eq("menu_id", id)
         .eq("active", true)
         .order("position", { ascending: true })
-        .limit(18);
+        .limit(60);
       if (error) throw new Error(error.message);
       return (items ?? []).map((item: any) => ({
         ...item,
@@ -67,9 +75,24 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
       }));
     };
 
-    const [menu, catalog, reviewsRaw] = await Promise.all([
+    const fetchCategories = async (id: string | null) => {
+      if (!id) return [];
+      const { data: categories, error } = await supabaseAdmin
+        .from("menu_categories")
+        .select("id, name, description, image_url, position")
+        .eq("menu_id", id)
+        .eq("active", true)
+        .order("position", { ascending: true })
+        .limit(40);
+      if (error) throw new Error(error.message);
+      return categories ?? [];
+    };
+
+    const [menu, catalog, menuCategories, catalogCategories, reviewsRaw] = await Promise.all([
       fetchItems(menuId),
       fetchItems(catalogId),
+      fetchCategories(menuId),
+      fetchCategories(catalogId),
       supabaseAdmin
         .from("customer_reviews")
         .select("id, rating, comment, customer_name, merchant_reply, submitted_at, anonymous")
@@ -100,5 +123,12 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
         }
       : null;
 
-    return { menu, catalog, reviews, stats };
+    return {
+      menu,
+      catalog,
+      menu_categories: menuCategories,
+      catalog_categories: catalogCategories,
+      reviews,
+      stats,
+    };
   });
