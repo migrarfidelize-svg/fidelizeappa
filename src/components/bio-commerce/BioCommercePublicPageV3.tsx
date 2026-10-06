@@ -15,10 +15,16 @@ export function BioCommercePublicPageV3({ data, slug }: { data: BioCommerceLandi
     retry: 1,
   });
 
+  // O slug público da Bio pode ser personalizado (ex.: /tesalvei), enquanto
+  // Cardápio/Catálogo continuam usando o slug técnico do estabelecimento
+  // (ex.: /cardapio/cafe-aurora). O renderer recebe o slug técnico para que
+  // compras e links internos nunca quebrem.
+  const commerceSlug = String(data.establishment?.slug || slug);
+
   return (
     <BioCommerceLanding
       data={data}
-      slug={slug}
+      slug={commerceSlug}
       blockData={(blockDataQuery.data ?? EMPTY_BLOCK_DATA) as BioCommerceBlockData}
       interactive
     />
