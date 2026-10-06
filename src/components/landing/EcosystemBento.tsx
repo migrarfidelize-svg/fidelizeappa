@@ -92,7 +92,7 @@ const FEATURES: Feature[] = [
   },
   {
     icon: LinkIcon,
-    title: "Árvore de links",
+    title: "Bio Commerce",
     sub: "Uma bio só: cardápio, cartão, WhatsApp e mapa.",
     tag: "Bio",
     visual: (

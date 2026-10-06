@@ -20,7 +20,7 @@ export const Route = createFileRoute("/criativos")({
       {
         name: "description",
         content:
-          "Peças de campanha 1080x1350 do Fidelize renderizadas com o próprio design system: fidelidade, cardápio, avaliações, push e árvore de links.",
+          "Peças de campanha 1080x1350 do Fidelize renderizadas com o próprio design system: fidelidade, cardápio, avaliações, push e Bio Commerce.",
       },
       { property: "og:title", content: "Fidelize — Criativos de campanha" },
       {
@@ -305,7 +305,7 @@ function CreativeOne() {
           />
           <FeatureChip
             icon={Link2}
-            label="Árvore de links"
+            label="Bio Commerce"
             sub="Sua bio profissional"
             className="w-full"
           />
@@ -329,7 +329,7 @@ const MODULES = [
   { icon: ShoppingBag, t: "Catálogo digital", d: "Vitrine de produtos" },
   { icon: Star, t: "Avaliações", d: "Feedback e reputação" },
   { icon: BellRing, t: "Push nativo", d: "Reengajamento automático" },
-  { icon: Link2, t: "Árvore de links", d: "Bio que converte" },
+  { icon: Link2, t: "Bio Commerce", d: "Bio que converte" },
   { icon: Megaphone, t: "Campanhas", d: "Promoções segmentadas" },
   { icon: Users, t: "Base de clientes", d: "CRM com histórico" },
   { icon: BarChart3, t: "Analytics", d: "Retorno em números" },

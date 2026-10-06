@@ -149,7 +149,7 @@ export const DESTINATION_META: Record<DestinationType, { label: string; descript
   establishment: { label: "Página do estabelecimento", description: "Perfil público com dados e benefícios.", path: "/e" },
   catalog: { label: "Catálogo", description: "Vitrine de produtos com pedidos.", path: "/catalogo" },
   menu: { label: "Cardápio", description: "Cardápio digital em modo stories.", path: "/cardapio" },
-  linktree: { label: "Árvore de links", description: "Sua página única de links.", path: "/links" },
+  linktree: { label: "Bio Commerce", description: "Sua página única de links.", path: "/links" },
   loyalty_card: { label: "Cartão fidelidade", description: "Página pública do cartão.", path: "/cartao" },
 };
 

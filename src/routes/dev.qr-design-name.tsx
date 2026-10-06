@@ -34,7 +34,7 @@ function QrDesignNameHarness() {
         >
           <option value="reviews">Avaliação</option>
           <option value="landing">Cartão Fidelidade</option>
-          <option value="linktree">Árvore de Links</option>
+          <option value="linktree">Bio Commerce</option>
         </select>
       </label>
       <p>

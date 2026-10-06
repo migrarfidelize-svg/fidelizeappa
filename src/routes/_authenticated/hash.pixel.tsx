@@ -201,7 +201,7 @@ function PixelMonitorPage() {
             <RouteLoading label="Carregando eventos…" fullscreen={false} className="min-h-[40vh]" />
           ) : feed.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum evento recebido ainda. Abra uma página pública (landing, cardápio, árvore de links) para gerar o primeiro PageView.
+              Nenhum evento recebido ainda. Abra uma página pública (landing, cardápio, Bio Commerce) para gerar o primeiro PageView.
             </p>
           ) : (
             <ul className="divide-y">

@@ -41,7 +41,7 @@ type Props = { establishmentId: string };
 
 const DEST_LABEL: Record<string, string> = {
   reviews: "Avaliação",
-  linktree: "Árvore de Links",
+  linktree: "Bio Commerce",
   landing: "Cartão Fidelidade",
   menu: "Cardápio digital",
 };
@@ -272,7 +272,7 @@ function EditTagDialog({
               <SelectContent>
                 <SelectItem value="default">Usar padrão do estabelecimento</SelectItem>
                 <SelectItem value="reviews">Avaliação</SelectItem>
-                <SelectItem value="linktree">Árvore de Links</SelectItem>
+                <SelectItem value="linktree">Bio Commerce</SelectItem>
                 <SelectItem value="landing">Cartão Fidelidade</SelectItem>
               </SelectContent>
             </Select>
@@ -357,7 +357,7 @@ function CreateSingleDialog({
               <SelectContent>
                 <SelectItem value="default">Usar padrão do estabelecimento</SelectItem>
                 <SelectItem value="reviews">Avaliação</SelectItem>
-                <SelectItem value="linktree">Árvore de Links</SelectItem>
+                <SelectItem value="linktree">Bio Commerce</SelectItem>
                 <SelectItem value="landing">Cartão Fidelidade</SelectItem>
               </SelectContent>
             </Select>
@@ -447,7 +447,7 @@ function BulkCreateDialog({
               <SelectContent>
                 <SelectItem value="default">Usar padrão do estabelecimento</SelectItem>
                 <SelectItem value="reviews">Avaliação</SelectItem>
-                <SelectItem value="linktree">Árvore de Links</SelectItem>
+                <SelectItem value="linktree">Bio Commerce</SelectItem>
                 <SelectItem value="landing">Cartão Fidelidade</SelectItem>
               </SelectContent>
             </Select>

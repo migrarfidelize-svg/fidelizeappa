@@ -634,7 +634,7 @@ function PublicFormTab({ estId, slug }: { estId: string; slug: string }) {
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3">
         <div>
           <div className="text-sm font-medium">Avaliações públicas ativas</div>
-          <div className="text-xs text-muted-foreground">Aparece na Árvore de Links e em <code>/avaliar/{slug}</code></div>
+          <div className="text-xs text-muted-foreground">Aparece na Bio Commerce e em <code>/avaliar/{slug}</code></div>
         </div>
         <div className="flex items-center gap-3">
           <a href={`/avaliar/${slug}`} target="_blank" rel="noopener" className="text-sm text-primary hover:underline inline-flex items-center gap-1"><ExtLink className="h-3 w-3" />Abrir</a>

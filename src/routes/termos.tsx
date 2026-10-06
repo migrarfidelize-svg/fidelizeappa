@@ -79,7 +79,7 @@ function TermosPage() {
           <p>
             A Fidelize é um software como serviço (SaaS) que oferece, conforme o plano contratado: cartão fidelidade
             digital, base de clientes, campanhas e cupons, notificações push, avaliações de atendimento, cardápio e
-            catálogo digital, árvore de links, QR Codes, materiais de divulgação, relatórios e atendimento ao cliente.
+            catálogo digital, Bio Commerce, QR Codes, materiais de divulgação, relatórios e atendimento ao cliente.
           </p>
           <p>
             A plataforma é uma <strong>ferramenta</strong>. Não garantimos aumento de vendas, retorno de clientes ou
@@ -151,7 +151,7 @@ function TermosPage() {
             Logotipo, fotos, textos, cardápio, preços, descrições de produtos e mensagens enviadas são de sua inteira
             responsabilidade. Você declara ter os direitos necessários sobre esse conteúdo e nos concede licença
             limitada, não exclusiva e revogável para hospedá-lo e exibi-lo dentro da plataforma e nos seus canais
-            públicos (perfil, cardápio, árvore de links).
+            públicos (perfil, cardápio, Bio Commerce).
           </p>
           <p>
             Podemos remover conteúdo manifestamente ilegal ou que viole estes Termos, notificando você sempre que
