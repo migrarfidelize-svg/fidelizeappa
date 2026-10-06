@@ -20,7 +20,7 @@ export const Route = createFileRoute("/videos")({
   head: () => ({
     meta: [
       { title: "Fidelize — Vídeos promocionais" },
-      { name: "description", content: "Prévias animadas dos vídeos promocionais do Fidelize: cartão fidelidade digital, avaliações, árvore de links, displays personalizados e cartão NFC." },
+      { name: "description", content: "Prévias animadas dos vídeos promocionais do Fidelize: cartão fidelidade digital, avaliações, Bio Commerce, displays personalizados e cartão NFC." },
       { property: "og:title", content: "Fidelize — Vídeos promocionais" },
       { property: "og:description", content: "Prévias animadas do Fidelize em estilo Remotion." },
       { property: "og:type", content: "website" },
@@ -323,7 +323,7 @@ function ScenePreview2() {
   );
 }
 
-// ---------- Preview 3 — Árvore de links (foco no phone) ----------
+// ---------- Preview 3 — Bio Commerce (foco no phone) ----------
 function ScenePreview3() {
   const t = useLoop(DURATION);
   const items = useMemo(
@@ -601,7 +601,7 @@ function VideosPage() {
       scene: <ScenePreview2 />,
     },
     {
-      title: "Árvore de links no seu perfil",
+      title: "Bio Commerce no seu perfil",
       subtitle: "Ep. 03 · Presença",
       pill: "Presença",
       scene: <ScenePreview3 />,

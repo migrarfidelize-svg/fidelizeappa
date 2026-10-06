@@ -67,7 +67,7 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
     title: "QR Codes",
     subtitle: "Todos os seus códigos em um lugar",
     steps: [
-      { title: "Escolha o destino", description: "Cada QR pode apontar para avaliação, árvore de links, cardápio, catálogo ou cartão fidelidade." },
+      { title: "Escolha o destino", description: "Cada QR pode apontar para avaliação, Bio Commerce, cardápio, catálogo ou cartão fidelidade." },
       { title: "Crie etiquetas", description: "Gere QRs diferentes por mesa, balcão ou campanha para saber de onde vem cada acesso." },
       { title: "Acompanhe os scans", description: "As leituras aparecem em Analytics, separadas por etiqueta." },
     ],
@@ -114,13 +114,13 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
     title: "QR Codes e materiais",
     subtitle: "Divulgação pronta para imprimir",
     steps: [
-      { title: "Escolha o destino", description: "Defina se o QR leva para a avaliação, a árvore de links, o cardápio ou o cartão fidelidade." },
+      { title: "Escolha o destino", description: "Defina se o QR leva para a avaliação, a Bio Commerce, o cardápio ou o cartão fidelidade." },
       { title: "Personalize a arte", description: "Suba sua logo e escolha o modelo: story, feed, A5, A4 ou display de mesa 7x10cm." },
       { title: "Baixe e imprima", description: "Exporte em alta resolução com margem de segurança para gráfica." },
     ],
   },
   "/app/linktree": {
-    title: "Árvore de links",
+    title: "Bio Commerce",
     subtitle: "Sua bio-link própria",
     steps: [
       { title: "Adicione os links", description: "Cardápio, WhatsApp, redes sociais, delivery — na ordem que fizer sentido." },
@@ -186,7 +186,7 @@ export const PAGE_GUIDES: Record<string, PageGuide> = {
     subtitle: "Os números do seu negócio",
     steps: [
       { title: "Visão geral", description: "Carimbos, clientes novos, resgates e receita no período escolhido." },
-      { title: "Canais", description: "Veja de onde vêm os acessos: QR, árvore de links, cardápio ou avaliações." },
+      { title: "Canais", description: "Veja de onde vêm os acessos: QR, Bio Commerce, cardápio ou avaliações." },
       { title: "Exporte", description: "Baixe os dados em CSV ou PDF para analisar fora do sistema." },
     ],
   },

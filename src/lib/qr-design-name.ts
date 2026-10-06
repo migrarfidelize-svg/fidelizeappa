@@ -8,7 +8,7 @@ export type QrDest = "reviews" | "landing" | "linktree" | "menu" | "catalog";
 export const QR_DEST_LABEL: Record<QrDest, string> = {
   reviews: "Avaliação",
   landing: "Cartão Fidelidade",
-  linktree: "Árvore de Links",
+  linktree: "Bio Commerce",
   menu: "Cardápio digital",
   catalog: "Catálogo digital",
 };

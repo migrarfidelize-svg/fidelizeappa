@@ -19,6 +19,13 @@ export type PublicLandingDTO = {
     primary_color: string;
     accent_color: string;
     description: string | null;
+    whatsapp: string | null;
+    phone: string | null;
+    instagram: string | null;
+    facebook: string | null;
+    tiktok: string | null;
+    website: string | null;
+    google_maps_url: string | null;
     updated_at: string;
   };
   page: {
@@ -39,6 +46,8 @@ export type PublicLandingDTO = {
     data: Json;
   }>;
 };
+
+const ESTABLISHMENT_SELECT = "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, whatsapp, phone, instagram, facebook, tiktok, website, google_maps_url, updated_at";
 
 export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandingDTO> => {
   const normalizedSlug = slug.trim().toLowerCase();
@@ -65,9 +74,7 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
   if (customPage?.establishment_id) {
     const { data, error } = await supabaseAdmin
       .from("establishments")
-      .select(
-        "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
-      )
+      .select(ESTABLISHMENT_SELECT)
       .eq("id", customPage.establishment_id)
       .maybeSingle();
 
@@ -80,9 +87,7 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
     // Compatibilidade: mantém /links/{slug-antigo-do-estabelecimento}.
     const { data, error } = await supabaseAdmin
       .from("establishments")
-      .select(
-        "id, slug, name, logo_url, cover_url, primary_color, accent_color, active, description, updated_at",
-      )
+      .select(ESTABLISHMENT_SELECT)
       .eq("slug", normalizedSlug)
       .maybeSingle();
 
@@ -111,7 +116,6 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
   if (establishment.active !== true) throw new PublicLandingError("INACTIVE");
   if (!page || page.published !== true) throw new PublicLandingError("UNPUBLISHED");
 
-  // 3. Buscar links ativos
   const { data: links, error: linksError } = await supabaseAdmin
     .from("link_tree_links")
     .select("id, label, url, kind, sort_order, enabled, data")
@@ -124,7 +128,6 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
     throw new PublicLandingError("DATABASE_ERROR");
   }
 
-  // 4. DTO Seguro
   return {
     establishment: {
       name: establishment.name,
@@ -134,6 +137,13 @@ export const getPublicLandingBySlug = async (slug: string): Promise<PublicLandin
       primary_color: establishment.primary_color || "#0ea5e9",
       accent_color: establishment.accent_color || "#8b5cf6",
       description: establishment.description,
+      whatsapp: establishment.whatsapp ?? null,
+      phone: establishment.phone ?? null,
+      instagram: establishment.instagram ?? null,
+      facebook: establishment.facebook ?? null,
+      tiktok: establishment.tiktok ?? null,
+      website: establishment.website ?? null,
+      google_maps_url: establishment.google_maps_url ?? null,
       updated_at: establishment.updated_at,
     },
     page: {

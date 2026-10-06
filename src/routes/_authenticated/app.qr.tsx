@@ -512,7 +512,7 @@ function ReviewQrPage() {
     const destLabels: Record<QrDest, string> = {
       reviews: "Avaliação",
       landing: "Cartão Fidelidade",
-      linktree: "Árvore de Links",
+      linktree: "Bio Commerce",
       menu: "Cardápio digital",
       catalog: "Catálogo digital",
     };
@@ -1107,7 +1107,7 @@ function ReviewQrPage() {
         icon={Star}
         eyebrow="Marketing · QR"
         title="QR Code do estabelecimento"
-        subtitle="Um único cartaz, três destinos: Avaliação, Árvore de Links ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
+        subtitle="Um único cartaz, três destinos: Avaliação, Bio Commerce ou Cartão Fidelidade. Escolha abaixo para onde o cliente será direcionado ao escanear."
       />
 
       {step === 1 && (

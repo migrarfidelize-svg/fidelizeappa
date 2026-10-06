@@ -381,7 +381,7 @@ export function buildOpenApiDocument(origin: string) {
         post: {
           summary: "Provisiona uma conta completa (empresa + admin + plano + módulos)",
           description:
-            "Cria a empresa (tenant), o usuário administrador com senha temporária, ativa a assinatura do plano informado e libera os módulos Cartão Fidelidade, Cardápio Digital e Árvore de Links. Requer API Key com escopo `provisioning`.",
+            "Cria a empresa (tenant), o usuário administrador com senha temporária, ativa a assinatura do plano informado e libera os módulos Cartão Fidelidade, Cardápio Digital e Bio Commerce. Requer API Key com escopo `provisioning`.",
           requestBody: {
             required: true,
             content: {

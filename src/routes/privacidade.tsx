@@ -188,7 +188,7 @@ function PrivacidadePage() {
                 basis: "Consentimento (permissão do navegador, revogável)",
               },
               {
-                what: "QR Code e árvore de links",
+                what: "QR Code e Bio Commerce",
                 data: "Contagem de leituras e cliques, link acessado, data/hora, tipo de dispositivo e origem aproximada da visita",
                 why: "Mostrar ao lojista quais canais trazem clientes",
                 basis: "Legítimo interesse (métricas agregadas)",

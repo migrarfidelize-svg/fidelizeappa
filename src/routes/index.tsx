@@ -1519,7 +1519,7 @@ function useComparePlans() {
 const COMPARE_ROWS: { label: string; values: (boolean | string)[] }[] = [
   { label: "Cartão Fidelidade Digital", values: [true, true, true, true] },
   { label: "Avaliação de Atendimento", values: [true, true, true, true] },
-  { label: "Árvore de Links", values: [true, true, true, true] },
+  { label: "Bio Commerce", values: [true, true, true, true] },
   { label: "Cardápio Virtual", values: [false, true, true, true] },
   { label: "Catálogo Digital", values: [false, true, true, true] },
 

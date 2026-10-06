@@ -140,7 +140,7 @@ export function FirstStepsCard({
     },
     {
       key: "linktree",
-      label: "Criar sua árvore de links",
+      label: "Criar sua Bio Commerce",
       hint: "Reúna WhatsApp, redes e cardápio em um link só",
       to: "/app/linktree",
       done: !!linkTree?.page && (linkTree?.links?.length ?? 0) > 0,

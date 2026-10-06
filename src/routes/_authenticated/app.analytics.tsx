@@ -157,7 +157,7 @@ function AnalyticsPage() {
       {/* Canais & Alcance */}
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <ChannelKpi icon={Link2} label="Árvore de Links" primary={data.channels.linktree.views} primaryLabel="visualizações"
+          <ChannelKpi icon={Link2} label="Bio Commerce" primary={data.channels.linktree.views} primaryLabel="visualizações"
             secondary={`${data.channels.linktree.clicks} cliques · CTR ${data.channels.linktree.ctr}%`} />
           <ChannelKpi icon={StarIcon} label="Página de Avaliação" primary={data.channels.reviews.views} primaryLabel="visualizações"
             secondary={data.totals.stamps > 0 ? "canal público" : "aguardando tráfego"} />

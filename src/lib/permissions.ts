@@ -60,7 +60,7 @@ export const PERMISSION_CATALOG: PermissionEntry[] = [
   { action: "reviews.view",       group: "reputacao", label: "Ver avaliações",           description: "Consultar avaliações recebidas." },
   { action: "reviews.reply",      group: "reputacao", label: "Responder avaliações",     description: "Publicar respostas públicas." },
   { action: "qr.manage",          group: "reputacao", label: "QR Codes",                 description: "Editar cartazes, banners e materiais de QR." },
-  { action: "linktree.manage",    group: "reputacao", label: "Árvore de links",          description: "Editar página pública de links." },
+  { action: "linktree.manage",    group: "reputacao", label: "Bio Commerce",          description: "Editar página pública de links." },
   { action: "menu.manage",        group: "reputacao", label: "Cardápio Virtual",         description: "Criar e publicar o cardápio digital do restaurante." },
 
   // Anúncios

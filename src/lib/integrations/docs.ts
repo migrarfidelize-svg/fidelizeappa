@@ -174,7 +174,7 @@ export const PROVIDER_GUIDES: Record<string, ProviderGuide> = {
       {
         title: "Ativar",
         description:
-          "Ligue a chave da integração. Com Rastrear páginas públicas em Sim, o Pixel passa a carregar apenas nas páginas públicas (landing, perfil da loja, cardápio, árvore de links) — nunca no painel autenticado.",
+          "Ligue a chave da integração. Com Rastrear páginas públicas em Sim, o Pixel passa a carregar apenas nas páginas públicas (landing, perfil da loja, cardápio, Bio Commerce) — nunca no painel autenticado.",
       },
     ],
     troubleshooting: [

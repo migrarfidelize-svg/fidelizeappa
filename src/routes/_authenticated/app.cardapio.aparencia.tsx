@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ShowcaseAppearance } from "@/components/showcase/ShowcaseAppearance";
+import { ShowcaseDisplay } from "@/components/showcase/ShowcaseDisplay";
 
 export const Route = createFileRoute("/_authenticated/app/cardapio/aparencia")({
   head: () => ({
     meta: [
-      { title: "Aparência do Cardápio — Fidelize" },
-      { name: "description", content: "Escolha o tema, o fundo e o layout da vitrine pública do seu cardápio digital." },
+      { title: "Exibição do Cardápio — Fidelize" },
+      { name: "description", content: "Defina como pratos e categorias aparecem quando o Cardápio é aberto diretamente." },
     ],
   }),
-  component: () => <ShowcaseAppearance kind="menu" />,
+  component: () => <ShowcaseDisplay kind="menu" />,
 });
