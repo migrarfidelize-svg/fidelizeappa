@@ -3,21 +3,42 @@ import { useCallback, useEffect, useState } from "react";
 export type CartLine = { id: string; qty: number; variant?: string | null };
 
 const key = (slug: string) => `fidelize:cart:${slug}`;
+const CART_EVENT = "fidelize:cart:update";
 
 /** Chave única de uma linha (produto + variação escolhida). */
 export const lineKey = (id: string, variant?: string | null) => `${id}::${variant ?? ""}`;
+
+function readCart(slug: string): CartLine[] {
+  try {
+    const raw = localStorage.getItem(key(slug));
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
 
 /** Carrinho simples da vitrine pública, persistido no navegador do cliente. */
 export function useCart(slug: string) {
   const [lines, setLines] = useState<CartLine[]>([]);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(key(slug));
-      if (raw) setLines(JSON.parse(raw));
-    } catch {
-      /* ignora */
-    }
+    setLines(readCart(slug));
+
+    const sync = (event: Event) => {
+      const custom = event as CustomEvent<{ slug?: string; lines?: CartLine[] }>;
+      if (custom.detail?.slug && custom.detail.slug !== slug) return;
+      setLines(custom.detail?.lines ?? readCart(slug));
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === key(slug)) setLines(readCart(slug));
+    };
+
+    window.addEventListener(CART_EVENT, sync as EventListener);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(CART_EVENT, sync as EventListener);
+      window.removeEventListener("storage", onStorage);
+    };
   }, [slug]);
 
   const persist = useCallback(
@@ -28,6 +49,7 @@ export function useCart(slug: string) {
       } catch {
         /* ignora */
       }
+      window.dispatchEvent(new CustomEvent(CART_EVENT, { detail: { slug, lines: next } }));
     },
     [slug],
   );
@@ -64,7 +86,6 @@ export function useCart(slug: string) {
   const qtyOf = useCallback(
     (id: string, variant?: string | null) => {
       if (variant === undefined) {
-        // sem variação informada: soma todas as variações do produto
         return lines.filter((l) => l.id === id).reduce((a, l) => a + l.qty, 0);
       }
       const k = lineKey(id, variant);
