@@ -46,7 +46,6 @@ export function BioCommerceLanding(props: {
       const url = normalizeFallback(kind, value);
       if (!url) return;
       synthetic.push({
-        id: `merchant-${kind}`,
         kind,
         label,
         url,
