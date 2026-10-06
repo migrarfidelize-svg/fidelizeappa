@@ -17,7 +17,7 @@ type SavedStyles = {
 };
 
 /**
- * Trava a página atrás do checkout, inclusive no Safari/iOS.
+ * Trava a pagina atras do checkout, inclusive no Safari/iOS.
  * O checkout continua rolando normalmente; somente a landing de fundo fica fixa.
  */
 function useCheckoutBodyLock(rootRef: React.RefObject<HTMLDivElement | null>) {
@@ -155,6 +155,20 @@ export function BioCommerceLanding(props: {
       <style>{`
         .bc-v12-runtime .fixed.inset-0 {
           -webkit-overflow-scrolling: touch;
+        }
+
+        /* Dentro do Cardapio/Catalogo completo, a sacola permanece acessivel
+           sem obrigar o cliente a fechar a vitrine. */
+        .bc-v12-runtime:has(.fixed.inset-0.z-\[230\]) .fixed.inset-x-0.bottom-3.z-\[120\] {
+          z-index: 235 !important;
+          pointer-events: auto !important;
+        }
+
+        /* Se a sacola for aberta de dentro da vitrine completa, o checkout
+           precisa ficar acima dela; ao fechar, o cliente volta exatamente para
+           o ponto em que estava no Cardapio/Catalogo. */
+        .bc-v12-runtime:has(.fixed.inset-0.z-\[230\]) .fixed.inset-0.z-\[190\] {
+          z-index: 270 !important;
         }
       `}</style>
       <BioCommerceLandingV11 {...props} />
