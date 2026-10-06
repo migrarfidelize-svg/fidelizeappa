@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BioCommerceEditor } from "@/components/bio-commerce/BioCommerceEditor";
+import { BioCommerceEditorV3 } from "@/components/bio-commerce/BioCommerceEditorV3";
 
 export const Route = createFileRoute("/_authenticated/app/linktree")({
   ssr: false,
-  component: BioCommerceEditor,
+  component: BioCommerceEditorV3,
 });
