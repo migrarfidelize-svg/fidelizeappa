@@ -94,7 +94,7 @@ export function QrDestinationCard({
             <SelectTrigger className="h-11 w-full shrink-0 sm:h-10 sm:w-[240px]"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="reviews">Avaliação de atendimento</SelectItem>
-              <SelectItem value="linktree">Árvore de Links</SelectItem>
+              <SelectItem value="linktree">Bio Commerce</SelectItem>
               <SelectItem value="landing">Cartão Fidelidade</SelectItem>
               <SelectItem value="menu" disabled={!menuAllowed}>
                 Cardápio digital{!menuAllowed ? " (não incluso no plano)" : ""}
@@ -129,9 +129,9 @@ export function QrDestinationCard({
               </div>
             ) : dest === "linktree" ? (
               <div className="min-w-0 flex-1">
-                <p className="font-medium">Você ainda não possui uma Árvore de Links publicada.</p>
+                <p className="font-medium">Você ainda não possui um Bio Commerce publicado.</p>
                 <Button asChild size="sm" variant="outline" className="mt-2">
-                  <Link to="/app/linktree">Criar Árvore de Links</Link>
+                  <Link to="/app/linktree">Criar Bio Commerce</Link>
                 </Button>
               </div>
             ) : (
