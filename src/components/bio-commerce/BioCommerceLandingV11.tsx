@@ -9,16 +9,29 @@ import {
 
 export type { BioCommerceBlockData, BioCommerceLandingData, BioCommerceProduct, BioCommerceReview };
 
+function readTranslateX(element: HTMLElement) {
+  const transform = window.getComputedStyle(element).transform;
+  if (!transform || transform === "none") return 0;
+  try {
+    return new DOMMatrixReadOnly(transform).m41;
+  } catch {
+    const match = /matrix(?:3d)?\(([^)]+)\)/.exec(transform);
+    if (!match) return 0;
+    const values = match[1].split(",").map((value) => Number(value.trim()));
+    return transform.startsWith("matrix3d") ? Number(values[12] ?? 0) : Number(values[4] ?? 0);
+  }
+}
+
 /**
- * Marquee nativo por CSS para os rails de produtos.
+ * Rail continuo para produtos, otimizado para Safari/iOS.
  *
- * Motivo: no iOS/Safari, animar scrollLeft por requestAnimationFrame ou criar
- * uma Web Animation por card pode sofrer throttling durante o scroll vertical.
- * Aqui movemos UM unico track com transform: translate3d(), deixando o
- * compositor do Safari cuidar da animacao sem reflow por frame.
- *
- * O rail ja vem duplicado pelo renderer V8. Ao mover exatamente a distancia
- * entre a primeira e a segunda copia, o loop fica continuo e sem salto.
+ * Regras importantes:
+ * - uma unica animacao de transform no track inteiro;
+ * - resize apenas por mudanca REAL de largura (a barra do Safari altera a
+ *   altura durante o scroll e nao pode reiniciar o carrossel);
+ * - tocar/segurar pausa no ponto atual;
+ * - arrastar horizontalmente move para frente ou para tras;
+ * - ao soltar, o loop continua exatamente da posicao em que ficou.
  */
 function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -30,6 +43,7 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
     const cleanups = new Map<HTMLElement, () => void>();
     let scanFrame = 0;
     let resizeTimer = 0;
+    let viewportWidth = window.innerWidth;
 
     const install = (rail: HTMLElement) => {
       if (cleanups.has(rail) || reduced.matches) return;
@@ -38,8 +52,8 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
         (node): node is HTMLElement => node instanceof HTMLElement,
       );
 
-      // Somente rails de produtos duplicados. Outros scrolls horizontais
-      // (links, galeria, YouTube, categorias) continuam com gesto normal.
+      // So rails de produtos duplicados. Links, galeria, YouTube e categorias
+      // continuam com scroll horizontal nativo.
       if (children.length < 6 || children.length % 2 !== 0) return;
       if (!children[0]?.matches('article[role="button"]')) return;
 
@@ -50,9 +64,6 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
       const parent = rail.parentElement;
       if (!parent) return;
 
-      // Ao transformar o rail em width:max-content, o motor legado deixa de
-      // enxergar overflow interno e para de alterar scrollLeft por frame.
-      // O viewport passa a ser o elemento pai.
       rail.scrollLeft = 0;
       rail.classList.add("bc-v11-smooth-rail");
       parent.classList.add("bc-v11-smooth-wrap");
@@ -60,69 +71,175 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
       const durationSeconds = Math.max(22, Math.min(46, distance / 38));
       rail.style.setProperty("--bc-v11-distance", `-${distance}px`);
       rail.style.setProperty("--bc-v11-duration", `${durationSeconds}s`);
+      rail.style.setProperty("--bc-v11-delay", "0s");
 
       let resumeTimer = 0;
+      let dragging = false;
+      let horizontalDrag = false;
+      let startX = 0;
+      let startY = 0;
+      let startOffset = 0;
+      let currentOffset = 0;
+      let suppressClick = false;
+      let activePointerId: number | null = null;
+
+      const normalizeOffset = (value: number) => {
+        if (!Number.isFinite(value) || distance <= 0) return 0;
+        let next = value % distance;
+        if (next > 0) next -= distance;
+        if (next <= -distance) next += distance;
+        return next;
+      };
+
       const setPaused = (paused: boolean) => {
         rail.classList.toggle("bc-v11-paused", paused);
       };
+
       const pause = () => {
         window.clearTimeout(resumeTimer);
         setPaused(true);
       };
+
       const resume = (delay = 0) => {
         window.clearTimeout(resumeTimer);
         resumeTimer = window.setTimeout(() => setPaused(false), delay);
       };
 
-      // iOS: touch events sao usados explicitamente, porque durante um scroll
-      // vertical o Safari pode cancelar pointer events de maneira agressiva.
-      const onTouchStart = () => pause();
-      const onTouchEnd = () => resume(420);
-      const onTouchCancel = () => resume(220);
+      const beginDrag = (x: number, y: number) => {
+        window.clearTimeout(resumeTimer);
+        const renderedOffset = normalizeOffset(readTranslateX(rail));
+        dragging = true;
+        horizontalDrag = false;
+        startX = x;
+        startY = y;
+        startOffset = renderedOffset;
+        currentOffset = renderedOffset;
+        rail.classList.add("bc-v11-paused", "bc-v11-dragging");
+        rail.style.transform = `translate3d(${renderedOffset}px,0,0)`;
+        rail.style.webkitTransform = `translate3d(${renderedOffset}px,0,0)`;
+      };
+
+      const moveDrag = (x: number, y: number, event?: Event) => {
+        if (!dragging) return;
+        const dx = x - startX;
+        const dy = y - startY;
+
+        if (!horizontalDrag && Math.abs(dx) >= 8 && Math.abs(dx) > Math.abs(dy) * 1.05) {
+          horizontalDrag = true;
+          suppressClick = true;
+        }
+
+        if (!horizontalDrag) return;
+        if (event?.cancelable) event.preventDefault();
+
+        currentOffset = normalizeOffset(startOffset + dx);
+        rail.style.transform = `translate3d(${currentOffset}px,0,0)`;
+        rail.style.webkitTransform = `translate3d(${currentOffset}px,0,0)`;
+      };
+
+      const finishDrag = (delay = 180) => {
+        if (!dragging) {
+          resume(delay);
+          return;
+        }
+
+        dragging = false;
+        const normalized = normalizeOffset(currentOffset);
+        const progress = distance > 0 ? Math.max(0, Math.min(1, -normalized / distance)) : 0;
+        rail.style.setProperty("--bc-v11-delay", `${-(progress * durationSeconds)}s`);
+        rail.classList.remove("bc-v11-dragging");
+        rail.style.removeProperty("transform");
+        rail.style.removeProperty("-webkit-transform");
+        resume(delay);
+      };
+
+      // Touch dedicado evita o cancelamento agressivo de pointer events no iOS.
+      const onTouchStart = (event: TouchEvent) => {
+        const touch = event.touches[0];
+        if (!touch) return;
+        beginDrag(touch.clientX, touch.clientY);
+      };
+      const onTouchMove = (event: TouchEvent) => {
+        const touch = event.touches[0];
+        if (!touch) return;
+        moveDrag(touch.clientX, touch.clientY, event);
+      };
+      const onTouchEnd = () => finishDrag(260);
+      const onTouchCancel = () => finishDrag(120);
+
+      // Mouse/pen tambem podem arrastar o rail no desktop.
       const onPointerDown = (event: PointerEvent) => {
-        if (event.pointerType !== "touch") pause();
+        if (event.pointerType === "touch") return;
+        activePointerId = event.pointerId;
+        beginDrag(event.clientX, event.clientY);
+        try { rail.setPointerCapture(event.pointerId); } catch { /* noop */ }
+      };
+      const onPointerMove = (event: PointerEvent) => {
+        if (event.pointerType === "touch" || activePointerId !== event.pointerId) return;
+        moveDrag(event.clientX, event.clientY, event);
       };
       const onPointerUp = (event: PointerEvent) => {
-        if (event.pointerType !== "touch") resume(80);
+        if (event.pointerType === "touch" || activePointerId !== event.pointerId) return;
+        activePointerId = null;
+        try { rail.releasePointerCapture(event.pointerId); } catch { /* noop */ }
+        finishDrag(80);
       };
       const onPointerCancel = (event: PointerEvent) => {
-        if (event.pointerType !== "touch") resume(120);
+        if (event.pointerType === "touch" || activePointerId !== event.pointerId) return;
+        activePointerId = null;
+        finishDrag(100);
       };
+
       const onMouseEnter = () => {
-        if (finePointer.matches) pause();
+        if (finePointer.matches && !dragging) pause();
       };
       const onMouseLeave = () => {
-        if (finePointer.matches) resume(60);
+        if (finePointer.matches && !dragging) resume(60);
       };
       const onVisibility = () => {
-        if (document.visibilityState === "visible") resume(80);
+        if (document.visibilityState === "visible" && !dragging) resume(60);
+      };
+      const onClickCapture = (event: MouseEvent) => {
+        if (!suppressClick) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressClick = false;
       };
 
       rail.addEventListener("touchstart", onTouchStart, { passive: true });
+      rail.addEventListener("touchmove", onTouchMove, { passive: false });
       rail.addEventListener("touchend", onTouchEnd, { passive: true });
       rail.addEventListener("touchcancel", onTouchCancel, { passive: true });
       rail.addEventListener("pointerdown", onPointerDown, { passive: true });
+      rail.addEventListener("pointermove", onPointerMove, { passive: false });
       rail.addEventListener("pointerup", onPointerUp, { passive: true });
       rail.addEventListener("pointercancel", onPointerCancel, { passive: true });
       rail.addEventListener("mouseenter", onMouseEnter, { passive: true });
       rail.addEventListener("mouseleave", onMouseLeave, { passive: true });
+      rail.addEventListener("click", onClickCapture, true);
       document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
       cleanups.set(rail, () => {
         window.clearTimeout(resumeTimer);
         rail.removeEventListener("touchstart", onTouchStart);
+        rail.removeEventListener("touchmove", onTouchMove);
         rail.removeEventListener("touchend", onTouchEnd);
         rail.removeEventListener("touchcancel", onTouchCancel);
         rail.removeEventListener("pointerdown", onPointerDown);
+        rail.removeEventListener("pointermove", onPointerMove);
         rail.removeEventListener("pointerup", onPointerUp);
         rail.removeEventListener("pointercancel", onPointerCancel);
         rail.removeEventListener("mouseenter", onMouseEnter);
         rail.removeEventListener("mouseleave", onMouseLeave);
+        rail.removeEventListener("click", onClickCapture, true);
         document.removeEventListener("visibilitychange", onVisibility);
-        rail.classList.remove("bc-v11-smooth-rail", "bc-v11-paused");
+        rail.classList.remove("bc-v11-smooth-rail", "bc-v11-paused", "bc-v11-dragging");
         parent.classList.remove("bc-v11-smooth-wrap");
         rail.style.removeProperty("--bc-v11-distance");
         rail.style.removeProperty("--bc-v11-duration");
+        rail.style.removeProperty("--bc-v11-delay");
+        rail.style.removeProperty("transform");
+        rail.style.removeProperty("-webkit-transform");
       });
     };
 
@@ -135,7 +252,13 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
       scanFrame = requestAnimationFrame(scan);
     };
 
-    const resetForResize = () => {
+    // Safari/iOS dispara resize quando a barra de endereco aparece/some durante
+    // o scroll vertical. Isso NAO pode reinstalar a animacao. So recalculamos
+    // quando a largura realmente mudou (rotacao, split view, resize desktop).
+    const resetForMeaningfulResize = () => {
+      const nextWidth = window.innerWidth;
+      if (Math.abs(nextWidth - viewportWidth) < 2) return;
+      viewportWidth = nextWidth;
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
         cleanups.forEach((cleanup) => cleanup());
@@ -146,16 +269,16 @@ function useSmoothProductRails(rootRef: React.RefObject<HTMLDivElement | null>) 
 
     const observer = new MutationObserver(scheduleScan);
     observer.observe(root, { childList: true, subtree: true });
-    window.addEventListener("resize", resetForResize, { passive: true });
-    reduced.addEventListener?.("change", resetForResize);
+    window.addEventListener("resize", resetForMeaningfulResize, { passive: true });
+    reduced.addEventListener?.("change", resetForMeaningfulResize);
     scheduleScan();
 
     return () => {
       observer.disconnect();
       cancelAnimationFrame(scanFrame);
       window.clearTimeout(resizeTimer);
-      window.removeEventListener("resize", resetForResize);
-      reduced.removeEventListener?.("change", resetForResize);
+      window.removeEventListener("resize", resetForMeaningfulResize);
+      reduced.removeEventListener?.("change", resetForMeaningfulResize);
       cleanups.forEach((cleanup) => cleanup());
       cleanups.clear();
     };
@@ -184,10 +307,11 @@ export function BioCommerceLanding(props: {
           max-width: none !important;
           overflow: visible !important;
           scroll-behavior: auto !important;
-          touch-action: pan-y !important;
+          touch-action: pan-y pinch-zoom !important;
           overscroll-behavior-x: none !important;
           animation-name: bc-v11-marquee;
           animation-duration: var(--bc-v11-duration, 28s);
+          animation-delay: var(--bc-v11-delay, 0s);
           animation-timing-function: linear;
           animation-iteration-count: infinite;
           animation-fill-mode: both;
@@ -196,9 +320,16 @@ export function BioCommerceLanding(props: {
           -webkit-transform: translate3d(0, 0, 0);
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
+          cursor: grab;
         }
         .bc-v11-smooth-rail.bc-v11-paused {
           animation-play-state: paused !important;
+        }
+        .bc-v11-smooth-rail.bc-v11-dragging {
+          animation: none !important;
+          cursor: grabbing;
+          user-select: none;
+          -webkit-user-select: none;
         }
         .bc-v11-smooth-rail > * {
           flex: 0 0 auto;
@@ -225,6 +356,7 @@ export function BioCommerceLanding(props: {
             overflow-x: auto !important;
             width: auto !important;
             max-width: 100% !important;
+            touch-action: pan-x pan-y !important;
           }
         }
       `}</style>
