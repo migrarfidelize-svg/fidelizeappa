@@ -165,7 +165,7 @@ export const registerTrialInviteVisit = createServerFn({ method: "POST" })
     const { data: link } = await db.from("trial_invite_links")
       .select("id,active,expires_at,max_signups,signup_count").eq("token",data.token).maybeSingle();
     if (!link?.active || link.signup_count >= link.max_signups ||
-      (link.expires_at && new Date(link.expires_at) <= new Date())) {
+      (link.expires_at && new Date(link.expires_at).getTime() <= Date.now())) {
       return { ok: false as const };
     }
     const { error } = await db.from("trial_invite_visits").upsert({
