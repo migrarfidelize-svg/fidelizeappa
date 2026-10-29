@@ -1,3 +1,4 @@
+import { getMyTrialAccess, trialCanOpenRoute } from "@/lib/trial-access.functions";
 import { createFileRoute, Link, Outlet, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -302,6 +303,19 @@ function AppLayout() {
 
   const activeEstEarly = memberships?.[0]?.establishment as { id: string } | undefined;
   const activeEstId = activeEstEarly?.id;
+  const myTrialFn = useServerFn(getMyTrialAccess);
+  const { data: trialAccess } = useQuery({
+    queryKey: ["merchant-trial-access", activeEstId],
+    queryFn: () => myTrialFn({ data: { establishment_id: activeEstId! } }),
+    enabled: !!activeEstId,
+    staleTime: 30000,
+  });
+  const trialAllows = (path: string) => !trialAccess?.trial ||
+    ["/app", "/app/planos", "/app/fidelize", "/app/kb"].includes(path) ||
+    (trialAccess.active && trialCanOpenRoute(path, trialAccess.features));
+  const trialRestricted = trialAccess?.trial === true &&
+    !["/app/planos", "/app/fidelize", "/app/kb"].some((path) => pathname === path || pathname.startsWith(path + "/")) &&
+    (!trialAccess.active || !trialCanOpenRoute(pathname, trialAccess.features));
   const lastAllowedRef = useRef<boolean | null>(null);
   const checkFeatureFn = useServerFn(checkMyFeature);
   useEffect(() => {
@@ -351,6 +365,7 @@ function AppLayout() {
       ...g,
       items: g.items.filter((it: NavItem) => {
         const action = ROUTE_PERMISSIONS[it.to];
+        if (!trialAllows(it.to)) return false;
         if (!action) return true;
         if (permsLoading) return true;
         return can(action);
@@ -359,6 +374,7 @@ function AppLayout() {
   }).filter((g) => {
     if (!('items' in g)) {
       const action = ROUTE_PERMISSIONS[g.to];
+      if (!trialAllows(g.to)) return false;
       if (!action) return true;
       if (permsLoading) return true;
       return can(action);
@@ -555,7 +571,7 @@ function AppLayout() {
 
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => window.dispatchEvent(new CustomEvent("fidelize:start-tour"))} className="hidden lg:inline-flex text-primary hover:text-primary hover:bg-primary/10 gap-2 h-9 border border-primary/25"><Compass className="h-4 w-4" /><span className="text-xs font-medium">Fazer tour</span></Button>
-              <QuickSearch establishmentId={activeEstId ?? null} navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))} />
+              <QuickSearch establishmentId={activeEstId ?? null} navTargets={FLAT_ALLOWED.map((n) => ({ to: n.to, label: n.label }))} />
               <PageGuideButton scope={activeEst?.id ?? "user"} />
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
@@ -566,7 +582,18 @@ function AppLayout() {
               <AnimatePresence mode="wait">
                 <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }} className="relative min-w-0 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-6 md:py-7 md:pb-7 max-w-[1400px] w-full mx-auto">
                   <PanelTransition />
-                  <Outlet />
+                  {trialRestricted ? (
+                    <div className="mx-auto max-w-xl rounded-3xl border border-primary/20 bg-card p-8 text-center shadow-lg md:p-12">
+                      <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary"><Shield className="h-7 w-7" /></div>
+                      <h2 className="font-display text-2xl font-bold">{trialAccess?.trial && !trialAccess.active ? "Seu período de teste terminou" : "Recurso não incluído neste teste"}</h2>
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        {trialAccess?.trial && !trialAccess.active
+                          ? "Obrigado por conhecer a Fidelize. Escolha um plano para continuar com suas ferramentas."
+                          : "Este módulo não foi liberado no seu convite. Você pode conhecer os planos ou falar com nossa equipe."}
+                      </p>
+                      <Button className="mt-6" onClick={() => navigate({ to: "/app/planos" })}>Conhecer os planos</Button>
+                    </div>
+                  ) : <Outlet />}
                 </motion.div>
               </AnimatePresence>
             </ErrorBoundary>
@@ -574,7 +601,7 @@ function AppLayout() {
 
           <nav aria-label="Navegação rápida" className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-card/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] md:hidden">
             <ul className="grid grid-cols-5">
-              {MOBILE_TABS.map((t) => {
+              {MOBILE_TABS.filter((t) => trialAllows(t.to)).map((t) => {
                 const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
                 return <li key={t.to}><Link to={t.to} className={["flex h-16 flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors", active ? "text-primary" : "text-muted-foreground"].join(" ")}><t.icon className="h-5 w-5" strokeWidth={active ? 2.4 : 1.8} /><span className="max-w-full truncate px-1">{t.label}</span></Link></li>;
               })}

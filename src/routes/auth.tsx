@@ -26,6 +26,7 @@ import { guardAuthAttempt, reportAuthAttempt } from "@/lib/auth-guard.functions"
 import { Turnstile, resetTurnstile } from "@/components/Turnstile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { requestOTP, verifyOTP } from "@/lib/otp.functions";
+import { claimTrialInviteForUser } from "@/lib/trial-invites.functions";
 
 const AUTH_SYNC_CHANNEL = "fidelize-auth-sync";
 
@@ -48,6 +49,7 @@ const searchSchema = z.object({
   next: z.string().optional(),
   source: z.string().optional(),
   plan: z.string().optional(),
+  trial: z.string().optional(),
 });
 
 async function routeAfterAuth(opts: { claim?: string; est_slug?: string; next?: string; role?: "customer" | "establishment" }): Promise<{ to: string; toast?: string; toastKind?: "success" | "error" | "info" }> {
@@ -110,6 +112,16 @@ function AuthPage() {
   const search = Route.useSearch();
   const router = useRouter();
   const { mode } = search;
+  useEffect(() => {
+    if (!search.trial) return;
+    try {
+      const previous = JSON.parse(localStorage.getItem("fidelize:pending-trial") ?? "{}");
+      if (previous.token !== search.trial) {
+        // Apenas a rota /teste/:token cria uma visita verificada; URL /auth isolada nao gera beneficios.
+        localStorage.removeItem("fidelize:pending-trial");
+      }
+    } catch { localStorage.removeItem("fidelize:pending-trial"); }
+  }, [search.trial]);
   const trackedPlanRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -159,6 +171,16 @@ function AuthPage() {
       setRedirecting(false);
       toast.info("Não conseguimos iniciar sua sessão. Tente novamente.");
       return;
+    }
+    // Concluir atribuicao apenas apos sessao valida. Link e visitante sao
+    // verificados novamente pelo backend; contas antigas nao recebem trial.
+    try {
+      const pending = JSON.parse(localStorage.getItem("fidelize:pending-trial") ?? "null");
+      if (pending?.token && pending?.visitor_id) {
+        await claimTrialInviteForUser({ data: { token: pending.token, visitor_id: pending.visitor_id } });
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Convite de testes indisponível.");
     }
     setRedirecting(true);
     try { await router.invalidate(); } catch {}
