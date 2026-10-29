@@ -158,10 +158,10 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
         {cover && <img src={cover} className="gr-bg-photo absolute -right-12 top-0 h-[800px] w-[min(85vw,850px)] rotate-[-6deg] object-cover object-center" alt="" />}
       </div>
 
-      <header className="gr-shell relative z-20 flex h-[74px] items-center justify-between border-b border-blue-200/10">
-        <a href="#inicio" className="flex items-center gap-2.5 font-black tracking-[.10em]" aria-label="GYNRACE, voltar ao início">
-          <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#1d8cff]/50 bg-[#1162d7]/15 text-[#7bd4ff]"><Zap className="h-5 w-5"/></span>
-          <span className="text-[18px] italic">GYN<span className="text-[#419dff]">RACE</span><span className="align-top text-[9px]">®</span></span>
+      <header className="gr-shell relative z-20 flex min-h-[74px] min-w-0 items-center justify-between gap-3 border-b border-blue-200/10 py-3">
+        <a href="#inicio" className="flex min-w-0 items-center gap-2 font-black tracking-[.08em] sm:gap-2.5" aria-label="GYNRACE, voltar ao início">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#1d8cff]/50 bg-[#1162d7]/15 text-[#7bd4ff]"><Zap className="h-5 w-5"/></span>
+          <span className="whitespace-nowrap text-[16px] italic min-[370px]:text-[18px]">GYN<span className="text-[#419dff]">RACE</span><span className="align-top text-[9px]">®</span></span>
         </a>
         <nav className="hidden items-center gap-6 text-xs font-semibold text-[#bacde5] lg:flex">
           <a href="#servicos" className="hover:text-white">Serviços</a>
@@ -180,24 +180,24 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
       <main id="inicio" className="relative z-10">
         <section className="gr-shell gr-hero-section relative grid min-w-0 items-center gap-10 pb-14 pt-10 md:min-h-[650px] md:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)] md:gap-6 md:pt-16 xl:gap-10 xl:pt-20">
           <div className="gr-rise gr-hero-copy relative z-10">
-            <div className="mb-7 flex items-center gap-4">
-              <div className="relative h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-[#208dff] bg-[#142642] p-1 shadow-[0_0_22px_rgba(12,122,255,.48)]">
+            <div className="mb-6 flex min-w-0 items-center gap-3 sm:mb-7 sm:gap-4">
+              <div className="relative h-[64px] w-[64px] shrink-0 overflow-hidden sm:h-[72px] sm:w-[72px] rounded-full border-2 border-[#208dff] bg-[#142642] p-1 shadow-[0_0_22px_rgba(12,122,255,.48)]">
                 {avatar ? <img src={avatar} alt="Foto de perfil da GYNRACE" className="h-full w-full rounded-full object-cover" referrerPolicy="no-referrer" /> : <Zap className="m-auto mt-4 h-7 w-7 text-blue-300"/>}
               </div>
-              <div><p className="text-lg font-black">@gynrace_</p><span className="text-[11px] font-bold uppercase tracking-[.19em] text-[#6db6ff]">GOIÂNIA • GOIÁS</span></div>
+              <div className="min-w-0"><p className="text-base font-black sm:text-lg">@gynrace_</p><span className="block text-[10px] font-bold uppercase tracking-[.11em] text-[#6db6ff] sm:text-[11px] sm:tracking-[.19em]">GOIÂNIA • GOIÁS</span></div>
             </div>
             <p className="gr-eyebrow mb-5"><span className="mr-3 inline-block h-[2px] w-7 align-middle bg-[#238dff]"/> CUSTOM • TECH • PERFORMANCE</p>
             <h1 className="gr-hero-title max-w-full font-black uppercase italic">
               SUA MOTO.<br/><span className="gr-hero-emphasis text-[#3b99ff]">OUTRO NÍVEL.</span>
             </h1>
-            <p className="mt-7 max-w-[530px] text-[15px] leading-7 text-[#c0cde0] sm:text-[17px]">
+            <p className="gr-safe-copy mt-5 max-w-[530px] text-[14px] leading-6 text-[#c0cde0] sm:mt-7 sm:text-[17px] sm:leading-7">
               Difusores eletrônicos e manuais, escapamentos esportivos, manutenção premium e projetos especiais. Técnica e personalidade em cada detalhe.
             </p>
             <div className="gr-hero-buttons mt-8 flex flex-wrap gap-3">
               {link(INSTAGRAM_MESSAGES,"hero:orcamento",<>Solicitar orçamento <ArrowUpRight className="h-4 w-4"/></>,"gr-shimmer inline-flex min-h-13 items-center justify-center gap-3 rounded-xl border border-[#499fff] bg-gradient-to-r from-[#1377ff] to-[#073cb8] px-6 py-3.5 text-sm font-bold shadow-[0_12px_36px_rgba(13,108,255,.32)] transition hover:shadow-[0_17px_45px_rgba(13,108,255,.52)]")}
               <a href="#servicos" className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/20 bg-[#0a1428]/80 px-6 py-3.5 text-sm font-bold text-white transition hover:border-blue-400/60">Explorar serviços <ArrowDown className="h-4 w-4"/></a>
             </div>
-            <div className="mt-9 flex items-center gap-3 border-t border-white/10 pt-5 text-[11px] font-semibold uppercase tracking-[.13em] text-[#99b4d4]"><ShieldCheck className="h-5 w-5 text-[#5aacff]" /> Especialistas em motos esportivas e performance</div>
+            <div className="mt-7 flex min-w-0 items-start gap-3 border-t border-white/10 pt-5 text-[10px] font-semibold uppercase leading-5 tracking-[.10em] text-[#99b4d4] sm:mt-9 sm:items-center sm:text-[11px]"><ShieldCheck className="h-5 w-5 shrink-0 text-[#5aacff]" /> <span className="gr-safe-copy">Especialistas em motos esportivas e performance</span></div>
           </div>
 
           <div className="gr-rise gr-rise-delay gr-hero-photo-wrap relative flex h-[350px] min-w-0 items-center justify-center md:h-[480px] xl:h-[540px]">
@@ -213,42 +213,42 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
           </div>
         </section>
 
-        <section className="gr-shell grid gap-3 pb-16 sm:grid-cols-3">
+        <section className="gr-shell grid min-w-0 gap-3 pb-12 sm:grid-cols-3 md:pb-16">
           {[
             {icon:Zap, label:"Engenharia & tecnologia", text:"Soluções para uma experiência diferenciada."},
             {icon:Wrench,label:"Cuidado técnico",text:"Revisões, manutenção e diagnósticos."},
             {icon:RouteIcon,label:"Projetos exclusivos",text:"Cada moto com sua própria identidade."},
-          ].map((item)=> <div key={item.label} className="gr-glass flex min-h-[110px] items-start gap-4 rounded-2xl p-5"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#1267db]/15 text-[#5eb4ff]"><item.icon className="h-6 w-6"/></span><div><h3 className="text-sm font-black">{item.label}</h3><p className="mt-1.5 text-xs leading-5 text-[#9faecc]">{item.text}</p></div></div>)}
+          ].map((item)=> <div key={item.label} className="gr-glass flex min-h-[100px] min-w-0 items-start gap-3 rounded-2xl p-4 sm:min-h-[110px] sm:gap-4 sm:p-5"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#1267db]/15 text-[#5eb4ff]"><item.icon className="h-6 w-6"/></span><div className="gr-safe-copy"><h3 className="text-sm font-black">{item.label}</h3><p className="mt-1.5 text-xs leading-5 text-[#9faecc]">{item.text}</p></div></div>)}
         </section>
 
-        <section id="servicos" className="relative border-t border-blue-200/10 bg-gradient-to-b from-[#071323]/90 to-[#03060d] py-20">
+        <section id="servicos" className="relative border-t border-blue-200/10 bg-gradient-to-b from-[#071323]/90 to-[#03060d] py-12 sm:py-16 lg:py-20">
           <div className="gr-shell">
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
-              <div><p className="gr-eyebrow">01 / O QUE FAZEMOS</p><h2 className="mt-3 text-[clamp(30px,6vw,54px)] font-black uppercase italic leading-tight tracking-[-.05em]">PRECISÃO EM CADA <span className="text-[#459fff]">SERVIÇO.</span></h2></div>
+            <div className="mb-8 flex min-w-0 flex-col items-start justify-between gap-4 sm:mb-10 sm:flex-row sm:flex-wrap sm:items-end sm:gap-5">
+              <div className="min-w-0 max-w-full"><p className="gr-eyebrow">01 / O QUE FAZEMOS</p><h2 className="gr-section-title gr-safe-copy mt-3 text-[clamp(28px,6vw,54px)] font-black uppercase italic leading-tight tracking-[-.05em]">PRECISÃO EM CADA <span className="text-[#459fff]">SERVIÇO.</span></h2></div>
               <p className="max-w-[260px] text-sm leading-6 text-[#b1c1d7]">Sua moto merece soluções cuidadosas, do diagnóstico ao acabamento final.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.map(s=> <a key={s.id} href={INSTAGRAM_MESSAGES} target="_blank" rel="noopener noreferrer" onClick={() => track("service:"+s.id)} className="gr-service gr-glass group relative flex min-h-[235px] flex-col rounded-[22px] p-6">
+              {SERVICES.map(s=> <a key={s.id} href={INSTAGRAM_MESSAGES} target="_blank" rel="noopener noreferrer" onClick={() => track("service:"+s.id)} className="gr-service gr-service-card gr-glass group relative flex min-h-[235px] min-w-0 flex-col rounded-[22px] p-6">
                 <div className="mb-8 flex items-center justify-between"><span className="grid h-12 w-12 place-items-center rounded-[13px] border border-blue-400/25 bg-blue-500/10 text-[#61b4ff]"><s.icon className="h-6 w-6"/></span><span className="gr-number text-xs font-bold tracking-widest text-[#537da8]">{s.number}</span></div>
-                <h3 className="text-lg font-black uppercase leading-tight tracking-tight">{s.title}</h3>
+                <h3 className="gr-safe-copy text-[17px] font-black uppercase leading-tight tracking-tight sm:text-lg">{s.title}</h3>
                 <p className="mt-2 text-[13px] leading-5 text-[#a5b6d0]">{s.detail}</p>
-                <div className="mt-auto flex items-center justify-between pt-6"><span className="text-[9px] font-black tracking-[.14em] text-[#559ad9]">{s.note}</span><ArrowUpRight className="h-4 w-4 text-[#6eb4ff] transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div>
+                <div className="mt-auto flex min-w-0 items-end justify-between gap-2 pt-6"><span className="gr-safe-copy text-[9px] font-black leading-4 tracking-[.08em] text-[#559ad9] sm:tracking-[.14em]">{s.note}</span><ArrowUpRight className="h-4 w-4 shrink-0 text-[#6eb4ff] transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div>
               </a>)}
             </div>
           </div>
         </section>
 
-        <section id="projetos" className="gr-shell py-20">
-          <div className="mb-9"><p className="gr-eyebrow">02 / EM DESTAQUE</p><h2 className="mt-3 text-[clamp(31px,6vw,53px)] font-black uppercase italic leading-tight tracking-[-.045em]">MUITO ALÉM <span className="text-[#439aff]">DA OFICINA.</span></h2><p className="mt-3 max-w-[580px] text-sm leading-6 text-[#afc2da]">Mais personalidade para sua moto. Conheça nossos trabalhos e acompanhe a evolução de cada projeto no Instagram.</p></div>
-          <div className="relative isolate h-[380px] overflow-hidden rounded-[26px] border border-blue-400/20 bg-gradient-to-br from-[#122c4d] via-[#081324] to-[#020509] shadow-[0_16px_60px_rgba(4,35,78,.2)] sm:h-[560px]">
+        <section id="projetos" className="gr-shell py-12 sm:py-16 lg:py-20">
+          <div className="mb-8 min-w-0 sm:mb-9"><p className="gr-eyebrow">02 / EM DESTAQUE</p><h2 className="gr-section-title gr-safe-copy mt-3 text-[clamp(28px,6vw,53px)] font-black uppercase italic leading-tight tracking-[-.045em]">MUITO ALÉM <span className="text-[#439aff]">DA OFICINA.</span></h2><p className="mt-3 max-w-[580px] text-sm leading-6 text-[#afc2da]">Mais personalidade para sua moto. Conheça nossos trabalhos e acompanhe a evolução de cada projeto no Instagram.</p></div>
+          <div className="relative isolate h-[350px] overflow-hidden rounded-[22px] border border-blue-400/20 bg-gradient-to-br from-[#122c4d] via-[#081324] to-[#020509] shadow-[0_16px_60px_rgba(4,35,78,.2)] sm:h-[560px]">
             {cover ? <img src={cover} alt="Moto e ambiente da GYNRACE" className="absolute inset-0 h-full w-full object-cover object-center"/> : <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#0d70b955,transparent_50%)]" />}
             <div className="absolute inset-0 bg-gradient-to-t from-[#02060f] via-[#02060f]/20 to-transparent"/>
-            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-5 sm:p-9">
-              <div><p className="gr-eyebrow">VISÃO, ESTILO E TECNOLOGIA</p><h3 className="mt-2 max-w-md text-2xl font-black uppercase italic sm:text-4xl">Projetos com personalidade</h3><p className="mt-2 text-xs text-[#bccae0] sm:text-sm">Cada detalhe faz parte da experiência.</p></div>
-              <a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>track("projects:gallery")} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-blue-300/30 bg-blue-500/40 backdrop-blur-lg" aria-label="Ver todos os projetos no Instagram"><ArrowUpRight className="h-5 w-5"/></a>
+            <div className="gr-project-overlay absolute bottom-0 left-0 right-0 flex min-w-0 items-end justify-between gap-4 p-5 sm:p-9">
+              <div className="gr-safe-copy min-w-0"><p className="gr-eyebrow">VISÃO, ESTILO E TECNOLOGIA</p><h3 className="gr-project-title mt-2 max-w-md text-2xl font-black uppercase italic leading-tight sm:text-4xl">Projetos com personalidade</h3><p className="mt-2 text-xs text-[#bccae0] sm:text-sm">Cada detalhe faz parte da experiência.</p></div>
+              <a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>track("projects:gallery")} className="gr-project-action grid h-11 w-11 shrink-0 place-items-center rounded-full border border-blue-300/30 bg-blue-500/40 backdrop-blur-lg" aria-label="Ver todos os projetos no Instagram"><ArrowUpRight className="h-5 w-5"/></a>
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-between"><span className="text-xs font-semibold tracking-[.18em] text-[#8cadd6]">PROJETOS GYNRACE</span>{link(instagram,"projects:instagram",<>Explorar no Instagram <ArrowUpRight className="h-4 w-4"/></>,"inline-flex items-center gap-2 text-xs font-bold text-[#77baff] hover:text-white")}</div>
+          <div className="mt-5 flex min-w-0 flex-col items-start justify-between gap-3 sm:flex-row sm:items-center"><span className="text-xs font-semibold tracking-[.18em] text-[#8cadd6]">PROJETOS GYNRACE</span>{link(instagram,"projects:instagram",<>Explorar no Instagram <ArrowUpRight className="h-4 w-4"/></>,"inline-flex items-center gap-2 text-xs font-bold text-[#77baff] hover:text-white")}</div>
         </section>
 
         <div id="avaliacoes" className="gr-shell">
