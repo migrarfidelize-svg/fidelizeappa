@@ -22,7 +22,10 @@ export function BioCommercePublicPageV3({ data, slug }: { data: BioCommerceLandi
   // (ex.: /cardapio/cafe-aurora). O renderer recebe o slug técnico para que
   // compras e links internos nunca quebrem.
   const commerceSlug = String(data.establishment?.slug || slug);
-  if (slug === "gynrace" && (data.page?.theme as any)?.preset_id === "gynrace-racing-2026") {
+  // Página exclusiva vinculada à identidade REAL do estabelecimento,
+  // independente do preset retornado pelo cache ou do editor.
+  // Não fazer fallback para o template promocional da Fidelize.
+  if (slug.toLowerCase() === "gynrace" && commerceSlug.toLowerCase() === "gynrace") {
     return <GynRaceExclusivePage data={data} />;
   }
 
