@@ -12,7 +12,7 @@ test("Racing Edition keeps content, buttons and captions inside mobile viewport"
   await expect(page.locator('[data-gynrace-edition="racing-photo-original-2026-10-29"]')).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: /SUA MOTO/ })).toBeVisible();
   const originalPhoto = page.locator(".gr-hero-image img");
-  await expect(originalPhoto).toHaveAttribute("src", /gynrace-kawasaki-original-premium\\.webp$/);
+  await expect(originalPhoto).toHaveAttribute("src", /gynrace-kawasaki-original-premium\.webp$/);
   await expect(originalPhoto).toBeVisible();
   const imageSize = await originalPhoto.evaluate((img) => ({
     width: (img as HTMLImageElement).naturalWidth,
