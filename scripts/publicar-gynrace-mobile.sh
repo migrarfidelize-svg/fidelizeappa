@@ -14,6 +14,7 @@ SITE=""
 NEW=""
 WORKTREE_CREATED=0
 PM2_STARTED=0
+DEPLOY_SUCCESS=0
 
 # SSH non-interativo nao carrega o PATH configurado no ~/.bashrc.
 # Localizar Bun ANTES de criar um novo worktree, sem instalar pacotes globais.
@@ -40,10 +41,15 @@ finish() {
     cp -p "$BACKUP" "$SITE"
     nginx -t && systemctl reload nginx
   fi
-  # Se compilacao falhar, remover apenas o NOVO worktree desta execucao.
-  # Nunca tocar no worktree da release anterior ou em processos existentes.
-  if [[ "$WORKTREE_CREATED" == 1 && "$PM2_STARTED" == 0 && -n "$NEW" ]]; then
-    echo "[LIMPEZA] Removendo somente o build temporario que falhou."
+  # Nunca eliminar a porta 3070 quando a publicacao realmente passar.
+  # Em caso de falha, liberar apenas o PM2 criado nesta execucao.
+  if [[ "$DEPLOY_SUCCESS" == 0 && "$PM2_STARTED" == 1 ]]; then
+    echo "[LIMPEZA] Encerrando somente staging PM2 criado nesta execucao."
+    pm2 delete "$NAME" || true
+    PM2_STARTED=0
+  fi
+  if [[ "$WORKTREE_CREATED" == 1 && "$PM2_STARTED" == 0 && -n "$NEW" && "$DEPLOY_SUCCESS" == 0 ]]; then
+    echo "[LIMPEZA] Removendo somente o worktree temporario criado nesta execucao."
     git -C "$BASE" worktree remove --force "$NEW" || true
   fi
 }
@@ -156,6 +162,7 @@ curl --noproxy '*' -fsSk --max-time 20 \
   'https://afidelize.app/auth' -o /dev/null
 pm2 save
 CHANGED=0
+DEPLOY_SUCCESS=1
 
 echo "=== GYNRACE FOTO ORIGINAL HD + HERO SEM SOBREPOSICAO PUBLICADOS ==="
 echo "Commit: $SHA"
