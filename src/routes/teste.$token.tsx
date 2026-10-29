@@ -43,7 +43,7 @@ function TrialInviteEntry() {
         const tracked = await registerTrialInviteVisit({ data: {
           token,
           visitor_id: visitor,
-          referrer: document.referrer.slice(0, 500),
+          referrer: (() => { try { const url = new URL(document.referrer); return url.origin.slice(0,500); } catch { return ""; } })(),
           utm_source: (params.get("utm_source") ?? "").slice(0, 80),
           utm_medium: (params.get("utm_medium") ?? "").slice(0, 80),
           utm_campaign: (params.get("utm_campaign") ?? "").slice(0, 80),
