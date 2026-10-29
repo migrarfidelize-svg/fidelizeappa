@@ -33,7 +33,18 @@ if (bytes.toString("ascii", 0, 4) !== "RIFF" || bytes.toString("ascii", 8, 12) !
 
 const sha = createHash("sha256").update(bytes).digest("hex");
 const objectPath = "gynrace/hero-kawasaki-" + sha.slice(0, 16) + ".webp";
+// Compatibilidade com chaves legadas JWT e novas chaves sb_secret_* do Supabase.
+const safeServerFetch = (input, init) => {
+  const headers = new Headers(input instanceof Request ? input.headers : undefined);
+  new Headers(init?.headers).forEach((value, name) => headers.set(name, value));
+  if (key.startsWith("sb_secret_") && headers.get("Authorization") === "Bearer " + key) {
+    headers.delete("Authorization");
+  }
+  headers.set("apikey", key);
+  return fetch(input, { ...init, headers });
+};
 const client = createClient(url, key, {
+  global: { fetch: safeServerFetch },
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
 const bucket = client.storage.from("landing-media");
