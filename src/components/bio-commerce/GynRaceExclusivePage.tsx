@@ -53,8 +53,10 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
   const waUrl = whatsapp ? `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá, equipe GYNRACE! Gostaria de um orçamento para minha moto.")}` : null;
   const remoteCover = typeof page?.cover_url === "string" && /^(https:\/\/|data:image\/(?:webp|jpeg|png);base64,)/.test(page.cover_url)
     ? page.cover_url : null;
-  // Relative URL works in staging and production, before the Nginx switch too.
-  const cover = remoteCover === "https://afidelize.app/assets/gynrace/mt09-garage.svg"
+  // O arquivo visual faz parte da própria compilação. Mesmo que o editor
+  // ainda traga o URL da antiga produção, sempre usa a imagem da release atual.
+  // O lojista poderá substituir a capa por uma foto HTTPS personalizada.
+  const cover = !remoteCover || remoteCover.includes("/assets/gynrace/mt09-garage.svg")
     ? "/assets/gynrace/mt09-garage.svg" : remoteCover;
   const avatar = safeExternal(est.logo_url) ?? safeExternal(page?.logo_url);
   const googleReviews = (theme.google_reviews ?? null) as GoogleReviewsConfig | null;
@@ -83,7 +85,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => track(label)} className={className}>{children}</a>;
 
   return (
-    <div className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
+    <div data-gynrace-edition="racing-2026-10-29" className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
       <style>{`
         .gynrace-site{--gr-blue:#1676ff;--gr-ice:#7dd5ff;background:#03060d;color:#f8fbff}
         .gynrace-site::selection{background:#0c63ed;color:#fff}
