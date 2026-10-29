@@ -18,6 +18,7 @@ export const TRIAL_FEATURES = [
   { key: "qrcode", label: "QR Codes", group: "Reputação" },
   { key: "digital_menu", label: "Cardápio digital", group: "Vitrine digital" },
   { key: "digital_catalog", label: "Catálogo digital", group: "Vitrine digital" },
+  { key: "bio_commerce", label: "Bio Commerce / Árvore de Links", group: "Vitrine digital" },
   { key: "push_notifications", label: "Notificações push", group: "Comunicação" },
   { key: "email_marketing", label: "E-mail marketing", group: "Comunicação" },
   { key: "branding", label: "Identidade visual", group: "Personalização" },
@@ -31,7 +32,7 @@ export const TRIAL_STARTER_FEATURES = [
   "dashboard", "loyalty_card", "loyalty_cards", "stamps", "rewards",
   "campaigns", "customers", "customer_crm", "qr_generator", "qrcode",
   "public_reviews", "reports", "branding", "custom_branding",
-  "digital_catalog",
+  "digital_catalog", "bio_commerce",
 ];
 
 const featureKeys = TRIAL_FEATURES.map((f) => f.key) as string[];
