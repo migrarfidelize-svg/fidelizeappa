@@ -19,12 +19,12 @@ export const Route = createFileRoute("/_authenticated/hash/testes")({
 });
 
 type TrialForm = {
-  title: string; description: string; plan_id: string; duration_days: number;
+  title: string; description: string; plan_id: string; duration_days: number; duration_unit: "days" | "months";
   feature_keys: string[]; max_signups: number; expires_at: string | null; active: boolean;
 };
 const emptyForm: TrialForm = {
   title: "Experimente a Fidelize — 14 dias", description: "Convite exclusivo para lojistas conhecerem a Fidelize.",
-  plan_id: "", duration_days: 14, feature_keys: [...TRIAL_STARTER_FEATURES],
+  plan_id: "", duration_days: 14, duration_unit: "days", feature_keys: [...TRIAL_STARTER_FEATURES],
   max_signups: 1, expires_at: null, active: true,
 };
 const dateText = (value?: string | null) => value ? new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "Sem prazo";
@@ -86,7 +86,7 @@ function TrialsAdminPage() {
     setMode("edit"); setEditingId(link.id);
     setForm({
       title: link.title, description: link.description ?? "", plan_id: link.plan_id,
-      duration_days: link.duration_days, feature_keys: [...link.feature_keys],
+      duration_days: link.duration_days, duration_unit: link.duration_unit ?? "days", feature_keys: [...link.feature_keys],
       max_signups: link.max_signups, expires_at: link.expires_at,
       active: link.active,
     });
@@ -167,9 +167,9 @@ function TrialsAdminPage() {
                 </Select>
               </div>
               <div className="space-y-2 md:col-span-2"><Label>Descrição opcional</Label><Input maxLength={400} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Campanha, parceria ou origem desse link" /></div>
-              <div className="space-y-2"><Label>Duração do teste (dias)</Label>
-                <Input type="number" min={1} max={365} value={form.duration_days} onChange={(e) => setForm({ ...form, duration_days: Number(e.target.value) })} />
-                <div className="flex flex-wrap gap-2">{[7,14,30,60,90,180].map((days) => <Button type="button" key={days} variant={days===form.duration_days?"default":"outline"} size="sm" onClick={() => setForm({ ...form, duration_days: days })}>{days === 30 ? "1 mês" : days === 60 ? "2 meses" : days === 90 ? "3 meses" : days === 180 ? "6 meses" : days + " dias"}</Button>)}</div>
+              <div className="space-y-2"><Label>Duração do teste</Label>
+                <div className="flex gap-2"><Input type="number" min={1} max={form.duration_unit==="months"?12:365} value={form.duration_days} onChange={(e) => setForm({ ...form, duration_days: Number(e.target.value) })} /><Select value={form.duration_unit} onValueChange={(v: "days"|"months") => setForm({ ...form, duration_unit: v, duration_days: v==="months" ? 1 : 14 })}><SelectTrigger className="w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="days">Dias</SelectItem><SelectItem value="months">Meses</SelectItem></SelectContent></Select></div>
+                <div className="flex flex-wrap gap-2">{[{label:"7 dias",v:7,u:"days"},{label:"14 dias",v:14,u:"days"},{label:"1 mês",v:1,u:"months"},{label:"3 meses",v:3,u:"months"},{label:"6 meses",v:6,u:"months"}].map((opt) => <Button type="button" key={opt.label} variant={form.duration_unit===opt.u&&form.duration_days===opt.v?"default":"outline"} size="sm" onClick={() => setForm({ ...form, duration_unit: opt.u as "days"|"months", duration_days: opt.v })}>{opt.label}</Button>)}</div>
               </div>
               <div className="space-y-2"><Label>Máximo de cadastros</Label>
                 <Input type="number" min={1} max={500} value={form.max_signups} onChange={(e) => setForm({ ...form, max_signups: Number(e.target.value) })} />
@@ -220,7 +220,7 @@ function TrialsAdminPage() {
               <CardContent className="space-y-4 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2"><span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary"><Link2 className="h-5 w-5" /></span>
-                    <div className="min-w-0"><h3 className="truncate font-semibold">{link.title}</h3><p className="text-xs text-muted-foreground">{plan?.name ?? "Plano"} · {link.duration_days} dias de acesso</p></div>
+                    <div className="min-w-0"><h3 className="truncate font-semibold">{link.title}</h3><p className="text-xs text-muted-foreground">{plan?.name ?? "Plano"} · {link.duration_days} {link.duration_unit === "months" ? "meses" : "dias"} de acesso</p></div>
                   </div>
                   <Badge variant={available ? "default" : "secondary"}>{!link.active ? "Pausado" : exhausted ? "Esgotado" : expired ? "Expirado" : "Disponível"}</Badge>
                 </div>
