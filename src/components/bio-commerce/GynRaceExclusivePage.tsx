@@ -85,7 +85,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => track(label)} className={className}>{children}</a>;
 
   return (
-    <div data-gynrace-edition="racing-2026-10-29" className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
+    <div data-gynrace-edition="racing-mobile-2026-10-29" className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
       <style>{`
         .gynrace-site{--gr-blue:#1676ff;--gr-ice:#7dd5ff;background:#03060d;color:#f8fbff}
         .gynrace-site::selection{background:#0c63ed;color:#fff}
