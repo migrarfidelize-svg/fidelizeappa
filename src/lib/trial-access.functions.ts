@@ -27,7 +27,7 @@ export const getMyTrialAccess = createServerFn({ method: "POST" })
     if (subscription?.provider !== "trial_invite") return { trial: false as const };
 
     const { data: claim } = await db.from("trial_invite_claims")
-      .select("started_at,ends_at,link_id")
+      .select("started_at,ends_at,link_id,granted_features")
       .eq("establishment_id", data.establishment_id)
       .maybeSingle();
     const { data: invite } = claim?.link_id
@@ -42,7 +42,7 @@ export const getMyTrialAccess = createServerFn({ method: "POST" })
       ends_at: endsAt,
       started_at: claim?.started_at ?? null,
       title: invite?.title ?? "Experiência Fidelize",
-      features: (invite?.feature_keys ?? []) as string[],
+      features: (claim?.granted_features ?? []) as string[],
     };
   });
 
