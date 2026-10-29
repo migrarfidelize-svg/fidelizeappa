@@ -9,7 +9,7 @@ const screens = [320, 360, 375, 390, 430, 768] as const;
 
 test("Racing Edition keeps content, buttons and captions inside mobile viewport", async ({ page }) => {
   await page.goto("/links/gynrace", { waitUntil: "domcontentloaded" });
-  await expect(page.locator('[data-gynrace-edition="racing-photo-safe-2026-10-29"]')).toBeVisible();
+  await expect(page.locator('[data-gynrace-edition="racing-photo-original-2026-10-29"]')).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: /SUA MOTO/ })).toBeVisible();
 
   for (const width of screens) {
