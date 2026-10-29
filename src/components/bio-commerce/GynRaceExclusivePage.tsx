@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import {
   Activity, ArrowDown, ArrowUpRight,
-  CircuitBoard, Clock3, Cog, Instagram, MapPin, Menu, MessageCircle,
+  CircuitBoard, Clock3, Cog, Instagram, MapPin, Menu, MessageCircle, X,
   Route as RouteIcon, ShieldCheck, Wrench, Zap,
 } from "lucide-react";
 import { GoogleMapsReviewsSection } from "./GoogleMapsReviewsSection";
@@ -105,6 +105,48 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
         .gr-bg-photo{filter:grayscale(1) contrast(1.3) brightness(.7);opacity:.14;mix-blend-mode:screen;mask-image:linear-gradient(to bottom,#000 5%,#000 60%,transparent 100%)}
         .gr-hero-grid{background-image:linear-gradient(rgba(39,100,186,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(39,100,186,.08) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(#000,transparent)}
         .gr-number{font-variant-numeric:tabular-nums}
+        /* Mobile-first: never let ornaments or intrinsic flex sizing clip content. */
+        .gynrace-site{width:100%;min-width:0;overflow-x:clip}
+        .gynrace-site *, .gynrace-site *::before, .gynrace-site *::after{box-sizing:border-box}
+        .gynrace-site img{max-width:100%}
+        .gr-hero-copy{min-width:0;container-type:inline-size}
+        .gr-hero-title{font-size:clamp(29px,11.2cqw,84px);line-height:1;letter-spacing:-.06em}
+        .gr-hero-title .gr-hero-emphasis{white-space:nowrap}
+        .gr-safe-copy{min-width:0;overflow-wrap:break-word;text-wrap:pretty}
+        .gr-tap{min-height:48px;touch-action:manipulation}
+        .gr-hero-note{max-width:100%;min-width:0}
+        @media(max-width:1023px){
+          .gr-hero-title{font-size:clamp(29px,10.8cqw,66px)}
+        }
+        @media(max-width:767px){
+          .gr-hero-section{min-height:0;grid-template-columns:minmax(0,1fr);gap:24px;padding-top:32px;padding-bottom:36px}
+          .gr-hero-photo-wrap{height:auto;min-width:0;flex-direction:column;align-items:stretch;gap:12px}
+          .gr-hero-image{width:100%;height:auto;max-height:none;aspect-ratio:4/3;border-radius:22px}
+          .gr-hero-note{position:relative;right:auto;bottom:auto;left:auto;align-self:stretch}
+          .gr-hero-buttons{display:grid;grid-template-columns:minmax(0,1fr);width:100%;gap:12px}
+          .gr-hero-buttons>a{width:100%;min-width:0;justify-content:center;min-height:50px;text-align:center;padding-left:16px;padding-right:16px}
+          .gr-service-card{min-height:205px;padding:20px}
+          .gr-project-overlay{flex-direction:column;align-items:stretch;gap:10px;padding:16px}
+          .gr-project-action{align-self:flex-end;min-height:48px;min-width:48px}
+          .gr-section-title{font-size:clamp(27px,7vw,44px);overflow-wrap:break-word}
+          .gr-location-action{min-height:56px;padding:12px 14px;font-size:13px}
+          .gr-bottom-actions{width:100%;align-items:stretch}
+          .gr-bottom-actions>a,.gr-bottom-actions>span{width:100%;min-width:0;padding-top:12px;padding-bottom:12px;text-align:center}
+          .gr-footer-wrap{flex-direction:column;align-items:flex-start}
+          .gr-eyebrow{letter-spacing:.14em;line-height:1.65}
+          .gr-bg-photo{opacity:.08}
+        }
+        @media(max-width:359px){
+          .gr-shell{padding-left:14px;padding-right:14px}
+          .gr-hero-title{font-size:clamp(28px,10.4cqw,40px)}
+          .gr-image-title{font-size:19px}
+          .gr-project-title{font-size:21px}
+        }
+        @supports not (font-size:1cqw){
+          .gr-hero-title{font-size:clamp(29px,6vw,68px)}
+          @media(max-width:767px){.gr-hero-title{font-size:clamp(28px,9vw,48px)}}
+        }
+
         @media(prefers-reduced-motion:reduce){.gynrace-site *, .gynrace-site *:before,.gynrace-site *:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
         @media(max-width:640px){.gr-service:hover{transform:none}.gr-bg-photo{opacity:.11}}
       `}</style>
@@ -121,23 +163,23 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
           <span className="grid h-9 w-9 place-items-center rounded-lg border border-[#1d8cff]/50 bg-[#1162d7]/15 text-[#7bd4ff]"><Zap className="h-5 w-5"/></span>
           <span className="text-[18px] italic">GYN<span className="text-[#419dff]">RACE</span><span className="align-top text-[9px]">®</span></span>
         </a>
-        <nav className="hidden items-center gap-7 text-xs font-semibold text-[#bacde5] md:flex">
+        <nav className="hidden items-center gap-6 text-xs font-semibold text-[#bacde5] lg:flex">
           <a href="#servicos" className="hover:text-white">Serviços</a>
           <a href="#projetos" className="hover:text-white">Projetos</a>
           <a href="#avaliacoes" className="hover:text-white">Avaliações</a>
           <a href="#localizacao" className="hover:text-white">Localização</a>
         </nav>
-        <button type="button" onClick={() => setMenuOpen(v=>!v)} className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/[.06] md:hidden" aria-label="Abrir menu" aria-expanded={menuOpen}><Menu className="h-5 w-5"/></button>
-        {link(instagram,"nav:instagram",<>Conhecer a GYNRACE <ArrowUpRight className="h-4 w-4"/></>,"hidden min-h-10 items-center gap-2 rounded-xl border border-[#2c83e9]/55 bg-[#1261d0]/10 px-4 text-xs font-bold text-[#d6e9ff] transition hover:bg-[#1261d0]/30 md:inline-flex")}
+        <button type="button" onClick={() => setMenuOpen(v=>!v)} className="gr-tap grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/[.06] lg:hidden" aria-controls="gynrace-mobile-nav" aria-label={menuOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={menuOpen}>{menuOpen ? <X className="h-5 w-5"/> : <Menu className="h-5 w-5"/>}</button>
+        {link(instagram,"nav:instagram",<>Conhecer a GYNRACE <ArrowUpRight className="h-4 w-4"/></>,"hidden min-h-10 items-center gap-2 rounded-xl border border-[#2c83e9]/55 bg-[#1261d0]/10 px-4 text-xs font-bold text-[#d6e9ff] transition hover:bg-[#1261d0]/30 lg:inline-flex")}
       </header>
 
-      {menuOpen && <nav className="gr-shell relative z-30 grid gap-1 border-b border-white/10 bg-[#071022] py-3 text-sm md:hidden">
+      {menuOpen && <nav id="gynrace-mobile-nav" aria-label="Navegação GYNRACE" className="gr-shell relative z-30 grid gap-1 border-b border-white/10 bg-[#071022] py-3 text-sm lg:hidden">
         {[["Serviços","#servicos"],["Projetos","#projetos"],["Avaliações","#avaliacoes"],["Localização","#localizacao"]].map(([label,href])=> <a key={href} href={href} onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 font-semibold text-[#cfe3ff] hover:bg-blue-500/10">{label}</a>)}
       </nav>}
 
       <main id="inicio" className="relative z-10">
-        <section className="gr-shell relative grid min-h-[650px] items-center gap-10 pb-14 pt-10 md:min-h-[700px] md:grid-cols-[1.1fr_.9fr] md:pt-20">
-          <div className="gr-rise relative z-10">
+        <section className="gr-shell gr-hero-section relative grid min-w-0 items-center gap-10 pb-14 pt-10 md:min-h-[650px] md:grid-cols-[minmax(0,1.1fr)_minmax(0,.9fr)] md:gap-6 md:pt-16 xl:gap-10 xl:pt-20">
+          <div className="gr-rise gr-hero-copy relative z-10">
             <div className="mb-7 flex items-center gap-4">
               <div className="relative h-[72px] w-[72px] overflow-hidden rounded-full border-2 border-[#208dff] bg-[#142642] p-1 shadow-[0_0_22px_rgba(12,122,255,.48)]">
                 {avatar ? <img src={avatar} alt="Foto de perfil da GYNRACE" className="h-full w-full rounded-full object-cover" referrerPolicy="no-referrer" /> : <Zap className="m-auto mt-4 h-7 w-7 text-blue-300"/>}
@@ -145,29 +187,29 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
               <div><p className="text-lg font-black">@gynrace_</p><span className="text-[11px] font-bold uppercase tracking-[.19em] text-[#6db6ff]">GOIÂNIA • GOIÁS</span></div>
             </div>
             <p className="gr-eyebrow mb-5"><span className="mr-3 inline-block h-[2px] w-7 align-middle bg-[#238dff]"/> CUSTOM • TECH • PERFORMANCE</p>
-            <h1 className="max-w-[720px] text-[clamp(43px,8.9vw,88px)] font-black uppercase italic leading-[.93] tracking-[-.07em]">
-              SUA MOTO.<br/><span className="text-[#3b99ff]">OUTRO NÍVEL.</span>
+            <h1 className="gr-hero-title max-w-full font-black uppercase italic">
+              SUA MOTO.<br/><span className="gr-hero-emphasis text-[#3b99ff]">OUTRO NÍVEL.</span>
             </h1>
             <p className="mt-7 max-w-[530px] text-[15px] leading-7 text-[#c0cde0] sm:text-[17px]">
               Difusores eletrônicos e manuais, escapamentos esportivos, manutenção premium e projetos especiais. Técnica e personalidade em cada detalhe.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="gr-hero-buttons mt-8 flex flex-wrap gap-3">
               {link(INSTAGRAM_MESSAGES,"hero:orcamento",<>Solicitar orçamento <ArrowUpRight className="h-4 w-4"/></>,"gr-shimmer inline-flex min-h-13 items-center justify-center gap-3 rounded-xl border border-[#499fff] bg-gradient-to-r from-[#1377ff] to-[#073cb8] px-6 py-3.5 text-sm font-bold shadow-[0_12px_36px_rgba(13,108,255,.32)] transition hover:shadow-[0_17px_45px_rgba(13,108,255,.52)]")}
               <a href="#servicos" className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/20 bg-[#0a1428]/80 px-6 py-3.5 text-sm font-bold text-white transition hover:border-blue-400/60">Explorar serviços <ArrowDown className="h-4 w-4"/></a>
             </div>
             <div className="mt-9 flex items-center gap-3 border-t border-white/10 pt-5 text-[11px] font-semibold uppercase tracking-[.13em] text-[#99b4d4]"><ShieldCheck className="h-5 w-5 text-[#5aacff]" /> Especialistas em motos esportivas e performance</div>
           </div>
 
-          <div className="gr-rise gr-rise-delay relative flex h-[350px] items-center justify-center md:h-[540px]">
+          <div className="gr-rise gr-rise-delay gr-hero-photo-wrap relative flex h-[350px] min-w-0 items-center justify-center md:h-[480px] xl:h-[540px]">
             <div className="absolute inset-[12%] rounded-full border border-[#1c79ff]/20 shadow-[0_0_100px_rgba(20,112,255,.15)]"/>
             <div className="absolute inset-[19%] rounded-full border border-dashed border-[#2f89f9]/30"/>
             <div className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/25 blur-[80px]"/>
-            {cover ? <div className="relative aspect-[4/4.8] h-[97%] max-h-[520px] w-[91%] overflow-hidden rounded-[28px] border border-blue-400/25 bg-[#09121f] shadow-[0_24px_65px_rgba(0,0,0,.5),0_0_38px_rgba(5,95,233,.22)]">
+            {cover ? <div className="gr-hero-image relative aspect-[4/4.8] h-[97%] max-h-[520px] w-[91%] min-w-0 overflow-hidden rounded-[28px] border border-blue-400/25 bg-[#09121f] shadow-[0_24px_65px_rgba(0,0,0,.5),0_0_38px_rgba(5,95,233,.22)]">
               <img src={cover} className="h-full w-full object-cover" alt="Moto esportiva da GYNRACE em ambiente de oficina" />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020610] via-transparent to-transparent"/>
               <div className="absolute bottom-6 left-5 right-5"><p className="gr-eyebrow">PROJETO EM EVIDÊNCIA</p><h2 className="mt-2 text-2xl font-black italic">PRESENÇA É TUDO.</h2></div>
             </div> : <div className="grid h-[90%] w-[88%] place-items-center rounded-[28px] border border-blue-500/25 bg-gradient-to-br from-[#112c52] via-[#071222] to-[#04070d]"><Zap className="h-28 w-28 text-blue-400/40" /></div>}
-            <div className="absolute -bottom-3 right-0 rounded-2xl border border-[#4e9fff]/30 bg-[#081b38]/95 px-5 py-4 shadow-[0_0_30px_rgba(0,100,255,.18)]"><span className="gr-eyebrow">DE GOIÂNIA PARA AS RUAS</span><p className="mt-1 text-lg font-black italic">PERFORMANCE <span className="text-[#429eff]">GYNRACE.</span></p></div>
+            <div className="gr-hero-note absolute -bottom-3 right-0 rounded-2xl border border-[#4e9fff]/30 bg-[#081b38]/95 px-5 py-4 shadow-[0_0_30px_rgba(0,100,255,.18)]"><span className="gr-eyebrow">DE GOIÂNIA PARA AS RUAS</span><p className="gr-image-title gr-safe-copy mt-1 text-lg font-black italic">PERFORMANCE <span className="text-[#429eff]">GYNRACE.</span></p></div>
           </div>
         </section>
 
