@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Activity, ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronLeft, ChevronRight,
+  Activity, ArrowDown, ArrowUpRight,
   CircuitBoard, Clock3, Cog, Instagram, MapPin, Menu, MessageCircle,
   Route as RouteIcon, ShieldCheck, Wrench, Zap,
 } from "lucide-react";
@@ -20,7 +20,7 @@ const SERVICES = [
   { id: "manutencao", number: "06", icon: ShieldCheck, title: "Manutenção de motos", detail: "Atenção aos detalhes do seu projeto, do início ao fim.", note: "CUIDADO • SEGURANÇA" },
 ] as const;
 
-const WHATSAPP_PLACEHOLDERS = new Set(["", "00000000000", "62981098928"]);
+const WHATSAPP_PLACEHOLDERS = new Set(["", "00000000000"]);
 
 /** Somente números de celular brasileiros validáveis, para não publicar CTA quebrado. */
 function verifiedWhatsApp(value: unknown): string | null {
@@ -43,8 +43,6 @@ type GoogleReviewsConfig = { place_id: string; maps_url: string; rating?: number
 
 export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [slide, setSlide] = useState(0);
-  const [showFullStory, setShowFullStory] = useState(false);
   const est = data.establishment;
   const page = data.page;
   const theme = ((page?.theme ?? {}) as Record<string, any>);
@@ -55,10 +53,8 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
   const waUrl = whatsapp ? `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá, equipe GYNRACE! Gostaria de um orçamento para minha moto.")}` : null;
   const cover = typeof page?.cover_url === "string" && /^(https:\/\/|data:image\/(?:webp|jpeg|png);base64,)/.test(page.cover_url)
     ? page.cover_url : null;
-  const avatar = safeExternal(page?.logo_url) ?? safeExternal(est.logo_url);
+  const avatar = safeExternal(est.logo_url) ?? safeExternal(page?.logo_url);
   const googleReviews = (theme.google_reviews ?? null) as GoogleReviewsConfig | null;
-  const gallery = useMemo(() => [{title: "Projetos com personalidade",subtitle: "Cada detalhe faz parte da experiência.",image:cover},
-    {title:"Escapamentos e difusores",subtitle:"Tecnologia e presença para sua moto.",image:cover}], [cover]);
 
   // Prevent white overscroll on iOS / Instagram's internal browser without changing global app theme.
   useEffect(() => {
@@ -185,12 +181,12 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
               <p className="max-w-[260px] text-sm leading-6 text-[#b1c1d7]">Sua moto merece soluções cuidadosas, do diagnóstico ao acabamento final.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.map(s=> <article key={s.id} className="gr-service gr-glass group relative flex min-h-[235px] flex-col rounded-[22px] p-6">
+              {SERVICES.map(s=> <a key={s.id} href={INSTAGRAM_MESSAGES} target="_blank" rel="noopener noreferrer" onClick={() => track("service:"+s.id)} className="gr-service gr-glass group relative flex min-h-[235px] flex-col rounded-[22px] p-6">
                 <div className="mb-8 flex items-center justify-between"><span className="grid h-12 w-12 place-items-center rounded-[13px] border border-blue-400/25 bg-blue-500/10 text-[#61b4ff]"><s.icon className="h-6 w-6"/></span><span className="gr-number text-xs font-bold tracking-widest text-[#537da8]">{s.number}</span></div>
                 <h3 className="text-lg font-black uppercase leading-tight tracking-tight">{s.title}</h3>
                 <p className="mt-2 text-[13px] leading-5 text-[#a5b6d0]">{s.detail}</p>
                 <div className="mt-auto flex items-center justify-between pt-6"><span className="text-[9px] font-black tracking-[.14em] text-[#559ad9]">{s.note}</span><ArrowUpRight className="h-4 w-4 text-[#6eb4ff] transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div>
-              </article>)}
+              </a>)}
             </div>
           </div>
         </section>
@@ -198,11 +194,11 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
         <section id="projetos" className="gr-shell py-20">
           <div className="mb-9"><p className="gr-eyebrow">02 / EM DESTAQUE</p><h2 className="mt-3 text-[clamp(31px,6vw,53px)] font-black uppercase italic leading-tight tracking-[-.045em]">MUITO ALÉM <span className="text-[#439aff]">DA OFICINA.</span></h2><p className="mt-3 max-w-[580px] text-sm leading-6 text-[#afc2da]">Mais personalidade para sua moto. Conheça nossos trabalhos e acompanhe a evolução de cada projeto no Instagram.</p></div>
           <div className="relative isolate h-[380px] overflow-hidden rounded-[26px] border border-blue-400/20 bg-gradient-to-br from-[#122c4d] via-[#081324] to-[#020509] shadow-[0_16px_60px_rgba(4,35,78,.2)] sm:h-[560px]">
-            {gallery[slide].image ? <img src={gallery[slide].image!} alt="Moto e ambiente da GYNRACE" className="absolute inset-0 h-full w-full object-cover object-center"/> : <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#0d70b955,transparent_50%)]" />}
+            {cover ? <img src={cover} alt="Moto e ambiente da GYNRACE" className="absolute inset-0 h-full w-full object-cover object-center"/> : <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,#0d70b955,transparent_50%)]" />}
             <div className="absolute inset-0 bg-gradient-to-t from-[#02060f] via-[#02060f]/20 to-transparent"/>
             <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 p-5 sm:p-9">
-              <div><p className="gr-eyebrow">VISÃO, ESTILO E TECNOLOGIA</p><h3 className="mt-2 max-w-md text-2xl font-black uppercase italic sm:text-4xl">{gallery[slide].title}</h3><p className="mt-2 text-xs text-[#bccae0] sm:text-sm">{gallery[slide].subtitle}</p></div>
-              <div className="flex shrink-0 gap-2"><button type="button" onClick={()=>setSlide(i=>(i+gallery.length-1)%gallery.length)} className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 backdrop-blur-lg" aria-label="Projeto anterior"><ChevronLeft className="h-5 w-5"/></button><button type="button" onClick={()=>setSlide(i=>(i+1)%gallery.length)} className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/55 backdrop-blur-lg" aria-label="Próximo projeto"><ChevronRight className="h-5 w-5"/></button></div>
+              <div><p className="gr-eyebrow">VISÃO, ESTILO E TECNOLOGIA</p><h3 className="mt-2 max-w-md text-2xl font-black uppercase italic sm:text-4xl">Projetos com personalidade</h3><p className="mt-2 text-xs text-[#bccae0] sm:text-sm">Cada detalhe faz parte da experiência.</p></div>
+              <a href={instagram} target="_blank" rel="noopener noreferrer" onClick={()=>track("projects:gallery")} className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-blue-300/30 bg-blue-500/40 backdrop-blur-lg" aria-label="Ver todos os projetos no Instagram"><ArrowUpRight className="h-5 w-5"/></a>
             </div>
           </div>
           <div className="mt-5 flex items-center justify-between"><span className="text-xs font-semibold tracking-[.18em] text-[#8cadd6]">PROJETOS GYNRACE</span>{link(instagram,"projects:instagram",<>Explorar no Instagram <ArrowUpRight className="h-4 w-4"/></>,"inline-flex items-center gap-2 text-xs font-bold text-[#77baff] hover:text-white")}</div>
