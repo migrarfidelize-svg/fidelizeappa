@@ -85,7 +85,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => track(label)} className={className}>{children}</a>;
 
   return (
-    <div data-gynrace-edition="racing-mobile-2026-10-29" className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
+    <div data-gynrace-edition="racing-photo-safe-2026-10-29" className="gynrace-site relative min-h-dvh w-full min-w-0 overflow-x-clip bg-[#03060d] text-white [font-family:Inter,system-ui,sans-serif]">
       <style>{`
         .gynrace-site{--gr-blue:#1676ff;--gr-ice:#7dd5ff;background:#03060d;color:#f8fbff}
         .gynrace-site::selection{background:#0c63ed;color:#fff}
@@ -114,7 +114,16 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
         .gr-hero-title .gr-hero-emphasis{white-space:nowrap}
         .gr-safe-copy{min-width:0;overflow-wrap:break-word;text-wrap:pretty}
         .gr-tap{min-height:48px;touch-action:manipulation}
-        .gr-hero-note{max-width:100%;min-width:0}
+        .gr-hero-note{max-width:100%;min-width:0;position:relative;right:auto;bottom:auto;left:auto;align-self:stretch;isolation:isolate}
+        .gr-hero-photo-wrap{height:auto;min-height:0;min-width:0;flex-direction:column;align-items:center;gap:14px;justify-content:center}
+        .gr-hero-image{width:min(100%,540px);height:auto;max-height:none;aspect-ratio:4/4.8;flex:none}
+        .gr-hero-image-label{position:relative;z-index:3;margin-top:12px;margin-bottom:4px;line-height:1.25}
+        .gr-hero-photo-wrap .gr-hero-note{width:min(100%,540px);margin:0 auto}
+        .gr-hero-image img{object-position:center 48%}
+        .gr-hero-photo-wrap .gr-decor{pointer-events:none;z-index:0}
+        .gr-hero-image{z-index:1}
+        .gr-hero-note{z-index:2}
+        @media(max-width:767px){.gr-hero-photo-wrap{align-items:stretch}.gr-hero-photo-wrap .gr-hero-note{width:100%;margin:0}}
         @media(max-width:1023px){
           .gr-hero-title{font-size:clamp(29px,10.8cqw,66px)}
         }
@@ -200,16 +209,16 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
             <div className="mt-7 flex min-w-0 items-start gap-3 border-t border-white/10 pt-5 text-[10px] font-semibold uppercase leading-5 tracking-[.10em] text-[#99b4d4] sm:mt-9 sm:items-center sm:text-[11px]"><ShieldCheck className="h-5 w-5 shrink-0 text-[#5aacff]" /> <span className="gr-safe-copy">Especialistas em motos esportivas e performance</span></div>
           </div>
 
-          <div className="gr-rise gr-rise-delay gr-hero-photo-wrap relative flex h-[350px] min-w-0 items-center justify-center md:h-[480px] xl:h-[540px]">
-            <div className="absolute inset-[12%] rounded-full border border-[#1c79ff]/20 shadow-[0_0_100px_rgba(20,112,255,.15)]"/>
-            <div className="absolute inset-[19%] rounded-full border border-dashed border-[#2f89f9]/30"/>
-            <div className="absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/25 blur-[80px]"/>
-            {cover ? <div className="gr-hero-image relative aspect-[4/4.8] h-[97%] max-h-[520px] w-[91%] min-w-0 overflow-hidden rounded-[28px] border border-blue-400/25 bg-[#09121f] shadow-[0_24px_65px_rgba(0,0,0,.5),0_0_38px_rgba(5,95,233,.22)]">
-              <img src={cover} className="h-full w-full object-cover" alt="Moto esportiva da GYNRACE em ambiente de oficina" />
+          <div className="gr-rise gr-rise-delay gr-hero-photo-wrap relative flex min-w-0 items-center justify-center">
+            <div className="gr-decor absolute inset-[12%] rounded-full border border-[#1c79ff]/20 shadow-[0_0_100px_rgba(20,112,255,.15)]"/>
+            <div className="gr-decor absolute inset-[19%] rounded-full border border-dashed border-[#2f89f9]/30"/>
+            <div className="gr-decor absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/25 blur-[80px]"/>
+            {cover ? <div className="gr-hero-image relative aspect-[4/4.8] w-full min-w-0 overflow-hidden rounded-[28px] border border-blue-400/25 bg-[#09121f] shadow-[0_24px_65px_rgba(0,0,0,.5),0_0_38px_rgba(5,95,233,.22)]">
+              <img src={cover} className="h-full w-full object-cover" alt="Kawasaki GYNRACE diante do mural de grafite da oficina" loading="eager" fetchPriority="high" decoding="async" />
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#020610] via-transparent to-transparent"/>
-              <div className="absolute bottom-6 left-5 right-5"><p className="gr-eyebrow">PROJETO EM EVIDÊNCIA</p><h2 className="mt-2 text-2xl font-black italic">PRESENÇA É TUDO.</h2></div>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#020610]/95 via-[#020610]/60 to-transparent px-4 pb-4 pt-12 sm:px-5 sm:pb-5"><p className="gr-eyebrow">PROJETO EM EVIDÊNCIA</p><h2 className="gr-hero-image-label text-[clamp(18px,3vw,24px)] font-black italic">PRESENÇA É TUDO.</h2></div>
             </div> : <div className="grid h-[90%] w-[88%] place-items-center rounded-[28px] border border-blue-500/25 bg-gradient-to-br from-[#112c52] via-[#071222] to-[#04070d]"><Zap className="h-28 w-28 text-blue-400/40" /></div>}
-            <div className="gr-hero-note absolute -bottom-3 right-0 rounded-2xl border border-[#4e9fff]/30 bg-[#081b38]/95 px-5 py-4 shadow-[0_0_30px_rgba(0,100,255,.18)]"><span className="gr-eyebrow">DE GOIÂNIA PARA AS RUAS</span><p className="gr-image-title gr-safe-copy mt-1 text-lg font-black italic">PERFORMANCE <span className="text-[#429eff]">GYNRACE.</span></p></div>
+            <div className="gr-hero-note relative rounded-2xl border border-[#4e9fff]/30 bg-[#081b38]/95 px-5 py-4 shadow-[0_0_30px_rgba(0,100,255,.18)]"><span className="gr-eyebrow">DE GOIÂNIA PARA AS RUAS</span><p className="gr-image-title gr-safe-copy mt-1 text-lg font-black italic">PERFORMANCE <span className="text-[#429eff]">GYNRACE.</span></p></div>
           </div>
         </section>
 
