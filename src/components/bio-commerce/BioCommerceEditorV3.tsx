@@ -336,6 +336,16 @@ export function BioCommerceEditorV3() {
       <div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex items-center gap-2"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></span><div><h1 className="font-display text-xl font-black sm:text-2xl">Bio Commerce</h1><p className="text-xs text-muted-foreground">Sua micro landing comercial premium.</p></div></div></div><div className="flex flex-wrap gap-2"><ConfigureQrButton dest="linktree" label="QR Code" />{published && <Button variant="outline" size="sm" asChild><a href={publicUrl} target="_blank" rel="noreferrer"><Eye className="mr-1.5 h-4 w-4" />Ver público</a></Button>}<Button size="sm" onClick={() => save()} disabled={saving}><Save className="mr-1.5 h-4 w-4" />{saving ? "Salvando…" : "Salvar"}</Button></div></div>
     </header>
 
+    {est.slug === "gynrace" && (treeQuery.data?.page?.theme as any)?.preset_id === "gynrace-racing-2026" && (
+      <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#1687ff]/35 bg-gradient-to-r from-[#081b38] to-[#060c18] px-5 py-4 text-white shadow-[0_10px_40px_rgba(14,98,240,.10)]">
+        <div><p className="text-[10px] font-extrabold uppercase tracking-[.25em] text-[#71baff]">Experiência exclusiva ativa</p>
+          <h2 className="mt-1 text-lg font-black">GYNRACE® • Racing Edition</h2>
+          <p className="mt-1 max-w-xl text-xs leading-relaxed text-[#b6c8e6]">Esta identidade especial está salva no seu perfil. Atualize a foto, capa, links e WhatsApp nas configurações. A prévia pública apresenta o tema completo com animações.</p>
+        </div>
+        <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-[#64a9ff]/50 bg-[#1167e6] px-4 text-xs font-bold hover:bg-[#217aff]">Visualizar meu site <Eye className="h-4 w-4" /></a>
+      </section>
+    )}
+
     <StageNav stage={stage} onChange={setStage} />
 
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_460px]">
