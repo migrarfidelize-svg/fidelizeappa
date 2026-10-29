@@ -15,7 +15,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import {
   Shield, LayoutDashboard, Building2, CreditCard, ArrowLeft, Bell, FileClock, Wallet2,
-  UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, Mic,
+  UsersRound, Settings, Mail, FileText, ListChecks, LifeBuoy, Package, Gift, Mic,
   DollarSign, Wallet, Megaphone, Cog, BookOpen, Menu, Star, Plug, Sparkles, Rocket, FileJson, KeyRound, ChevronRight, ChevronLeft, Activity, MessageSquare, Globe, ServerCog, Link2
 } from "lucide-react";
 import { toast } from "sonner";
@@ -54,6 +54,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/hash/financeiro", label: "Financeiro", icon: DollarSign },
       { to: "/hash/assinaturas", label: "Assinaturas", icon: CreditCard },
       { to: "/hash/planos", label: "Planos", icon: Package },
+      { to: "/hash/testes", label: "Testes", icon: Gift },
       { to: "/hash/anuncios", label: "Anúncios patrocinados", icon: Megaphone },
       
     ],
