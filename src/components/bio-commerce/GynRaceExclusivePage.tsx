@@ -53,11 +53,11 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
   const waUrl = whatsapp ? `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá, equipe GYNRACE! Gostaria de um orçamento para minha moto.")}` : null;
   const remoteCover = typeof page?.cover_url === "string" && /^(https:\/\/|data:image\/(?:webp|jpeg|png);base64,)/.test(page.cover_url)
     ? page.cover_url : null;
-  // O arquivo visual faz parte da própria compilação. Mesmo que o editor
-  // ainda traga o URL da antiga produção, sempre usa a imagem da release atual.
-  // O lojista poderá substituir a capa por uma foto HTTPS personalizada.
+  // Foto ORIGINAL enviada pela GYNRACE: 1080x1920, versionada no GitHub.
+  // Substitui apenas a arte minúscula do release antigo, causadora do borrão.
+  // Se o lojista definir uma capa HTTPS própria depois, ela continua prevalecendo.
   const cover = !remoteCover || remoteCover.includes("/assets/gynrace/mt09-garage.svg")
-    ? "/assets/gynrace/mt09-garage.svg" : remoteCover;
+    ? "/assets/gynrace/gynrace-kawasaki-original-premium.webp" : remoteCover;
   const avatar = safeExternal(est.logo_url) ?? safeExternal(page?.logo_url);
   const googleReviews = (theme.google_reviews ?? null) as GoogleReviewsConfig | null;
 
