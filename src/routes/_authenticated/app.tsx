@@ -311,6 +311,7 @@ function AppLayout() {
     staleTime: 30000,
   });
   const trialAllows = (path: string) => !trialAccess?.trial ||
+    ["/app", "/app/planos", "/app/fidelize", "/app/kb"].includes(path) ||
     (trialAccess.active && trialCanOpenRoute(path, trialAccess.features));
   const trialRestricted = trialAccess?.trial === true &&
     !["/app/planos", "/app/fidelize", "/app/kb"].some((path) => pathname === path || pathname.startsWith(path + "/")) &&
@@ -570,7 +571,7 @@ function AppLayout() {
 
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" onClick={() => window.dispatchEvent(new CustomEvent("fidelize:start-tour"))} className="hidden lg:inline-flex text-primary hover:text-primary hover:bg-primary/10 gap-2 h-9 border border-primary/25"><Compass className="h-4 w-4" /><span className="text-xs font-medium">Fazer tour</span></Button>
-              <QuickSearch establishmentId={activeEstId ?? null} navTargets={FLAT_NAV.map((n) => ({ to: n.to, label: n.label }))} />
+              <QuickSearch establishmentId={activeEstId ?? null} navTargets={FLAT_ALLOWED.map((n) => ({ to: n.to, label: n.label }))} />
               <PageGuideButton scope={activeEst?.id ?? "user"} />
               <div className="hidden md:block"><ThemeToggle /></div>
             </div>
