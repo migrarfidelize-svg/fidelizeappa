@@ -32,7 +32,7 @@ function Stars({ rating, size = "sm" }: { rating: number; size?: "sm" | "lg" }) 
 }
 
 /** Visible only for pages with a business-associated Google Places ID. */
-export function GoogleMapsReviewsSection({ slug, config }: { slug: string; config: GoogleReviewConfig }) {
+export function GoogleMapsReviewsSection({ slug, config, compact = false }: { slug: string; config: GoogleReviewConfig; compact?: boolean }) {
   const mapsUrl = safeMapsUrl(config.maps_url || "");
   const getReviews = getGooglePlaceReviews;
 
@@ -49,7 +49,7 @@ export function GoogleMapsReviewsSection({ slug, config }: { slug: string; confi
   const reviews = data?.available ? (data.reviews ?? []).filter((r) => !!r.text.trim()) : [];
 
   return (
-    <section className="relative isolate mx-auto w-full min-w-0 max-w-[1280px] overflow-hidden px-0 pb-10 pt-10 text-white sm:px-6 sm:pt-12 md:pb-16"
+    <section className={`relative isolate mx-auto w-full min-w-0 max-w-[1280px] overflow-hidden pb-10 pt-10 text-white sm:pt-12 md:pb-16 ${compact ? "px-0 sm:px-0" : "px-4 sm:px-6"}`}
       aria-labelledby="google-race-reviews-title">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-64 rounded-full bg-blue-500/10 blur-[100px]" aria-hidden="true" />
       <div className="relative min-w-0 rounded-[22px] border border-blue-500/25 bg-[#080d17]/90 p-4 shadow-[0_0_44px_rgba(16,96,255,0.11)] sm:rounded-[26px] sm:p-8">
