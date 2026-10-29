@@ -11,12 +11,40 @@ MARKER=racing-photo-original-2026-10-29
 CHANGED=0
 BACKUP=""
 SITE=""
+NEW=""
+WORKTREE_CREATED=0
+PM2_STARTED=0
+
+# SSH non-interativo nao carrega o PATH configurado no ~/.bashrc.
+# Localizar Bun ANTES de criar um novo worktree, sem instalar pacotes globais.
+BUN_BIN="$(command -v bun || true)"
+if [[ -z "$BUN_BIN" ]]; then
+  for candidate in "$HOME/.bun/bin/bun" /root/.bun/bin/bun /usr/local/bin/bun /usr/bin/bun /opt/bun/bin/bun; do
+    if [[ -x "$candidate" ]]; then BUN_BIN="$candidate"; break; fi
+  done
+fi
+if [[ -z "$BUN_BIN" ]]; then
+  BUN_BIN="$(find /root/.bun /opt/bun /usr/local/bin -maxdepth 4 -type f -name bun -perm /111 -print -quit 2>/dev/null || true)"
+fi
+if [[ -z "$BUN_BIN" || ! -x "$BUN_BIN" ]]; then
+  echo "ERRO: Bun nao localizado na VPS. Nginx e producao nao foram alterados."
+  echo "Diagnostico seguro: ssh root@190.102.43.86 'ls -l /root/.bun/bin/bun; command -v bun'"
+  exit 10
+fi
+export PATH="$(dirname "$BUN_BIN"):$PATH"
+echo "[OK] Bun encontrado em: $BUN_BIN"
 
 finish() {
   if [[ "$CHANGED" == 1 && -n "$BACKUP" && -f "$BACKUP" ]]; then
     echo "[ROLLBACK] Restaurando Nginx para 3060."
     cp -p "$BACKUP" "$SITE"
     nginx -t && systemctl reload nginx
+  fi
+  # Se compilacao falhar, remover apenas o NOVO worktree desta execucao.
+  # Nunca tocar no worktree da release anterior ou em processos existentes.
+  if [[ "$WORKTREE_CREATED" == 1 && "$PM2_STARTED" == 0 && -n "$NEW" ]]; then
+    echo "[LIMPEZA] Removendo somente o build temporario que falhou."
+    git -C "$BASE" worktree remove --force "$NEW" || true
   fi
 }
 trap finish EXIT
@@ -40,11 +68,13 @@ git -C "$BASE" fetch origin "$BRANCH"
 SHA=$(git -C "$BASE" rev-parse "origin/$BRANCH")
 NEW="/var/www/fidelize-gynrace-mobile-$(date +%Y%m%d-%H%M%S)"
 git -C "$BASE" worktree add --detach "$NEW" "$SHA"
+WORKTREE_CREATED=1
 cp -p "$BASE/.env" "$NEW/.env"
 (
   cd "$NEW"
-  bun install --frozen-lockfile
-  bun run build:vps
+  "$BUN_BIN" --version
+  "$BUN_BIN" install --frozen-lockfile
+  "$BUN_BIN" run build:vps
   test -f .output/server/index.mjs
   test -f .output/public/assets/gynrace/gynrace-kawasaki-original-premium.webp
   echo 'b92f90af70220af534409ccc1802dde3f06b2486129ae4144ff0ee44a56f98da  .output/public/assets/gynrace/gynrace-kawasaki-original-premium.webp' | sha256sum -c -
@@ -52,6 +82,7 @@ cp -p "$BASE/.env" "$NEW/.env"
     .output/server/index.mjs --name "$NAME" --interpreter node \
     --node-args='--env-file=.env'
 )
+PM2_STARTED=1
 
 echo "== 3/5: Validacao do novo build sem tocar no site =="
 READY=0
