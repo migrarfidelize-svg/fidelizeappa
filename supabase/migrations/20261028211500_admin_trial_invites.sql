@@ -6,6 +6,11 @@ create table if not exists public.trial_invite_links (
   description text,
   plan_id uuid not null references public.plans(id),
   duration_days integer not null default 14 check (duration_days between 1 and 365),
+  duration_unit text not null default 'days' check (duration_unit in ('days','months')),
+  constraint trial_invite_valid_duration check (
+    (duration_unit='days' and duration_days between 1 and 365)
+    or (duration_unit='months' and duration_days between 1 and 12)
+  ),
   feature_keys text[] not null default '{}'::text[],
   max_signups integer not null default 1 check (max_signups between 1 and 500),
   signup_count integer not null default 0 check (signup_count >= 0),
@@ -120,11 +125,11 @@ begin
   select * into i from public.trial_invite_links where id=c.link_id;
   select * into p from public.plans where id=i.plan_id;
   if p.id is null then raise exception 'Plano de teste nao encontrado'; end if;
-  v_ends := now() + make_interval(days => i.duration_days);
+  v_ends := case when i.duration_unit='months' then now() + make_interval(months => i.duration_days) else now() + make_interval(days => i.duration_days) end;
 
   select * into v_existing from public.subscriptions where establishment_id=_est for update;
   if found and v_existing.provider is distinct from 'trial_invite'
-     and v_existing.status='active' and v_existing.current_period_end>now() then
+     and v_existing.status='active' and (v_existing.current_period_end is null or v_existing.current_period_end>now()) then
     return jsonb_build_object('activated',false,'reason','paid_subscription');
   end if;
   if v_existing.id is null then
