@@ -56,7 +56,7 @@ const { error: uploadError } = await bucket.upload(objectPath, bytes, {
   cacheControl: "31536000",
   upsert: false,
 });
-if (uploadError && uploadError.statusCode !== "409" && uploadError.status !== 409) {
+if (uploadError && String(uploadError.statusCode ?? uploadError.status) !== "409") {
   throw new Error("Falha no envio: " + uploadError.message);
 }
 
