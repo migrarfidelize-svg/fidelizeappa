@@ -174,7 +174,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
       </header>
 
       {menuOpen && <nav id="gynrace-mobile-nav" aria-label="Navegação GYNRACE" className="gr-shell relative z-30 grid gap-1 border-b border-white/10 bg-[#071022] py-3 text-sm lg:hidden">
-        {[["Serviços","#servicos"],["Projetos","#projetos"],["Avaliações","#avaliacoes"],["Localização","#localizacao"]].map(([label,href])=> <a key={href} href={href} onClick={()=>setMenuOpen(false)} className="rounded-xl px-4 py-3 font-semibold text-[#cfe3ff] hover:bg-blue-500/10">{label}</a>)}
+        {[["Serviços","#servicos"],["Projetos","#projetos"],["Avaliações","#avaliacoes"],["Localização","#localizacao"]].map(([label,href])=> <a key={href} href={href} onClick={()=>setMenuOpen(false)} className="gr-tap flex items-center rounded-xl px-4 py-3 font-semibold text-[#cfe3ff] hover:bg-blue-500/10">{label}</a>)}
       </nav>}
 
       <main id="inicio" className="relative z-10">
@@ -194,8 +194,8 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
               Difusores eletrônicos e manuais, escapamentos esportivos, manutenção premium e projetos especiais. Técnica e personalidade em cada detalhe.
             </p>
             <div className="gr-hero-buttons mt-8 flex flex-wrap gap-3">
-              {link(INSTAGRAM_MESSAGES,"hero:orcamento",<>Solicitar orçamento <ArrowUpRight className="h-4 w-4"/></>,"gr-shimmer inline-flex min-h-13 items-center justify-center gap-3 rounded-xl border border-[#499fff] bg-gradient-to-r from-[#1377ff] to-[#073cb8] px-6 py-3.5 text-sm font-bold shadow-[0_12px_36px_rgba(13,108,255,.32)] transition hover:shadow-[0_17px_45px_rgba(13,108,255,.52)]")}
-              <a href="#servicos" className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/20 bg-[#0a1428]/80 px-6 py-3.5 text-sm font-bold text-white transition hover:border-blue-400/60">Explorar serviços <ArrowDown className="h-4 w-4"/></a>
+              {link(INSTAGRAM_MESSAGES,"hero:orcamento",<>Solicitar orçamento <ArrowUpRight className="h-4 w-4"/></>,"gr-shimmer gr-tap inline-flex min-h-[52px] min-w-0 items-center justify-center gap-3 rounded-xl border border-[#499fff] bg-gradient-to-r from-[#1377ff] to-[#073cb8] px-6 py-3.5 text-sm font-bold shadow-[0_12px_36px_rgba(13,108,255,.32)] transition hover:shadow-[0_17px_45px_rgba(13,108,255,.52)]")}
+              <a href="#servicos" className="gr-tap inline-flex min-h-[52px] min-w-0 items-center justify-center gap-2 rounded-xl border border-white/20 bg-[#0a1428]/80 px-6 py-3.5 text-sm font-bold text-white transition hover:border-blue-400/60">Explorar serviços <ArrowDown className="h-4 w-4"/></a>
             </div>
             <div className="mt-7 flex min-w-0 items-start gap-3 border-t border-white/10 pt-5 text-[10px] font-semibold uppercase leading-5 tracking-[.10em] text-[#99b4d4] sm:mt-9 sm:items-center sm:text-[11px]"><ShieldCheck className="h-5 w-5 shrink-0 text-[#5aacff]" /> <span className="gr-safe-copy">Especialistas em motos esportivas e performance</span></div>
           </div>
@@ -259,14 +259,14 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
           )}
         </div>
 
-        <section id="localizacao" className="gr-shell pb-20 pt-12">
-          <div className="gr-glass relative overflow-hidden rounded-[28px] p-6 sm:p-10">
+        <section id="localizacao" className="gr-shell pb-12 pt-10 sm:pb-20 sm:pt-12">
+          <div className="gr-glass relative min-w-0 overflow-hidden rounded-[24px] p-5 sm:rounded-[28px] sm:p-10">
             <div className="pointer-events-none absolute right-0 top-0 h-72 w-72 rounded-full bg-[#0b65ff]/14 blur-[90px]" />
-            <div className="relative grid gap-6 md:grid-cols-[1fr_.6fr] md:items-center">
-              <div><p className="gr-eyebrow">03 / NOSSA LOCALIZAÇÃO</p><h2 className="mt-3 text-3xl font-black uppercase italic tracking-[-.03em] sm:text-5xl">A SUA PRÓXIMA <span className="text-[#499fff]">PARADA.</span></h2><p className="mt-4 text-sm leading-7 text-[#aec0db]">Jardim América • Goiânia, Goiás. Visite a GYNRACE e conheça nossas soluções para motos esportivas.</p></div>
+            <div className="relative grid min-w-0 gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,.6fr)] md:items-center">
+              <div className="gr-safe-copy"><p className="gr-eyebrow">03 / NOSSA LOCALIZAÇÃO</p><h2 className="gr-section-title gr-safe-copy mt-3 text-[clamp(27px,6.8vw,48px)] font-black uppercase italic leading-tight tracking-[-.03em] sm:text-5xl">A SUA PRÓXIMA <span className="text-[#499fff]">PARADA.</span></h2><p className="mt-4 text-sm leading-7 text-[#aec0db]">Jardim América • Goiânia, Goiás. Visite a GYNRACE e conheça nossas soluções para motos esportivas.</p></div>
               <div className="flex flex-col gap-3">
-                {link(maps,"location:maps",<> <MapPin className="h-5 w-5"/> Traçar rota até a GYNRACE <ArrowUpRight className="ml-auto h-4 w-4"/></>,"gr-shimmer flex min-h-14 items-center gap-3 rounded-xl border border-blue-400/50 bg-[#0860d5] px-5 text-sm font-black transition hover:bg-[#1378ef]")}
-                {link(instagram,"location:instagram",<> <Instagram className="h-5 w-5"/> Acompanhar projetos <ArrowUpRight className="ml-auto h-4 w-4"/></>,"flex min-h-14 items-center gap-3 rounded-xl border border-white/15 bg-white/[.055] px-5 text-sm font-black transition hover:border-blue-400/40")}
+                {link(maps,"location:maps",<><MapPin className="h-5 w-5 shrink-0"/><span className="gr-safe-copy min-w-0 flex-1">Traçar rota até a GYNRACE</span><ArrowUpRight className="h-4 w-4 shrink-0"/></>,"gr-shimmer gr-tap gr-location-action flex min-h-[56px] min-w-0 items-center gap-3 rounded-xl border border-blue-400/50 bg-[#0860d5] px-5 py-3 text-sm font-black transition hover:bg-[#1378ef]")}
+                {link(instagram,"location:instagram",<><Instagram className="h-5 w-5 shrink-0"/><span className="gr-safe-copy min-w-0 flex-1">Acompanhar projetos</span><ArrowUpRight className="h-4 w-4 shrink-0"/></>,"gr-tap gr-location-action flex min-h-[56px] min-w-0 items-center gap-3 rounded-xl border border-white/15 bg-white/[.055] px-5 py-3 text-sm font-black transition hover:border-blue-400/40")}
               </div>
             </div>
           </div>
@@ -274,10 +274,10 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
 
         <section className="relative isolate overflow-hidden border-t border-blue-400/15 bg-[linear-gradient(90deg,#061c3c,#071329_52%,#03060d)]">
           {cover && <img src={cover} alt="" aria-hidden="true" className="gr-bg-photo pointer-events-none absolute right-0 top-0 h-full w-[55%] object-cover opacity-[.13]"/>}
-          <div className="gr-shell relative grid min-h-[300px] items-center gap-6 py-16 md:grid-cols-[1fr_auto]">
-            <div><p className="gr-eyebrow">PRONTO PARA O PRÓXIMO NÍVEL?</p><h2 className="mt-4 max-w-2xl text-[clamp(32px,7vw,63px)] font-black uppercase italic leading-[1.02] tracking-[-.05em]">A PRÓXIMA HISTÓRIA <br/> COMEÇA <span className="text-[#429bff]">NA SUA MOTO.</span></h2><p className="mt-4 max-w-md text-sm leading-6 text-[#c5d1e4]">Fale com quem entende do assunto e conte o que você tem em mente.</p></div>
-            <div className="flex flex-col items-start gap-3 md:items-stretch">
-              {link(INSTAGRAM_MESSAGES,"bottom:orcamento",<>Conversar com a GYNRACE <ArrowUpRight className="h-5 w-5"/></>,"gr-shimmer flex min-h-14 items-center justify-center gap-3 rounded-xl border border-[#62adff] bg-gradient-to-r from-[#1377ff] to-[#073aaa] px-7 text-sm font-black shadow-[0_14px_30px_rgba(10,88,255,.25)]")}
+          <div className="gr-shell relative grid min-h-[300px] min-w-0 items-center gap-6 py-12 sm:py-16 md:grid-cols-[minmax(0,1fr)_auto]">
+            <div className="gr-safe-copy"><p className="gr-eyebrow">PRONTO PARA O PRÓXIMO NÍVEL?</p><h2 className="gr-section-title gr-safe-copy mt-4 max-w-2xl text-[clamp(29px,6.5vw,63px)] font-black uppercase italic leading-[1.08] tracking-[-.05em]">A PRÓXIMA HISTÓRIA <br/> COMEÇA <span className="text-[#429bff]">NA SUA MOTO.</span></h2><p className="mt-4 max-w-md text-sm leading-6 text-[#c5d1e4]">Fale com quem entende do assunto e conte o que você tem em mente.</p></div>
+            <div className="gr-bottom-actions flex w-full min-w-0 flex-col items-stretch gap-3 md:w-auto">
+              {link(INSTAGRAM_MESSAGES,"bottom:orcamento",<>Conversar com a GYNRACE <ArrowUpRight className="h-5 w-5"/></>,"gr-shimmer gr-tap flex min-h-[56px] min-w-0 items-center justify-center gap-2 rounded-xl border border-[#62adff] bg-gradient-to-r from-[#1377ff] to-[#073aaa] px-5 py-3 text-center text-[13px] font-black shadow-[0_14px_30px_rgba(10,88,255,.25)] sm:px-7 sm:text-sm")}
               {waUrl ? link(waUrl,"bottom:whatsapp",<>WhatsApp <MessageCircle className="h-4 w-4"/></>,"flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#3372b6]/50 bg-[#091d35] px-5 text-sm font-bold") :
                 <span className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-black/20 px-4 text-center text-[11px] text-[#9bb5d5]"><Clock3 className="h-4 w-4"/> WhatsApp disponível em breve</span>}
             </div>
@@ -285,9 +285,9 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
         </section>
       </main>
 
-      <footer className="gr-shell relative z-10 flex flex-wrap items-center justify-between gap-4 py-7 text-xs text-[#8fa8cb]">
-        <span className="font-black tracking-widest text-white">GYNRACE® <span className="font-normal text-[#93afcb]">| Performance para motos esportivas</span></span>
-        <div className="flex items-center gap-5">{link(instagram,"footer:instagram",<>Instagram <ArrowUpRight className="inline h-3.5 w-3.5"/></>,"hover:text-white")}{link(maps,"footer:maps",<>Goiânia • GO <ArrowUpRight className="inline h-3.5 w-3.5"/></>,"hover:text-white")}</div>
+      <footer className="gr-shell gr-footer-wrap relative z-10 flex min-w-0 flex-wrap items-center justify-between gap-4 py-7 text-xs text-[#8fa8cb]">
+        <span className="gr-safe-copy font-black tracking-[.10em] text-white sm:tracking-widest">GYNRACE® <span className="font-normal text-[#93afcb]">| Performance para motos esportivas</span></span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">{link(instagram,"footer:instagram",<>Instagram <ArrowUpRight className="inline h-3.5 w-3.5"/></>,"hover:text-white")}{link(maps,"footer:maps",<>Goiânia • GO <ArrowUpRight className="inline h-3.5 w-3.5"/></>,"hover:text-white")}</div>
       </footer>
     </div>
   );
