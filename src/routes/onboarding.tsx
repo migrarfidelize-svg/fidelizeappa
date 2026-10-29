@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { STAMP_ICON_OPTIONS, getStampIcon, stampIconLabel } from "@/lib/stampIcons";
 import { DISCOVER_CATEGORIES } from "@/lib/discover-categories";
 import { getAuthenticatedAccountAccess } from "@/lib/account-access.functions";
+import { claimTrialInviteForUser } from "@/lib/trial-invites.functions";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -223,7 +224,18 @@ function Onboarding() {
     const rewardTitle = f.reward_title.trim().length >= 2 ? f.reward_title.trim() : "Brinde exclusivo";
     setLoading(true);
     try {
-      await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+      try {
+        const pending = JSON.parse(localStorage.getItem("fidelize:pending-trial") ?? "null");
+        if (pending?.token && pending?.visitor_id) {
+          await claimTrialInviteForUser({ data: { token: pending.token, visitor_id: pending.visitor_id } });
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Não foi possível reservar o convite de testes.");
+      }
+      const created = await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+      if (created.trial_activated) {
+        try { localStorage.removeItem("fidelize:pending-trial"); } catch {}
+      }
 
       try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       
@@ -234,8 +246,10 @@ function Onboarding() {
       // Forçamos a invalidação do estado do roteador antes de navegar
       await router.invalidate();
       
-      toast.success("Empresa criada! Agora escolha seu plano para ativar.");
-      navigate({ to: "/app/planos" });
+      toast.success(created.trial_activated
+        ? "Seu teste Fidelize está ativo! Explore as ferramentas liberadas."
+        : "Empresa criada! Agora escolha seu plano para ativar.");
+      navigate({ to: created.trial_activated ? "/app" : "/app/planos" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao criar empresa.");
     } finally {
