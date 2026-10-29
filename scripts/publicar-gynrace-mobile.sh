@@ -7,7 +7,7 @@ BASE=/var/www/fidelize-gynrace-release-20261029
 BRANCH=feature/gynrace-google-reviews-20261029
 PORT=3070
 NAME=fidelize-gynrace-mobile-3070
-MARKER=racing-mobile-2026-10-29
+MARKER=racing-photo-original-2026-10-29
 CHANGED=0
 BACKUP=""
 SITE=""
@@ -46,7 +46,8 @@ cp -p "$BASE/.env" "$NEW/.env"
   bun install --frozen-lockfile
   bun run build:vps
   test -f .output/server/index.mjs
-  test -f .output/public/assets/gynrace/mt09-garage.svg
+  test -f .output/public/assets/gynrace/gynrace-kawasaki-original-premium.webp
+  echo 'b92f90af70220af534409ccc1802dde3f06b2486129ae4144ff0ee44a56f98da  .output/public/assets/gynrace/gynrace-kawasaki-original-premium.webp' | sha256sum -c -
   PORT=3070 HOST=127.0.0.1 NODE_ENV=production pm2 start \
     .output/server/index.mjs --name "$NAME" --interpreter node \
     --node-args='--env-file=.env'
@@ -70,7 +71,7 @@ if [[ "$READY" != 1 ]]; then
   exit 4
 fi
 curl --noproxy '*' -fsS --max-time 15 \
-  http://127.0.0.1:3070/assets/gynrace/mt09-garage.svg -o /dev/null
+  http://127.0.0.1:3070/assets/gynrace/gynrace-kawasaki-original-premium.webp -o /dev/null
 curl --noproxy '*' -fsS --max-time 15 \
   http://127.0.0.1:3070/auth -o /dev/null
 echo "[OK] Pagina mobile, imagem e rota de login no staging."
@@ -118,14 +119,14 @@ if [[ "$PASSED" != 1 ]]; then
 fi
 curl --noproxy '*' -fsSk --max-time 20 \
   --resolve 'afidelize.app:443:127.0.0.1' \
-  'https://afidelize.app/assets/gynrace/mt09-garage.svg' -o /dev/null
+  'https://afidelize.app/assets/gynrace/gynrace-kawasaki-original-premium.webp' -o /dev/null
 curl --noproxy '*' -fsSk --max-time 20 \
   --resolve 'afidelize.app:443:127.0.0.1' \
   'https://afidelize.app/auth' -o /dev/null
 pm2 save
 CHANGED=0
 
-echo "=== GYNRACE MOBILE EDITION PUBLICADA ==="
+echo "=== GYNRACE FOTO ORIGINAL HD + HERO SEM SOBREPOSICAO PUBLICADOS ==="
 echo "Commit: $SHA"
 echo "Porta atual: 3070"
 echo "Backup: $BACKUP"
