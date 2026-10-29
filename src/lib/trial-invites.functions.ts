@@ -44,6 +44,7 @@ const linkSchema = z.object({
   description: z.string().trim().max(400).optional().nullable(),
   plan_id: z.string().uuid(),
   duration_days: z.number().int().min(1).max(365),
+  duration_unit: z.enum(["days", "months"]).default("days"),
   feature_keys: safeFeatures,
   max_signups: z.number().int().min(1).max(500),
   expires_at: z.string().datetime().nullable(),
@@ -100,6 +101,7 @@ export const adminCreateTrialLink = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => linkSchema.parse(d))
   .handler(async ({ data, context }) => {
     const db = await adminDb(context.supabase, context.userId);
+    if (data.duration_unit === "months" && data.duration_days > 12) throw new Error("Escolha até 12 meses.");
     const { randomBytes } = await import("node:crypto");
     const token = randomBytes(24).toString("hex");
     const { data: row, error } = await db.from("trial_invite_links")
@@ -129,7 +131,7 @@ export const getTrialInvitePublic = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as any;
     const { data: link } = await db.from("trial_invite_links")
-      .select("id,title,description,plan_id,duration_days,feature_keys,max_signups,signup_count,expires_at,active")
+      .select("id,title,description,plan_id,duration_days,duration_unit,feature_keys,max_signups,signup_count,expires_at,active")
       .eq("token", data.token).maybeSingle();
     if (!link) return { available: false as const, reason: "Este convite não existe." };
     const available = link.active && link.signup_count < link.max_signups &&
@@ -142,6 +144,7 @@ export const getTrialInvitePublic = createServerFn({ method: "POST" })
       description: link.description,
       plan_name: plan?.name ?? "Avaliação",
       duration_days: link.duration_days,
+      duration_unit: link.duration_unit,
       feature_keys: link.feature_keys,
       remaining: link.max_signups - link.signup_count,
     };
