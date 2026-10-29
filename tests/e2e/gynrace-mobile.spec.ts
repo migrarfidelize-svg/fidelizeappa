@@ -30,7 +30,7 @@ test("Racing Edition keeps content, buttons and captions inside mobile viewport"
         documentWidth: document.documentElement.scrollWidth,
         heroTitle: rectangle(".gr-hero-title"),
         heroNote: rectangle(".gr-hero-note"),
-        nextSection: rectangle("section.gr-shell.grid"),
+        nextSection: rectangle("section.gr-shell.grid.gap-3"),
         projectTitle: rectangle(".gr-project-title"),
         projectAction: rectangle(".gr-project-action"),
         locationButton: rectangle("#localizacao a"),
