@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Activity, ArrowDown, ArrowUpRight,
   CircuitBoard, Clock3, Cog, Instagram, MapPin, Menu, MessageCircle,
@@ -51,8 +51,11 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
   const instagram = safeExternal(est.instagram) ?? INSTAGRAM;
   const whatsapp = verifiedWhatsApp(est.whatsapp);
   const waUrl = whatsapp ? `https://wa.me/${whatsapp}?text=${encodeURIComponent("Olá, equipe GYNRACE! Gostaria de um orçamento para minha moto.")}` : null;
-  const cover = typeof page?.cover_url === "string" && /^(https:\/\/|data:image\/(?:webp|jpeg|png);base64,)/.test(page.cover_url)
+  const remoteCover = typeof page?.cover_url === "string" && /^(https:\/\/|data:image\/(?:webp|jpeg|png);base64,)/.test(page.cover_url)
     ? page.cover_url : null;
+  // Relative URL works in staging and production, before the Nginx switch too.
+  const cover = remoteCover === "https://afidelize.app/assets/gynrace/mt09-garage.svg"
+    ? "/assets/gynrace/mt09-garage.svg" : remoteCover;
   const avatar = safeExternal(est.logo_url) ?? safeExternal(page?.logo_url);
   const googleReviews = (theme.google_reviews ?? null) as GoogleReviewsConfig | null;
 
@@ -76,7 +79,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
   const track = (label: string) => {
     trackChannelEvent({slug: est.slug || "gynrace", channel:"linktree", event_type:"link_click", ref_label:"gynrace:"+label});
   };
-  const link = (href: string, label: string, children: React.ReactNode, className = "") =>
+  const link = (href: string, label: string, children: ReactNode, className = "") =>
     <a href={href} target="_blank" rel="noopener noreferrer" onClick={() => track(label)} className={className}>{children}</a>;
 
   return (
