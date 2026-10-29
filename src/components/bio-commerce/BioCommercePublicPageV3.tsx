@@ -10,24 +10,32 @@ const EMPTY_BLOCK_DATA: BioCommerceBlockData = { menu: [], catalog: [], reviews:
 export function BioCommercePublicPageV3({ data, slug }: { data: BioCommerceLandingData; slug: string }) {
   useChannelPageView(slug, "linktree");
 
+  // A rota GYNRACE usa apenas o renderer exclusivo. Nao dispare as consultas
+  // de catalogo/cardapio/reviews da landing generica para esta pagina.
+  // Alem de economizar dados no celular, isso elimina layout generico e
+  // requisicoes desnecessarias em navegadores internos do Instagram.
+  const commerceSlug = String(data.establishment?.slug || slug);
+  if (slug.toLowerCase() === "gynrace" && commerceSlug.toLowerCase() === "gynrace") {
+    return <GynRaceExclusivePage data={data} />;
+  }
+
+  return <GenericPublicPage data={data} slug={slug} commerceSlug={commerceSlug} />;
+}
+
+function GenericPublicPage({
+  data, slug, commerceSlug,
+}: {
+  data: BioCommerceLandingData;
+  slug: string;
+  commerceSlug: string;
+}) {
+  // Hook isolado no renderer generico para cumprir as regras dos hooks.
   const blockDataQuery = useQuery({
     queryKey: ["public-bio-commerce-runtime-v4", slug],
     queryFn: () => getBioCommerceRuntimeData({ data: { slug } }),
     staleTime: 60_000,
     retry: 1,
   });
-
-  // O slug público da Bio pode ser personalizado (ex.: /tesalvei), enquanto
-  // Cardápio/Catálogo continuam usando o slug técnico do estabelecimento
-  // (ex.: /cardapio/cafe-aurora). O renderer recebe o slug técnico para que
-  // compras e links internos nunca quebrem.
-  const commerceSlug = String(data.establishment?.slug || slug);
-  // Página exclusiva vinculada à identidade REAL do estabelecimento,
-  // independente do preset retornado pelo cache ou do editor.
-  // Não fazer fallback para o template promocional da Fidelize.
-  if (slug.toLowerCase() === "gynrace" && commerceSlug.toLowerCase() === "gynrace") {
-    return <GynRaceExclusivePage data={data} />;
-  }
 
   const googleReviews = (data.page?.theme as any)?.google_reviews as
     | { place_id: string; maps_url: string; rating?: number; total?: number; verified_at?: string }
