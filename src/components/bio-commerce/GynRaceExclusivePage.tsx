@@ -253,7 +253,7 @@ export function GynRaceExclusivePage({ data }: { data: BioCommerceLandingData })
 
         <div id="avaliacoes" className="gr-shell">
           {googleReviews?.place_id && googleReviews?.maps_url ? (
-            <GoogleMapsReviewsSection slug="gynrace" config={googleReviews} />
+            <GoogleMapsReviewsSection slug="gynrace" config={googleReviews} compact />
           ) : (
             <div className="rounded-3xl border border-blue-400/25 bg-[#0a1425] p-7 text-center"><h2 className="text-xl font-black">O que nossos clientes dizem</h2><p className="mt-3 text-sm text-[#b0c4df]">Conheça as opiniões públicas no Google.</p>{link(maps,"reviews:maps",<>Abrir avaliações <ArrowUpRight className="h-4 w-4"/></>,"mt-4 inline-flex items-center gap-2 text-[#65b5ff]")}</div>
           )}
