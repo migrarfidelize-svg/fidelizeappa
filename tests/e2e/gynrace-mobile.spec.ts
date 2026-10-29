@@ -9,7 +9,7 @@ const screens = [320, 360, 375, 390, 430, 768] as const;
 
 test("Racing Edition keeps content, buttons and captions inside mobile viewport", async ({ page }) => {
   await page.goto("/links/gynrace", { waitUntil: "domcontentloaded" });
-  await expect(page.locator('[data-gynrace-edition="racing-mobile-2026-10-29"]')).toBeVisible();
+  await expect(page.locator('[data-gynrace-edition="racing-photo-safe-2026-10-29"]')).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: /SUA MOTO/ })).toBeVisible();
 
   for (const width of screens) {
@@ -30,6 +30,8 @@ test("Racing Edition keeps content, buttons and captions inside mobile viewport"
         documentWidth: document.documentElement.scrollWidth,
         heroTitle: rectangle(".gr-hero-title"),
         heroNote: rectangle(".gr-hero-note"),
+        heroImage: rectangle(".gr-hero-image"),
+        photoCaption: rectangle(".gr-hero-image-label"),
         nextSection: rectangle("section.gr-shell.grid.gap-3"),
         projectTitle: rectangle(".gr-project-title"),
         projectAction: rectangle(".gr-project-action"),
@@ -46,6 +48,14 @@ test("Racing Edition keeps content, buttons and captions inside mobile viewport"
     expect(geometry.heroTitle!.left).toBeGreaterThanOrEqual(-2);
     expect(geometry.heroTitle!.right).toBeLessThanOrEqual(width + 2);
 
+    if (geometry.heroNote && geometry.heroImage) {
+      expect(geometry.heroNote.top,
+        `Hero badge covers the photo caption at ${width}px`).toBeGreaterThanOrEqual(geometry.heroImage.bottom - 1);
+    }
+    if (geometry.photoCaption && geometry.heroNote) {
+      expect(geometry.photoCaption.bottom,
+        `Hero note overlays caption text at ${width}px`).toBeLessThanOrEqual(geometry.heroNote.top + 1);
+    }
     if (width < 768 && geometry.heroNote && geometry.nextSection) {
       expect(geometry.heroNote.bottom, `Hero photo badge overlaps next section at ${width}px`).toBeLessThanOrEqual(geometry.nextSection.top + 1);
     }
