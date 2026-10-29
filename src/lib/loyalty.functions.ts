@@ -838,9 +838,22 @@ export const createEstablishment = createServerFn({ method: "POST" })
       throw new Error("Não foi possível criar a empresa. Tente novamente em instantes.");
     }
     await supabase.from("establishment_members").insert({ establishment_id: est.id, user_id: userId, role: "owner" });
-    // A campanha NÃO é criada no ato do onboarding para evitar violação de RLS (requires active subscription).
-    // Ela será criada automaticamente ou manualmente APÓS o primeiro pagamento ser confirmado e a assinatura ficar ativa.
-    return { establishment_id: est.id, slug: est.slug };
+    // O cadastro e os vinculos permanecem iguais para todos os lojistas.
+    // Se houver um convite validado na autenticacao, ativar o plano em
+    // transacao SQL, sem mexer em assinaturas pagas nem expor service_role.
+    let trial_activated = false;
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: activation, error: activationError } = await (supabaseAdmin as any).rpc("activate_trial_invite", {
+        _user: userId, _est: est.id,
+      });
+      if (activationError) console.error("[trial] falha ao ativar acesso:", activationError.message);
+      else trial_activated = activation?.activated === true;
+    } catch (activationError) {
+      console.error("[trial] falha inesperada:", activationError);
+    }
+    // Quando nao ha convite, o fluxo existente de escolha/pagamento do plano permanece.
+    return { establishment_id: est.id, slug: est.slug, trial_activated };
   });
 
 export const getMyEstablishments = createServerFn({ method: "GET" })
