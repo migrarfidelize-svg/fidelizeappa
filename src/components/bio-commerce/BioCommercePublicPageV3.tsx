@@ -3,6 +3,7 @@ import { BioCommerceLanding, type BioCommerceBlockData, type BioCommerceLandingD
 import { getBioCommerceRuntimeData } from "@/lib/bio-commerce-runtime.functions";
 import { useChannelPageView } from "@/lib/tracking";
 import { GoogleMapsReviewsSection } from "@/components/bio-commerce/GoogleMapsReviewsSection";
+import { GynRaceExclusivePage } from "@/components/bio-commerce/GynRaceExclusivePage";
 
 const EMPTY_BLOCK_DATA: BioCommerceBlockData = { menu: [], catalog: [], reviews: [], stats: null };
 
@@ -21,6 +22,10 @@ export function BioCommercePublicPageV3({ data, slug }: { data: BioCommerceLandi
   // (ex.: /cardapio/cafe-aurora). O renderer recebe o slug técnico para que
   // compras e links internos nunca quebrem.
   const commerceSlug = String(data.establishment?.slug || slug);
+  if (slug === "gynrace" && (data.page?.theme as any)?.preset_id === "gynrace-racing-2026") {
+    return <GynRaceExclusivePage data={data} />;
+  }
+
   const googleReviews = (data.page?.theme as any)?.google_reviews as
     | { place_id: string; maps_url: string; rating?: number; total?: number; verified_at?: string }
     | undefined;
