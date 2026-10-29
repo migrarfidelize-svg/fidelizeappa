@@ -49,16 +49,16 @@ export function GoogleMapsReviewsSection({ slug, config }: { slug: string; confi
   const reviews = data?.available ? (data.reviews ?? []).filter((r) => !!r.text.trim()) : [];
 
   return (
-    <section className="relative isolate mx-auto w-full max-w-[1280px] overflow-hidden px-4 pb-10 pt-12 text-white sm:px-6 md:pb-16"
+    <section className="relative isolate mx-auto w-full min-w-0 max-w-[1280px] overflow-hidden px-0 pb-10 pt-10 text-white sm:px-6 sm:pt-12 md:pb-16"
       aria-labelledby="google-race-reviews-title">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-64 rounded-full bg-blue-500/10 blur-[100px]" aria-hidden="true" />
-      <div className="relative rounded-[26px] border border-blue-500/25 bg-[#080d17]/90 p-5 shadow-[0_0_44px_rgba(16,96,255,0.11)] sm:p-8">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
+      <div className="relative min-w-0 rounded-[22px] border border-blue-500/25 bg-[#080d17]/90 p-4 shadow-[0_0_44px_rgba(16,96,255,0.11)] sm:rounded-[26px] sm:p-8">
+        <div className="mb-5 flex min-w-0 flex-col items-start justify-between gap-4 sm:flex-row sm:flex-wrap">
+          <div className="min-w-0 space-y-2">
             <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.27em] text-[#66bfff]">
               <span className="h-[2px] w-7 bg-[#2585ff]"/> Opiniões reais
             </span>
-            <h2 id="google-race-reviews-title" className="text-[23px] font-black tracking-tight sm:text-3xl">
+            <h2 id="google-race-reviews-title" className="max-w-full text-[clamp(20px,6vw,30px)] font-black leading-tight tracking-tight [overflow-wrap:break-word] sm:text-3xl">
               Quem acelera com a GYNRACE
             </h2>
             <p className="max-w-lg text-sm text-[#aebcd5]">
@@ -70,16 +70,16 @@ export function GoogleMapsReviewsSection({ slug, config }: { slug: string; confi
           </div>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-white/10 bg-black/30 px-5 py-4">
+        <div className="mb-5 flex min-w-0 flex-col items-start gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:px-5">
           {typeof rating === "number" && (
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <span className="text-5xl font-black tracking-tight text-white">{rating.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1})}</span>
               <div><Stars rating={rating} size="lg"/>
                 <span className="mt-1 block text-xs text-[#9eb0ce]">{typeof count === "number" ? `${count} avaliações` : "Avaliações públicas"}</span>
               </div>
             </div>
           )}
-          <div className="min-w-0 flex-1 text-xs leading-5 text-[#aab9d0]">
+          <div className="min-w-0 flex-1 text-xs leading-5 text-[#aab9d0] [overflow-wrap:break-word]">
             <ShieldCheck className="mr-1 inline h-4 w-4 text-[#72bbff]" />
             {data?.available ? "Nota consultada no Google Maps." :
               `Referência pública consultada em ${config.verified_at || "29/10/2026"}. A nota pode mudar.`}
@@ -90,7 +90,7 @@ export function GoogleMapsReviewsSection({ slug, config }: { slug: string; confi
         {reviews.length > 0 ? (
           <div className="-mx-1 mb-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-3 [scrollbar-width:thin]">
             {reviews.map((review, i) => (
-              <article key={review.reviewUri || i} className="w-[260px] shrink-0 snap-start space-y-3 rounded-2xl border border-white/10 bg-gradient-to-b from-[#121e34] to-[#0b111c] p-4 sm:w-[310px]">
+              <article key={review.reviewUri || i} className="w-[min(260px,67vw)] min-w-0 shrink-0 snap-start space-y-3 rounded-2xl border border-white/10 bg-gradient-to-b from-[#121e34] to-[#0b111c] p-4 sm:w-[310px]">
                 <div className="flex items-center gap-2">
                   {review.authorPhoto ? (
                     <img src={review.authorPhoto} referrerPolicy="no-referrer" alt="" className="h-10 w-10 rounded-full border border-white/10 object-cover" />
@@ -116,9 +116,9 @@ export function GoogleMapsReviewsSection({ slug, config }: { slug: string; confi
         )}
 
         <a href={mapsUrl} target="_blank" rel="noopener noreferrer"
-          className="group flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-[#3aa3ff]/60 bg-gradient-to-r from-[#0a6aff] to-[#1045b7] px-5 py-3 text-center text-sm font-bold text-white shadow-[0_9px_32px_rgba(13,91,231,.27)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_13px_36px_rgba(12,112,255,.43)]">
+          className="group flex min-h-[52px] w-full min-w-0 items-center justify-center gap-2 rounded-xl border border-[#3aa3ff]/60 bg-gradient-to-r from-[#0a6aff] to-[#1045b7] px-4 py-3 text-center text-[13px] font-bold leading-5 text-white shadow-[0_9px_32px_rgba(13,91,231,.27)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_13px_36px_rgba(12,112,255,.43)] sm:px-5 sm:text-sm">
           Ver todas as avaliações no Google
-          <ExternalLink className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <ExternalLink className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
         </a>
         <p className="mt-3 text-center text-[11px] text-[#8194b1]">
           {reviews.length > 0 ? "Destaques exibidos por relevância, conforme retornados pelo Google Maps." : "Opiniões fornecidas por terceiros. Consulte o histórico completo no Google Maps."}
