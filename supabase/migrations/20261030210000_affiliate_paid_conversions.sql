@@ -78,23 +78,23 @@ alter table public.affiliate_commissions enable row level security;
 alter table public.affiliate_withdrawals enable row level security;
 create policy affiliate_settings_read on public.affiliate_settings for select to authenticated using (true);
 create policy affiliate_accounts_read on public.affiliate_accounts for select to authenticated using (
-  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_accounts.establishment_id and m.user_id=(select auth.uid()) and m.active)
+  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_accounts.establishment_id and m.user_id=(select auth.uid()) and m.active and m.role::text='owner')
   or exists (select 1 from public.app_roles ar where ar.user_id=(select auth.uid()) and ar.role::text='super_admin')
 );
 create policy affiliate_referrals_read on public.affiliate_referrals for select to authenticated using (
-  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_referrals.affiliate_establishment_id and m.user_id=(select auth.uid()) and m.active)
+  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_referrals.affiliate_establishment_id and m.user_id=(select auth.uid()) and m.active and m.role::text='owner')
   or exists (select 1 from public.app_roles ar where ar.user_id=(select auth.uid()) and ar.role::text='super_admin')
 );
 create policy affiliate_assets_read on public.affiliate_assets for select to authenticated using (
-  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_assets.establishment_id and m.user_id=(select auth.uid()) and m.active)
+  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_assets.establishment_id and m.user_id=(select auth.uid()) and m.active and m.role::text='owner')
   or exists (select 1 from public.app_roles ar where ar.user_id=(select auth.uid()) and ar.role::text='super_admin')
 );
 create policy affiliate_commissions_read on public.affiliate_commissions for select to authenticated using (
-  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_commissions.affiliate_establishment_id and m.user_id=(select auth.uid()) and m.active)
+  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_commissions.affiliate_establishment_id and m.user_id=(select auth.uid()) and m.active and m.role::text='owner')
   or exists (select 1 from public.app_roles ar where ar.user_id=(select auth.uid()) and ar.role::text='super_admin')
 );
 create policy affiliate_withdrawals_read on public.affiliate_withdrawals for select to authenticated using (
-  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_withdrawals.establishment_id and m.user_id=(select auth.uid()) and m.active)
+  exists (select 1 from public.establishment_members m where m.establishment_id=affiliate_withdrawals.establishment_id and m.user_id=(select auth.uid()) and m.active and m.role::text='owner')
   or exists (select 1 from public.app_roles ar where ar.user_id=(select auth.uid()) and ar.role::text='super_admin')
 );
 grant select on public.affiliate_settings,public.affiliate_accounts,public.affiliate_referrals,public.affiliate_assets,public.affiliate_commissions,public.affiliate_withdrawals to authenticated;
