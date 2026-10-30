@@ -124,7 +124,7 @@ export const getAdminAffiliates = createServerFn({method:"GET"})
     await assertSuperAdmin(context.supabase,context.userId);
     const db=await adminDb();
     const [accounts,refs,commissions,withdrawals,settings]=await Promise.all([
-      db.from("affiliate_accounts").select("*,establishments:establishment_id(name,slug,created_by)").order("created_at",{ascending:false}).limit(1000),
+      db.from("affiliate_accounts").select("*,establishments!affiliate_accounts_establishment_id_fkey(name,slug,created_by)").order("created_at",{ascending:false}).limit(1000),
       db.from("affiliate_referrals").select("id,affiliate_establishment_id,referred_establishment_id,registered_at,establishments!affiliate_referrals_referred_establishment_id_fkey(name)").order("registered_at",{ascending:false}).limit(1000),
       db.from("affiliate_commissions").select("*").order("created_at",{ascending:false}).limit(1000),
       db.from("affiliate_withdrawals").select("*").order("requested_at",{ascending:false}).limit(1000),
@@ -179,7 +179,7 @@ export const adminNotifyAffiliate = createServerFn({method:"POST"})
     const {data:est,error}=await db.from("establishments").select("id,created_by").eq("id",data.establishment_id).single();
     check(error);if(!est?.created_by) throw new Error("Responsável pelo estabelecimento não identificado.");
     const {error:notifyError}=await db.from("user_notifications").insert({
-      user_id:est.created_by,establishment_id:est.id,audience:"merchant",kind:"affiliate",title:data.title,body:data.body,url:"/app/afiliados"
+      user_id:est.created_by,establishment_id:est.id,audience:"user",kind:"aviso",title:data.title,body:data.body,url:"/app/afiliados"
     });
     check(notifyError);return {ok:true};
   });
