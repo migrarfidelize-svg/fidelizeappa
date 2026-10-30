@@ -120,6 +120,13 @@ function LandingLiveSync() {
 }
 
 function Landing({ disableLiveSync = false }: { disableLiveSync?: boolean }) {
+  useEffect(() => {
+    // Registro apenas de atribuição de campanha, nunca de comissão ou pagamento.
+    const code = new URLSearchParams(window.location.search).get("ref")?.trim().toLowerCase();
+    if (code && /^[a-z0-9][a-z0-9-]{3,39}$/.test(code)) {
+      try { localStorage.setItem("fidelize:affiliate-ref", JSON.stringify({ code, at: Date.now() })); } catch {}
+    }
+  }, []);
   return (
     <div className="landing-scope min-h-dvh bg-background text-foreground pb-24 md:pb-0">
       {!disableLiveSync && <LandingLiveSync />}
