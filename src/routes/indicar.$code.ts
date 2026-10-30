@@ -20,7 +20,7 @@ const missing = () => new Response("Indicação não encontrada.", {
 export const Route = createFileRoute("/indicar/$code")({
   server: {
     handlers: {
-      GET: async ({ params }) => {
+      GET: async ({ params, request }) => {
         const code = String(params.code || "").toLowerCase();
         if (!/^[a-z0-9][a-z0-9-]{3,39}$/.test(code)) return missing();
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -57,7 +57,10 @@ export const Route = createFileRoute("/indicar/$code")({
         const owner = String(estRes.data?.name || "nosso parceiro");
         const title = String(account.custom_title || "Conheça a Fidelize com " + owner);
         const description = "Transforme clientes em clientes fiéis com a Fidelize. Conheça os planos pelo convite de " + owner + ".";
-        const canonical = "https://afidelize.app/indicar/" + encodeURIComponent(code);
+        // Preserva a versão do link na metadata OG para não manter miniatura antiga em cache.
+        const version = new URL(request.url).searchParams.get("v")?.slice(0, 64) || "";
+        const canonical = "https://afidelize.app/indicar/" + encodeURIComponent(code) +
+          (version ? "?v=" + encodeURIComponent(version) : "");
         const destination = "https://afidelize.app/?ref=" + encodeURIComponent(code);
 
         const imageTags = image
