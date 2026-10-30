@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { createEstablishment, getMyEstablishments } from "@/lib/loyalty.functions";
+import { claimAffiliateReferral } from "@/lib/affiliate.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -81,6 +82,7 @@ function Onboarding() {
   const router = useRouter();
   const qc = useQueryClient();
   const create = useServerFn(createEstablishment);
+  const claimReferral = useServerFn(claimAffiliateReferral);
   const getEsts = useServerFn(getMyEstablishments);
 
   const [loading, setLoading] = useState(false);
@@ -223,7 +225,21 @@ function Onboarding() {
     const rewardTitle = f.reward_title.trim().length >= 2 ? f.reward_title.trim() : "Brinde exclusivo";
     setLoading(true);
     try {
-      await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+      const created = await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+      // Atribuição única ao estabelecimento recém-criado; pagamento ainda NÃO gera saldo.
+      try {
+        const raw = localStorage.getItem("fidelize:affiliate-ref");
+        if (raw) {
+          const campaign = JSON.parse(raw) as { code?: string; at?: number };
+          if (campaign.code && campaign.at && Date.now() - campaign.at < 30 * 24 * 60 * 60 * 1000) {
+            await claimReferral({ data: { establishment_id: created.establishment_id, code: campaign.code } });
+          }
+          localStorage.removeItem("fidelize:affiliate-ref");
+        }
+      } catch (referralError) {
+        // Não interrompe o cadastro nem o checkout caso haja falha de atribuição.
+        console.warn("[affiliate] indicação não vinculada", referralError);
+      }
 
       try { localStorage.removeItem("fidelize:onboarding-prefill"); } catch { /* ignore */ }
       
