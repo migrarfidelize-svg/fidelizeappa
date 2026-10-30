@@ -107,6 +107,7 @@ async function reconcileAsaasPayment(remotePayment: any) {
       currency: "BRL",
       method: mapAsaasBillingTypeToMethod(String(remotePayment.billingType ?? "")),
       status: newStatus,
+      approved_at: approvedAt,
       status_detail: remotePayment.status ?? null,
       receipt_url: remotePayment.invoiceUrl ?? null,
       boleto_url: remotePayment.bankSlipUrl ?? null,
@@ -172,10 +173,22 @@ async function activatePlanAsaas(establishmentId: string, planSlug: string, prov
     next_billing_date: period.end,
     cancel_at_period_end: false,
   };
+  let subscriptionId: string | null = existingSub?.id ?? null;
   if (existingSub) {
     await supabaseAdmin.from("subscriptions").update(subPayload as never).eq("id", existingSub.id);
   } else {
-    await supabaseAdmin.from("subscriptions").insert({ establishment_id: establishmentId, ...subPayload } as never);
+    const { data: insertedSub } = await supabaseAdmin.from("subscriptions")
+      .insert({ establishment_id: establishmentId, ...subPayload } as never)
+      .select("id").maybeSingle();
+    subscriptionId = insertedSub?.id ?? null;
+  }
+
+  // Pagamento aprovado + assinatura ativa: cria vínculo necessário para a
+  // comissão de afiliado; o trigger idempotente verifica as duas condições.
+  if (subscriptionId) {
+    await supabaseAdmin.from("payments")
+      .update({ subscription_id: subscriptionId, plan_id: plan.id } as never)
+      .eq("provider", "asaas").eq("provider_payment_id", providerPaymentId);
   }
 
   // Ao ativar o plano, cria recursos iniciais

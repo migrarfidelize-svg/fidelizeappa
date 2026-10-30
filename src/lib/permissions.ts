@@ -137,5 +137,6 @@ export const ROUTE_PERMISSIONS: Record<string, PermissionAction> = {
   "/app/equipe":       "team.manage",
   "/app/planos":       "billing.manage",
   "/app/pagamentos":   "billing.manage",
+  "/app/afiliados":    "billing.manage",
   "/app/anuncios":     "ads.manage",
 };
