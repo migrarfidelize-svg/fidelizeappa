@@ -43,8 +43,9 @@ test("brand marquee stays black, regular-sized and seamless on desktop/mobile", 
     const widths = new Set(geometry.markSizes.map((s) => Math.round(s.width)));
     expect(heights.size).toBe(1);
     expect(widths.size).toBe(1);
+    // Fundos opacos não podem receber brightness(0), pois viram blocos pretos.
     expect(geometry.imageStyles.every((s) =>
-      s.filter.includes("grayscale(1)") && s.filter.includes("brightness(0)") && s.fit === "contain"
+      s.filter === "none" && s.fit === "contain"
     )).toBeTruthy();
   }
 });
