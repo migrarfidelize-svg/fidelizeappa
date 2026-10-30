@@ -56,6 +56,16 @@ export const getAffiliateDashboard = createServerFn({method:"GET"})
       db.from("affiliate_settings").select("default_rate,release_days").eq("id",true).single(),
     ]);
     for(const item of [referrals,commissions,withdrawals,assets,settings]) check(item.error);
+    // Um criativo existente também deve aparecer na prévia para os perfis
+    // que fizeram upload antes de esta melhoria ser publicada.
+    if (!account.featured_asset_id) {
+      const preferred=(assets.data??[]).find((a:any)=>a.media_type==="image")??(assets.data??[]).find((a:any)=>Boolean(a.preview_url));
+      if(preferred){
+        const {error:featuredError}=await db.from("affiliate_accounts").update({featured_asset_id:preferred.id}).eq("establishment_id",estId);
+        check(featuredError);
+        account.featured_asset_id=preferred.id;
+      }
+    }
     const balance=summarize(commissions.data??[],withdrawals.data??[]);
     return {establishmentId:estId,account,referrals:referrals.data??[],commissions:commissions.data??[],withdrawals:withdrawals.data??[],assets:assets.data??[],settings:settings.data,balance,registrations:referrals.data?.length??0,purchases:(commissions.data??[]).filter((c:any)=>c.status==="confirmed").length};
   });
@@ -102,11 +112,47 @@ export const claimAffiliateReferral = createServerFn({method:"POST"})
 
 export const saveAffiliateAsset = createServerFn({method:"POST"})
   .middleware([requireSupabaseAuth])
-  .inputValidator((v:unknown)=>z.object({establishment_id:id,media_url:z.string().url().max(2000).refine((url)=>url.startsWith("https://"),"A mídia precisa usar HTTPS."),media_type:z.enum(["image","video"]),format:z.enum(["feed","story","reels","square","landscape"]),title:z.string().trim().max(90).default("")}).parse(v))
+  .inputValidator((v:unknown)=>z.object({establishment_id:id,media_url:z.string().url().max(2000).refine((url)=>url.startsWith("https://"),"A mídia precisa usar HTTPS."),preview_url:z.string().url().max(2000).refine((url)=>url.startsWith("https://"),"A prévia precisa usar HTTPS.").optional().nullable(),media_type:z.enum(["image","video"]),format:z.enum(["feed","story","reels","square","landscape"]),title:z.string().trim().max(90).default("")}).parse(v))
   .handler(async ({context,data})=>{
     await getOwnedEstablishment(context,data.establishment_id);
     const db=await adminDb();
-    const {data:row,error}=await db.from("affiliate_assets").insert(data).select("*").single();check(error);return row;
+    // Aceita somente URLs pertencentes ao Storage do projeto Fidelize, nunca mídia externa arbitrária.
+    const expectedOrigin=new URL(process.env.SUPABASE_URL || "").origin;
+    const isOwnedStorageUrl=(url:string) => {
+      const parsed=new URL(url);
+      return parsed.origin===expectedOrigin
+        && /^\\/storage\\/v1\\/object\\/public\\/(logos|menu-videos)\\//.test(parsed.pathname);
+    };
+    if(!isOwnedStorageUrl(data.media_url) || (data.preview_url && !isOwnedStorageUrl(data.preview_url))){
+      throw new Error("Envie o criativo pelo armazenamento oficial da Fidelize.");
+    }
+    const {data:row,error}=await db.from("affiliate_assets").insert(data).select("*").single();
+    check(error);
+    // A imagem mais recentemente enviada já passa a aparecer no compartilhamento.
+    const {error:featureError}=await db.from("affiliate_accounts")
+      .update({featured_asset_id:row.id,updated_at:new Date().toISOString()})
+      .eq("establishment_id",data.establishment_id);
+    check(featureError);
+    return row;
+  });
+
+export const setFeaturedAffiliateAsset = createServerFn({method:"POST"})
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v:unknown)=>z.object({establishment_id:id,asset_id:id}).parse(v))
+  .handler(async ({context,data})=>{
+    await getOwnedEstablishment(context,data.establishment_id);
+    const db=await adminDb();
+    const {data:asset,error}=await db.from("affiliate_assets")
+      .select("id,establishment_id,media_type,preview_url")
+      .eq("id",data.asset_id).eq("establishment_id",data.establishment_id).single();
+    check(error);
+    if(asset.media_type==="video" && !asset.preview_url)
+      throw new Error("Este vídeo não possui imagem de capa para o link.");
+    const {error:updatedError}=await db.from("affiliate_accounts")
+      .update({featured_asset_id:asset.id,updated_at:new Date().toISOString()})
+      .eq("establishment_id",data.establishment_id);
+    check(updatedError);
+    return {ok:true};
   });
 
 export const requestAffiliateWithdrawal = createServerFn({method:"POST"})
