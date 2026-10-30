@@ -30,123 +30,190 @@ const DEFAULT_SVGS: Record<string, React.ReactNode> = {
  * Cache evita repetir o trabalho nas cópias do loop infinito.
  */
 const blackLogoCache = new Map<string, Promise<string | null>>();
+
+/**
+ * Logotipos com fundo opaco não podem receber brightness(0) diretamente:
+ * isso pinta TAMBÉM o fundo de preto. Removemos o fundo uniforme pela cor
+ * das bordas ANTES de transformar os pixels visíveis em tinta preta.
+ *
+ * Imagem ilegível (foto, CORS bloqueado, placa sólida) => wordmark em texto.
+ * Assim nenhuma marca vira um retângulo/oval preto no carrossel.
+ */
 function toBlackLogo(source: string): Promise<string | null> {
-  const cached = blackLogoCache.get(source);
-  if (cached) return cached;
-  const job = new Promise<string | null>((resolve) => {
+  const previous = blackLogoCache.get(source);
+  if (previous) return previous;
+
+  const promise = new Promise<string | null>((resolve) => {
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.onload = () => {
       try {
-        const w = Math.max(1, image.naturalWidth);
-        const h = Math.max(1, image.naturalHeight);
-        const ratio = Math.min(1, 900 / Math.max(w, h));
+        const naturalWidth = image.naturalWidth;
+        const naturalHeight = image.naturalHeight;
+        if (!naturalWidth || !naturalHeight) return resolve(null);
+
+        const scale = Math.min(1, 900 / Math.max(naturalWidth, naturalHeight));
         const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(w * ratio));
-        canvas.height = Math.max(1, Math.round(h * ratio));
+        canvas.width = Math.max(1, Math.round(naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(naturalHeight * scale));
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return resolve(null);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = pixels.data;
-        const sampleCorner = (x: number, y: number) => {
-          const i = (y * canvas.width + x) * 4;
-          return [d[i], d[i + 1], d[i + 2], d[i + 3]];
+        const data = pixels.data;
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Amostra um pequeno quadrado em cada canto: tolera JPEG/WebP e
+        // bordas suavizadas sem usar a cor de uma letra como cor do fundo.
+        const corner = (cx: number, cy: number) => {
+          const size = Math.max(1, Math.min(4, Math.floor(Math.min(width, height) / 8)));
+          let r = 0, g = 0, b = 0, a = 0, count = 0;
+          for (let y = cy; y < cy + size && y < height; y++) {
+            for (let x = cx; x < cx + size && x < width; x++) {
+              const idx = (y * width + x) * 4;
+              r += data[idx]; g += data[idx + 1];
+              b += data[idx + 2]; a += data[idx + 3];
+              count++;
+            }
+          }
+          return { r: r / count, g: g / count, b: b / count, a: a / count };
         };
         const corners = [
-          sampleCorner(0, 0),
-          sampleCorner(canvas.width - 1, 0),
-          sampleCorner(0, canvas.height - 1),
-          sampleCorner(canvas.width - 1, canvas.height - 1),
+          corner(0, 0), corner(Math.max(0, width - 4), 0),
+          corner(0, Math.max(0, height - 4)),
+          corner(Math.max(0, width - 4), Math.max(0, height - 4)),
         ];
-        const lightBg = corners.filter(([red, green, blue, alpha]) =>
-          alpha > 245 && red > 229 && green > 229 && blue > 229).length >= 3;
-        const darkBg = !lightBg && corners.filter(([red, green, blue, alpha]) =>
-          alpha > 245 && red < 27 && green < 27 && blue < 27).length >= 3;
-        for (let i = 0; i < d.length; i += 4) {
-          const alpha = d[i + 3];
-          if (alpha === 0) continue;
-          let finalAlpha = alpha;
-          if (lightBg) {
-            // Remoção de branco, preservando amarelo, rosa e demais logos como tinta preta.
-            finalAlpha = Math.min(alpha, Math.round((255 - Math.min(d[i], d[i + 1], d[i + 2])) * 3));
-          } else if (darkBg) {
-            // Logotipos claros sobre placas pretas também viram tinta preta sem a placa.
-            finalAlpha = Math.min(alpha, Math.round(Math.max(d[i], d[i + 1], d[i + 2]) * 3));
-          }
-          d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; d[i + 3] = finalAlpha;
-        }
-        ctx.putImageData(pixels, 0, 0);
+        const opaqueCorners = corners.every((c) => c.a > 238);
+        const background = {
+          r: corners.reduce((sum, c) => sum + c.r, 0) / 4,
+          g: corners.reduce((sum, c) => sum + c.g, 0) / 4,
+          b: corners.reduce((sum, c) => sum + c.b, 0) / 4,
+        };
+        const cornerDelta = Math.max(...corners.map((c) =>
+          Math.max(
+            Math.abs(c.r - background.r),
+            Math.abs(c.g - background.g),
+            Math.abs(c.b - background.b),
+          ),
+        ));
+        // Imagem opaca com fundo multicolorido não tem remoção confiável.
+        // Preferimos o nome legível da marca a produzir uma placa escura.
+        if (opaqueCorners && cornerDelta > 44) return resolve(null);
 
-        // Recorta margens transparentes embutidas no arquivo enviado.
-        // Assim Cimed, WePink e marcas longas ocupam a mesma area visual.
-        let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
-        for (let y = 0; y < canvas.height; y++) {
-          for (let x = 0; x < canvas.width; x++) {
-            if (d[(y * canvas.width + x) * 4 + 3] <= 18) continue;
-            minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-            minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+        let visible = 0;
+        let strong = 0;
+        let minX = width, minY = height, maxX = -1, maxY = -1;
+
+        for (let y = 0; y < height; y++) {
+          for (let x = 0; x < width; x++) {
+            const idx = (y * width + x) * 4;
+            const originalAlpha = data[idx + 3];
+            if (!originalAlpha) continue;
+
+            let newAlpha = originalAlpha;
+            if (opaqueCorners) {
+              // Diferença para a cor do fundo em vez de brightness(0)
+              // da imagem inteira (que destruía os arquivos enviados).
+              const contrast = Math.max(
+                Math.abs(data[idx] - background.r),
+                Math.abs(data[idx + 1] - background.g),
+                Math.abs(data[idx + 2] - background.b),
+              );
+              newAlpha = Math.min(originalAlpha, Math.max(0, Math.round(contrast * 5 - 24)));
+            }
+
+            // Símbolos e letras tornam-se pretos; o fundo fica transparente.
+            data[idx] = 0;
+            data[idx + 1] = 0;
+            data[idx + 2] = 0;
+            data[idx + 3] = newAlpha;
+
+            if (newAlpha <= 24) continue;
+            visible++;
+            if (newAlpha >= 140) strong++;
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
           }
         }
-        if (maxX < minX || maxY < minY) return resolve(null);
-        const width = maxX - minX + 1;
-        const height = maxY - minY + 1;
-        const pad = Math.max(2, Math.round(Math.max(width, height) * 0.025));
+
+        const surface = width * height;
+        if (visible < 12 || maxX < minX || maxY < minY) return resolve(null);
+
+        const cropW = maxX - minX + 1;
+        const cropH = maxY - minY + 1;
+        const occupancy = strong / Math.max(1, cropW * cropH);
+        // Um fundo residual/placa de cor sólida não é uma logo legível.
+        if (occupancy > 0.68 || strong / surface > 0.66) return resolve(null);
+
+        ctx.putImageData(pixels, 0, 0);
+        const padding = Math.max(2, Math.round(Math.max(cropW, cropH) * 0.03));
         const cropped = document.createElement("canvas");
-        cropped.width = width + pad * 2;
-        cropped.height = height + pad * 2;
+        cropped.width = cropW + padding * 2;
+        cropped.height = cropH + padding * 2;
         cropped.getContext("2d")?.drawImage(
-          canvas, minX, minY, width, height,
-          pad, pad, width, height,
+          canvas, minX, minY, cropW, cropH,
+          padding, padding, cropW, cropH,
         );
         resolve(cropped.toDataURL("image/png"));
       } catch {
-        // Ex.: servidor da imagem não permite CORS. CSS continua monocromático.
         resolve(null);
       }
     };
     image.onerror = () => resolve(null);
     image.src = source;
   });
-  blackLogoCache.set(source, job);
-  return job;
+  blackLogoCache.set(source, promise);
+  return promise;
 }
 
 function BrandLogo({ item }: { item: BrandItem }) {
-  const [broken, setBroken] = useState(false);
   const [monochromeUrl, setMonochromeUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const name = item.name?.trim() || "Marca";
   const svg = DEFAULT_SVGS[name.toLowerCase()];
 
   useEffect(() => {
     let active = true;
-    setBroken(false);
     setMonochromeUrl(null);
-    if (item.img) toBlackLogo(item.img).then((url) => { if (active) setMonochromeUrl(url); });
+    setFailed(false);
+    if (item.img) {
+      toBlackLogo(item.img).then((url) => {
+        if (active) {
+          setMonochromeUrl(url);
+          setFailed(!url);
+        }
+      });
+    }
     return () => { active = false; };
   }, [item.img]);
 
-  if (item.img && !broken) {
+  // SVGs nativos continuam nítidos quando não existe imagem personalizada.
+  if (!item.img && svg) {
+    return <span className="fidelize-brand-logo-vector" role="img" aria-label={name}>{svg}</span>;
+  }
+
+  if (item.img && monochromeUrl && !failed) {
     return (
       <img
         className="fidelize-brand-logo-image"
-        src={monochromeUrl ?? item.img}
+        src={monochromeUrl}
         alt={name}
         width={180}
         height={68}
-        loading="lazy"
+        loading="eager"
         decoding="async"
         draggable={false}
-        onError={() => setBroken(true)}
+        onError={() => setFailed(true)}
       />
     );
   }
 
-  return svg ? (
-    <span className="fidelize-brand-logo-vector" role="img" aria-label={name}>{svg}</span>
-  ) : (
-    <span className="fidelize-brand-logo-word" role="img" aria-label={name}>{name}</span>
-  );
+  // Mantém a marca legível enquanto a conversão ocorre e também quando
+  // o arquivo original possui fundo impossível de remover com segurança.
+  return <span className="fidelize-brand-logo-word" role="img" aria-label={name}>{name}</span>;
 }
 
 function BrandSequence({ brands, duplicate = false }: { brands: BrandItem[]; duplicate?: boolean }) {
@@ -183,7 +250,7 @@ export function BrandMarquee({ brands }: { brands?: BrandItem[] } = {}) {
         .fidelize-brand-logo-image{
           display:block;width:172px;height:64px;max-width:100%;max-height:100%;
           object-fit:contain;object-position:center;
-          filter:grayscale(1) brightness(0);mix-blend-mode:multiply;
+          filter:none;mix-blend-mode:normal;
         }
         .fidelize-brand-logo-vector{display:grid;place-items:center;width:68px;height:62px;color:#101010}
         .fidelize-brand-logo-vector svg{display:block;width:100%;height:100%;object-fit:contain}
