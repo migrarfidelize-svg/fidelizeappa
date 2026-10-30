@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DEFAULT_BRANDS, type BrandItem } from "@/lib/landing-content";
 
 /**
@@ -23,16 +23,91 @@ const DEFAULT_SVGS: Record<string, React.ReactNode> = {
   ),
 };
 
+/**
+ * Converte uma marca enviada ao Admin para tinta preta, preservando transparência.
+ * Se o PNG/GIF tiver fundo branco, remove o fundo antes de aplicar a tinta preta.
+ * Canvas só roda no cliente e em resolução limitada; o URL original é mantido no banco.
+ * Cache evita repetir o trabalho nas cópias do loop infinito.
+ */
+const blackLogoCache = new Map<string, Promise<string | null>>();
+function toBlackLogo(source: string): Promise<string | null> {
+  const cached = blackLogoCache.get(source);
+  if (cached) return cached;
+  const job = new Promise<string | null>((resolve) => {
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      try {
+        const w = Math.max(1, image.naturalWidth);
+        const h = Math.max(1, image.naturalHeight);
+        const ratio = Math.min(1, 900 / Math.max(w, h));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(w * ratio));
+        canvas.height = Math.max(1, Math.round(h * ratio));
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return resolve(null);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = pixels.data;
+        const sampleCorner = (x: number, y: number) => {
+          const i = (y * canvas.width + x) * 4;
+          return [d[i], d[i + 1], d[i + 2], d[i + 3]];
+        };
+        const corners = [
+          sampleCorner(0, 0),
+          sampleCorner(canvas.width - 1, 0),
+          sampleCorner(0, canvas.height - 1),
+          sampleCorner(canvas.width - 1, canvas.height - 1),
+        ];
+        const lightBg = corners.filter(([red, green, blue, alpha]) =>
+          alpha > 245 && red > 229 && green > 229 && blue > 229).length >= 3;
+        const darkBg = !lightBg && corners.filter(([red, green, blue, alpha]) =>
+          alpha > 245 && red < 27 && green < 27 && blue < 27).length >= 3;
+        for (let i = 0; i < d.length; i += 4) {
+          const alpha = d[i + 3];
+          if (alpha === 0) continue;
+          let finalAlpha = alpha;
+          if (lightBg) {
+            // Remoção de branco, preservando amarelo, rosa e demais logos como tinta preta.
+            finalAlpha = Math.min(alpha, Math.round((255 - Math.min(d[i], d[i + 1], d[i + 2])) * 3));
+          } else if (darkBg) {
+            // Logotipos claros sobre placas pretas também viram tinta preta sem a placa.
+            finalAlpha = Math.min(alpha, Math.round(Math.max(d[i], d[i + 1], d[i + 2]) * 3));
+          }
+          d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; d[i + 3] = finalAlpha;
+        }
+        ctx.putImageData(pixels, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      } catch {
+        // Ex.: servidor da imagem não permite CORS. CSS continua monocromático.
+        resolve(null);
+      }
+    };
+    image.onerror = () => resolve(null);
+    image.src = source;
+  });
+  blackLogoCache.set(source, job);
+  return job;
+}
+
 function BrandLogo({ item }: { item: BrandItem }) {
   const [broken, setBroken] = useState(false);
+  const [monochromeUrl, setMonochromeUrl] = useState<string | null>(null);
   const name = item.name?.trim() || "Marca";
   const svg = DEFAULT_SVGS[name.toLowerCase()];
+
+  useEffect(() => {
+    let active = true;
+    setMonochromeUrl(null);
+    if (item.img) toBlackLogo(item.img).then((url) => { if (active) setMonochromeUrl(url); });
+    return () => { active = false; };
+  }, [item.img]);
 
   if (item.img && !broken) {
     return (
       <img
         className="fidelize-brand-logo-image"
-        src={item.img}
+        src={monochromeUrl ?? item.img}
         alt={name}
         width={180}
         height={68}
