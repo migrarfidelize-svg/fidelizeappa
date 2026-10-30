@@ -131,12 +131,18 @@ export const getAdminAffiliates = createServerFn({method:"GET"})
       db.from("affiliate_settings").select("*").eq("id",true).single(),
     ]);
     for(const item of [accounts,refs,commissions,withdrawals,settings])check(item.error);
+    const processorIds=[...new Set((withdrawals.data??[]).map((w:any)=>w.processed_by).filter(Boolean))] as string[];
+    const {data:processors,error:processorsError}=processorIds.length
+      ? await db.from("profiles").select("id,full_name").in("id",processorIds)
+      : {data:[],error:null};
+    check(processorsError);
+    const processorNames=Object.fromEntries((processors??[]).map((p:any)=>[p.id,p.full_name||"Administrador"]));
     const affiliates=(accounts.data??[]).map((a:any)=>({
       ...a,registrations:(refs.data??[]).filter((r:any)=>r.affiliate_establishment_id===a.establishment_id).length,
       ...summarize((commissions.data??[]).filter((c:any)=>c.affiliate_establishment_id===a.establishment_id),
         (withdrawals.data??[]).filter((w:any)=>w.establishment_id===a.establishment_id))
     }));
-    return {affiliates,referrals:refs.data??[],commissions:commissions.data??[],withdrawals:withdrawals.data??[],settings:settings.data};
+    return {affiliates,referrals:refs.data??[],commissions:commissions.data??[],withdrawals:withdrawals.data??[],processorNames,settings:settings.data};
   });
 
 export const adminUpdateAffiliate = createServerFn({method:"POST"})
