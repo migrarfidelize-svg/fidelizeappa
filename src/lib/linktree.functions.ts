@@ -128,13 +128,29 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       throw new Error("Este link personalizado já está em uso. Escolha outro.");
     }
 
+    // Preserva os metadados do tema exclusivo nas edições comuns do lojista.
+    // O editor envia somente controles de aparência; perder google_reviews ou
+    // preset_id nesse fluxo faria a landing personalizada voltar ao tema genérico.
+    const { data: storedPage, error: storedPageError } = await (supabaseAdmin as any)
+      .from("link_tree_pages")
+      .select("theme, cover_url, logo_url")
+      .eq("establishment_id", data.establishment_id)
+      .maybeSingle();
+    if (storedPageError) throw new Error(storedPageError.message);
+
+    const storedTheme = (storedPage?.theme ?? {}) as Record<string, unknown>;
+    const exclusive = storedTheme.preset_id === "gynrace-racing-2026";
+    const nextTheme = exclusive
+      ? { ...storedTheme, ...data.theme, preset_id: "gynrace-racing-2026", google_reviews: storedTheme.google_reviews }
+      : data.theme;
+
     const patch: Database["public"]["Tables"]["link_tree_pages"]["Insert"] = {
       establishment_id: data.establishment_id,
       title: data.title ?? null,
       description: data.description ?? null,
-      logo_url: data.logo_url ?? null,
-      cover_url: data.cover_url ?? null,
-      theme: data.theme,
+      logo_url: data.logo_url ?? storedPage?.logo_url ?? null,
+      cover_url: data.cover_url ?? storedPage?.cover_url ?? null,
+      theme: nextTheme,
       social: data.social,
     };
     (patch as any).public_slug = publicSlug;

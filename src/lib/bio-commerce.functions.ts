@@ -39,7 +39,9 @@ export const saveBioCommerceTheme = createServerFn({ method: "POST" })
     if (!page) throw new Error("BIO_COMMERCE_PAGE_NOT_FOUND");
 
     const current = ((page.theme ?? {}) as Record<string, unknown>);
-    const nextTheme = { ...current, ...data.theme };
+    const nextTheme = current.preset_id === "gynrace-racing-2026"
+      ? { ...current, ...data.theme, preset_id: "gynrace-racing-2026" }
+      : { ...current, ...data.theme };
 
     const { error: updateError } = await context.supabase
       .from("link_tree_pages")
