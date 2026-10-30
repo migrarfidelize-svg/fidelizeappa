@@ -77,7 +77,29 @@ function toBlackLogo(source: string): Promise<string | null> {
           d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; d[i + 3] = finalAlpha;
         }
         ctx.putImageData(pixels, 0, 0);
-        resolve(canvas.toDataURL("image/png"));
+
+        // Recorta margens transparentes embutidas no arquivo enviado.
+        // Assim Cimed, WePink e marcas longas ocupam a mesma area visual.
+        let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            if (d[(y * canvas.width + x) * 4 + 3] <= 18) continue;
+            minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+            minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+          }
+        }
+        if (maxX < minX || maxY < minY) return resolve(null);
+        const width = maxX - minX + 1;
+        const height = maxY - minY + 1;
+        const pad = Math.max(2, Math.round(Math.max(width, height) * 0.025));
+        const cropped = document.createElement("canvas");
+        cropped.width = width + pad * 2;
+        cropped.height = height + pad * 2;
+        cropped.getContext("2d")?.drawImage(
+          canvas, minX, minY, width, height,
+          pad, pad, width, height,
+        );
+        resolve(cropped.toDataURL("image/png"));
       } catch {
         // Ex.: servidor da imagem não permite CORS. CSS continua monocromático.
         resolve(null);
@@ -98,6 +120,7 @@ function BrandLogo({ item }: { item: BrandItem }) {
 
   useEffect(() => {
     let active = true;
+    setBroken(false);
     setMonochromeUrl(null);
     if (item.img) toBlackLogo(item.img).then((url) => { if (active) setMonochromeUrl(url); });
     return () => { active = false; };
