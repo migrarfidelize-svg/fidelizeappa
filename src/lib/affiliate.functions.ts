@@ -49,7 +49,7 @@ export const getAffiliateDashboard = createServerFn({method:"GET"})
     const account = await ensureAccount(db,est);
     const estId = est.establishment_id;
     const [referrals,commissions,withdrawals,assets,settings] = await Promise.all([
-      db.from("affiliate_referrals").select("id,referred_establishment_id,registered_at,establishments:referred_establishment_id(name)").eq("affiliate_establishment_id",estId).order("registered_at",{ascending:false}).limit(300),
+      db.from("affiliate_referrals").select("id,referred_establishment_id,registered_at,establishments!affiliate_referrals_referred_establishment_id_fkey(name)").eq("affiliate_establishment_id",estId).order("registered_at",{ascending:false}).limit(300),
       db.from("affiliate_commissions").select("id,referral_id,payment_id,amount,paid_base,rate,status,release_at,created_at").eq("affiliate_establishment_id",estId).order("created_at",{ascending:false}).limit(300),
       db.from("affiliate_withdrawals").select("id,amount,status,requested_at,processed_at,processed_by,proof_reference,notes").eq("establishment_id",estId).order("requested_at",{ascending:false}).limit(150),
       db.from("affiliate_assets").select("*").eq("establishment_id",estId).order("created_at",{ascending:false}).limit(75),
@@ -84,6 +84,11 @@ export const claimAffiliateReferral = createServerFn({method:"POST"})
     const {data:affiliate,error}=await db.from("affiliate_accounts").select("establishment_id,enabled").eq("code",data.code).maybeSingle();
     check(error);
     if(!affiliate?.enabled || affiliate.establishment_id===data.establishment_id) throw new Error("Código de indicação inválido.");
+    // Não permitir que um mesmo titular indique suas próprias empresas.
+    const {data:referrer,error:referrerError}=await db.from("establishments")
+      .select("created_by").eq("id",affiliate.establishment_id).single();
+    check(referrerError);
+    if(referrer?.created_by===context.userId) throw new Error("Autoindicação não é permitida.");
     const {count,error:payError}=await db.from("payments").select("id",{count:"exact",head:true}).eq("establishment_id",data.establishment_id);
     check(payError);
     if(count && count>0) throw new Error("O cadastro já iniciou seu processo de pagamento.");
@@ -97,7 +102,7 @@ export const claimAffiliateReferral = createServerFn({method:"POST"})
 
 export const saveAffiliateAsset = createServerFn({method:"POST"})
   .middleware([requireSupabaseAuth])
-  .inputValidator((v:unknown)=>z.object({establishment_id:id,media_url:z.string().url().max(2000),media_type:z.enum(["image","video"]),format:z.enum(["feed","story","reels","square","landscape"]),title:z.string().trim().max(90).default("")}).parse(v))
+  .inputValidator((v:unknown)=>z.object({establishment_id:id,media_url:z.string().url().max(2000).refine((url)=>url.startsWith("https://"),"A mídia precisa usar HTTPS."),media_type:z.enum(["image","video"]),format:z.enum(["feed","story","reels","square","landscape"]),title:z.string().trim().max(90).default("")}).parse(v))
   .handler(async ({context,data})=>{
     await getOwnedEstablishment(context,data.establishment_id);
     const db=await adminDb();
@@ -120,7 +125,7 @@ export const getAdminAffiliates = createServerFn({method:"GET"})
     const db=await adminDb();
     const [accounts,refs,commissions,withdrawals,settings]=await Promise.all([
       db.from("affiliate_accounts").select("*,establishments:establishment_id(name,slug,created_by)").order("created_at",{ascending:false}).limit(1000),
-      db.from("affiliate_referrals").select("id,affiliate_establishment_id,referred_establishment_id,registered_at,establishments:referred_establishment_id(name)").order("registered_at",{ascending:false}).limit(1000),
+      db.from("affiliate_referrals").select("id,affiliate_establishment_id,referred_establishment_id,registered_at,establishments!affiliate_referrals_referred_establishment_id_fkey(name)").order("registered_at",{ascending:false}).limit(1000),
       db.from("affiliate_commissions").select("*").order("created_at",{ascending:false}).limit(1000),
       db.from("affiliate_withdrawals").select("*").order("requested_at",{ascending:false}).limit(1000),
       db.from("affiliate_settings").select("*").eq("id",true).single(),
