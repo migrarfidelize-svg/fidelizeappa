@@ -118,6 +118,7 @@ async function processPaymentEvent(paymentId: string) {
       currency: mp.currency_id ?? "BRL",
       method: mapMpMethod(mp.payment_type_id),
       status: newStatus,
+      approved_at: approvedAt,
       status_detail: mp.status_detail ?? null,
       payer_email: mp.payer?.email ?? null,
       establishment_id: mp.metadata?.establishment_id ?? null,
