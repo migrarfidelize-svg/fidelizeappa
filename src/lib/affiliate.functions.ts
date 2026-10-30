@@ -121,7 +121,7 @@ export const saveAffiliateAsset = createServerFn({method:"POST"})
     const isOwnedStorageUrl=(url:string) => {
       const parsed=new URL(url);
       return parsed.origin===expectedOrigin
-        && /^\\/storage\\/v1\\/object\\/public\\/(logos|menu-videos)\\//.test(parsed.pathname);
+        && /^\/storage\/v1\/object\/public\/(logos|menu-videos)\//.test(parsed.pathname);
     };
     if(!isOwnedStorageUrl(data.media_url) || (data.preview_url && !isOwnedStorageUrl(data.preview_url))){
       throw new Error("Envie o criativo pelo armazenamento oficial da Fidelize.");
