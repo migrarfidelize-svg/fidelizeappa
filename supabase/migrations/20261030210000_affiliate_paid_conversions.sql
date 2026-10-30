@@ -111,6 +111,11 @@ declare
   v_rate numeric(5,2);
   v_approved timestamptz;
 begin
+  -- Nunca creditar comissão com pagamento escrito diretamente pelo navegador.
+  -- Só os webhooks/serviços autenticados com a chave service_role podem conciliar.
+  if auth.role() is distinct from 'service_role' then
+    return new;
+  end if;
   if new.status in ('refunded','charged_back','cancelled') then
     update public.affiliate_commissions set status='reversed',reversed_at=now()
       where payment_id=new.id and status='confirmed';
