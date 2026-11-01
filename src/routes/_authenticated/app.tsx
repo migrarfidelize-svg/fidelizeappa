@@ -19,7 +19,7 @@ import {
   LifeBuoy, BookOpen, Package, Receipt, HeartHandshake, Bell, Star, Menu,
   PanelLeftClose, PanelLeftOpen, Compass, Megaphone, UserCircle2, MessageSquare, BarChart3,
   Link2, UtensilsCrossed, ShoppingBag, FolderTree, LayoutList, Wallet, CreditCard,
-  Palette,
+  Palette, BadgePercent,
 } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
@@ -68,7 +68,7 @@ const MERCHANT_TOUR_STEPS_MOBILE: TourStep[] = [
 ];
 
 /** Rotas liberadas mesmo sem assinatura ativa (pagamento, perfil e suporte de cobrança). */
-const BILLING_EXEMPT = ["/app/planos", "/app/perfil", "/app/checkout", "/app/assinatura"];
+const BILLING_EXEMPT = ["/app/planos", "/app/perfil", "/app/checkout", "/app/assinatura", "/app/afiliados"];
 
 function isBillingExempt(pathname: string) {
   return BILLING_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + "/"));
@@ -195,6 +195,7 @@ const NAV_GROUPS: (NavGroup | NavItem)[] = [
     items: [
       { to: "/app/planos", label: "Planos", icon: Package },
       { to: "/app/pagamentos", label: "Pagamentos", icon: CreditCard },
+      { to: "/app/afiliados", label: "Programa de afiliados", icon: BadgePercent },
     ],
   },
   {

@@ -8,7 +8,8 @@ export type BioCommercePresetId =
   | "pet-friendly"
   | "event-pulse"
   | "clean-health"
-  | "executive-pro";
+  | "executive-pro"
+  | "creator-ember";
 
 export type BioCommerceNicheId =
   | "food"
@@ -18,7 +19,8 @@ export type BioCommerceNicheId =
   | "pet"
   | "events"
   | "health"
-  | "services";
+  | "services"
+  | "education";
 
 export type BioCommerceLayout = "classic" | "commerce" | "editorial" | "bento";
 export type BioCommerceHeroStyle = "brand" | "immersive" | "minimal" | "split";
@@ -100,6 +102,7 @@ export const BIO_COMMERCE_NICHES: BioCommerceNiche[] = [
   { id: "events", label: "Eventos / Entretenimento", description: "Eventos, casas de show, produtores, festas e experiências.", default_preset: "event-pulse", eyebrow: "Viva a experiência", showcase_title: "Próximos destaques", primary_cta: "Garantir acesso", preferred_source: "catalog" },
   { id: "health", label: "Saúde / Bem-estar", description: "Clínicas, consultórios e profissionais de saúde e bem-estar.", default_preset: "clean-health", eyebrow: "Cuidado com confiança", showcase_title: "Serviços e cuidados", primary_cta: "Agendar atendimento", preferred_source: "catalog" },
   { id: "services", label: "Serviços / Profissionais", description: "Consultorias, escritórios e prestadores de serviço.", default_preset: "executive-pro", eyebrow: "Presença profissional, resultado real", showcase_title: "Soluções em destaque", primary_cta: "Falar agora", preferred_source: "catalog" },
+  { id: "education", label: "Criadores / Cursos", description: "Especialistas, mentores, conteúdos, e-books e comunidades.", default_preset: "creator-ember", eyebrow: "Conhecimento que transforma", showcase_title: "Conteúdos em destaque", primary_cta: "Conhecer meus conteúdos", preferred_source: "catalog" },
 ];
 
 export const BIO_COMMERCE_PRESETS: BioCommercePreset[] = [
@@ -166,6 +169,13 @@ export const BIO_COMMERCE_PRESETS: BioCommercePreset[] = [
     layout: "editorial", hero_style: "split", card_style: "glass", background_effect: "ambient", font_style: "modern",
     content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
   },
+  {
+    preset_id: "creator-ember", niche_id: "education", label: "Creator Ember", niche: "Criadores / Cursos",
+    description: "Editorial preto e laranja para especialistas, conteúdos, materiais, vídeos e mentorias.",
+    primary: "#ff6500", accent: "#f04424", background: "#100a08", text: "#fff8f3", button_style: "solid", rounded: "lg",
+    layout: "editorial", hero_style: "immersive", card_style: "elevated", background_effect: "ambient", font_style: "bold",
+    content_width: "comfortable", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "icons",
+  },
 ];
 
 const ADAPTIVE_DEFAULTS: Required<Pick<
@@ -202,6 +212,7 @@ export function inferBioCommerceNiche(input: { theme?: BioCommerceTheme | null; 
   if (/evento|show|festa|ingresso|entretenimento/.test(haystack)) return "events";
   if (/sa[uú]de|cl[ií]nica|m[eé]dic|odonto|fisi|terapia|nutri/.test(haystack)) return "health";
   if (/moda|roupa|boutique|vestu[aá]rio|cal[cç]ado|acess[oó]rio/.test(haystack)) return "fashion";
+  if (/curso|mentoria|consultoria|e.book|conte[uú]do|educa[çc]|treinamento|aprend/.test(haystack)) return "education";
   return "services";
 }
 

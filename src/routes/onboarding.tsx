@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { createEstablishment, getMyEstablishments } from "@/lib/loyalty.functions";
+import { claimAffiliateReferral } from "@/lib/affiliate.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,6 +83,7 @@ function Onboarding() {
   const router = useRouter();
   const qc = useQueryClient();
   const create = useServerFn(createEstablishment);
+  const claimReferral = useServerFn(claimAffiliateReferral);
   const getEsts = useServerFn(getMyEstablishments);
 
   const [loading, setLoading] = useState(false);
@@ -233,6 +235,19 @@ function Onboarding() {
         toast.error(error instanceof Error ? error.message : "Não foi possível reservar o convite de testes.");
       }
       const created = await create({ data: { ...f, reward_title: rewardTitle, slug: cleanSlug } });
+      // O vínculo de afiliado se aplica também a testes, mas a comissão só nasce com compra paga.
+      try {
+        const rawReferral = localStorage.getItem("fidelize:affiliate-ref");
+        if (rawReferral) {
+          const referral = JSON.parse(rawReferral) as { code?: string; at?: number };
+          if (referral.code && referral.at && Date.now() - referral.at < 30 * 24 * 60 * 60 * 1000) {
+            await claimReferral({ data: { establishment_id: created.establishment_id, code: referral.code } });
+          }
+          localStorage.removeItem("fidelize:affiliate-ref");
+        }
+      } catch (referralError) {
+        console.warn("[affiliate] falha na atribuição (não bloqueia onboarding)", referralError);
+      }
       if (created.trial_activated) {
         try { localStorage.removeItem("fidelize:pending-trial"); } catch {}
       }
