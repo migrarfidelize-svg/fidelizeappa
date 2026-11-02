@@ -27,7 +27,22 @@ const PLAN_LABEL: Record<string, string> = {
 
 function AdminOverview() {
   const getOverview = useServerFn(adminGetOverview);
-  const { data } = useQuery({ queryKey: ["admin-overview"], queryFn: () => getOverview() });
+  const { data, isError, refetch } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => getOverview(),
+    retry: 1,
+  });
+  if (isError) {
+    return (
+      <div className="mx-auto flex min-h-[40vh] max-w-lg flex-col items-center justify-center gap-4 rounded-2xl border border-border/60 bg-card p-8 text-center">
+        <h2 className="font-display text-xl font-bold">Não foi possível carregar os indicadores</h2>
+        <p className="text-sm text-muted-foreground">O painel está temporariamente indisponível. Nenhum dado administrativo foi alterado.</p>
+        <button type="button" onClick={() => void refetch()} className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground">
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
   if (!data) return <RouteLoading label="Carregando visão geral…" fullscreen={false} className="min-h-[40vh]" />;
 
   const secondary: Array<{ label: string; value: string | number; icon: any; accent?: boolean }> = [

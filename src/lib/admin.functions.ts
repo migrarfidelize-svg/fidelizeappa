@@ -2,24 +2,38 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export async function assertSuperAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
-  if (error) throw new Error(error.message);
+/**
+ * Check platform privileges against the trusted server database client.
+ * Call only after requireSupabaseAuth has verified the user's bearer JWT.
+ * Avoids PostgREST PGRST303 on an otherwise-valid user JWT.
+ */
+export async function assertSuperAdmin(_supabase: any, userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("app_roles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("role", "super_admin")
+    .maybeSingle();
+  if (error) throw new Error("Não foi possível validar a permissão administrativa.");
   if (!data) throw new Error("Acesso restrito: apenas administradores da plataforma.");
 }
 
 export const getAdminStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data, error } = await supabase.rpc("is_super_admin", { _user: userId });
-    if (error) throw new Error(`Não foi possível verificar o acesso administrativo: ${error.message}`);
-    // Bootstrap: allow claiming super_admin if none exists yet
-    const { count } = await supabase
-      .from("app_roles")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "super_admin");
-    return { isAdmin: data === true, canBootstrap: (count ?? 0) === 0, userId };
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [role, total] = await Promise.all([
+      supabaseAdmin.from("app_roles").select("user_id")
+        .eq("user_id", userId).eq("role", "super_admin").maybeSingle(),
+      supabaseAdmin.from("app_roles").select("user_id", { count: "exact", head: true })
+        .eq("role", "super_admin"),
+    ]);
+    if (role.error || total.error) {
+      throw new Error("Não foi possível verificar as permissões administrativas.");
+    }
+    return { isAdmin: Boolean(role.data), canBootstrap: total.count === 0, userId };
   });
 
 export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
@@ -40,8 +54,8 @@ export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
 export const adminGetOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await assertSuperAdmin(supabase, userId);
+    const { userId } = context;
+    await assertSuperAdmin(context.supabase, userId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: prodData } = await supabaseAdmin
@@ -66,16 +80,16 @@ export const adminGetOverview = createServerFn({ method: "GET" })
       { data: recentStamps },
       { data: recentEsts },
     ] = await Promise.all([
-      supabase.from("establishments").select("*", { count: "exact", head: true }),
-      supabase.from("establishments").select("*", { count: "exact", head: true }).eq("active", true),
-      supabase.from("establishments").select("*", { count: "exact", head: true }).eq("active", false),
-      supabase.from("customers").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
-      supabase.from("stamps").select("*", { count: "exact", head: true }).is("reverted_at", null).gte("created_at", cutoff),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
-      supabase.from("rewards").select("*", { count: "exact", head: true }).not("redeemed_at", "is", null).gte("redeemed_at", cutoff),
-      supabase.from("establishments").select("plan"),
-      supabase.from("stamps").select("created_at").is("reverted_at", null).gte("created_at", cutoff).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
-      supabase.from("establishments").select("id, name, slug, plan, active, created_at").order("created_at", { ascending: false }).limit(6),
+      supabaseAdmin.from("establishments").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("establishments").select("*", { count: "exact", head: true }).eq("active", true),
+      supabaseAdmin.from("establishments").select("*", { count: "exact", head: true }).eq("active", false),
+      supabaseAdmin.from("customers").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
+      supabaseAdmin.from("stamps").select("*", { count: "exact", head: true }).is("reverted_at", null).gte("created_at", cutoff),
+      supabaseAdmin.from("rewards").select("*", { count: "exact", head: true }).gte("created_at", cutoff),
+      supabaseAdmin.from("rewards").select("*", { count: "exact", head: true }).not("redeemed_at", "is", null).gte("redeemed_at", cutoff),
+      supabaseAdmin.from("establishments").select("plan"),
+      supabaseAdmin.from("stamps").select("created_at").is("reverted_at", null).gte("created_at", cutoff).gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString()),
+      supabaseAdmin.from("establishments").select("id, name, slug, plan, active, created_at").order("created_at", { ascending: false }).limit(6),
     ]);
 
     const planCounts: Record<string, number> = { free: 0, starter: 0, pro: 0, enterprise: 0 };
@@ -93,9 +107,9 @@ export const adminGetOverview = createServerFn({ method: "GET" })
     }
 
     // Real MRR: sum of price_monthly for establishments with an active paid subscription
-    const { data: plans } = await supabase.from("plans").select("tier, price_monthly");
+    const { data: plans } = await supabaseAdmin.from("plans").select("tier, price_monthly");
     const priceMap = new Map<string, number>((plans ?? []).map((p: any) => [p.tier, Number(p.price_monthly)]));
-    const { data: activeSubs } = await supabase
+    const { data: activeSubs } = await supabaseAdmin
       .from("subscriptions")
       .select("establishment_id, tier")
       .eq("status", "active");
