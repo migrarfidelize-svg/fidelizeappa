@@ -955,7 +955,13 @@ export const getEstablishmentCampaigns = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: membership, error: membershipError } = await supabaseAdmin
+      .from("establishment_members").select("id")
+      .eq("establishment_id", data.establishment_id)
+      .eq("user_id", context.userId).eq("active", true).maybeSingle();
+    if (membershipError || !membership) throw new Error("Sem acesso a este estabelecimento.");
+    const supabase = supabaseAdmin;
     const { data: rows, error } = await supabase.from("campaigns")
       .select("id, name, type, reward_title, reward_description, rules, stamps_required, stamp_icon, stamp_validity_days, reward_validity_days, primary_color, accent_color, active, created_at")
       .eq("establishment_id", data.establishment_id)
