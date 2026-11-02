@@ -12,10 +12,16 @@ export const getMyShowcaseStatus = createServerFn({ method: "GET" })
     establishment_id: z.string().uuid()
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    
-    // Consulta autenticada (RLS normal do lojista)
-    const { data: menus, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: member, error: memberError } = await supabaseAdmin
+      .from("establishment_members").select("id")
+      .eq("user_id", context.userId)
+      .eq("establishment_id", data.establishment_id)
+      .eq("active", true).maybeSingle();
+    if (memberError || !member) throw new Error("Sem acesso a este estabelecimento.");
+
+    // Read-only response, scoped to the verified establishment membership.
+    const { data: menus, error } = await supabaseAdmin
       .from("restaurant_menus")
       .select("kind, status")
       .eq("establishment_id", data.establishment_id);
