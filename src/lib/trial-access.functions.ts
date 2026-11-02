@@ -7,7 +7,10 @@ export const getMyTrialAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: membership, error: memberError } = await context.supabase
+    // The JWT was verified by requireSupabaseAuth. Scope the privileged read
+    // to the signed-in member so a PostgREST clock error does not deny access.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: membership, error: memberError } = await supabaseAdmin
       .from("establishment_members")
       .select("id")
       .eq("establishment_id", data.establishment_id)
