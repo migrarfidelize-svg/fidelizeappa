@@ -859,11 +859,14 @@ export const createEstablishment = createServerFn({ method: "POST" })
 export const getMyEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data, error } = await supabase.from("establishment_members")
+    // requireSupabaseAuth validates the bearer token first. The result is scoped
+    // to that authenticated user, even if PostgREST rejects the user JWT with
+    // PGRST303 ("JWT issued at future").
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.from("establishment_members")
       .select("role, establishment:establishments(*)")
-      .eq("user_id", userId).eq("active", true);
-    if (error) throw new Error(error.message);
+      .eq("user_id", context.userId).eq("active", true);
+    if (error) throw new Error("Não foi possível consultar suas empresas. Tente novamente.");
     return data ?? [];
   });
 
@@ -874,21 +877,25 @@ export const getDashboardData = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const est = data.establishment_id;
 
-    // 1. Validar que o usuário pertence ao establishment solicitado
-    const { data: membership } = await supabase
+    // 1. Validar vínculo explicitamente, antes de usar o cliente server-only.
+    // Nunca interpretar PGRST303 como "usuário sem empresa".
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: membership, error: membershipError } = await supabaseAdmin
       .from("establishment_members")
       .select("id")
       .eq("establishment_id", est)
       .eq("user_id", userId)
+      .eq("active", true)
       .maybeSingle();
-
+    if (membershipError) throw new Error("Não foi possível validar sua empresa.");
     if (!membership) {
-      // Se não for membro, checar se é super admin
-      const { data: isAdmin } = await supabase.rpc("is_super_admin", { _user: userId });
-      if (!isAdmin) throw new Error("Acesso negado ao estabelecimento.");
+      // Administradores podem inspecionar outros estabelecimentos nesta função;
+      // todas as demais ações continuam sujeitas às próprias autorizações.
+      const { data: adminRole, error: roleError } = await supabaseAdmin
+        .from("app_roles").select("user_id")
+        .eq("user_id", userId).eq("role", "super_admin").maybeSingle();
+      if (roleError || !adminRole) throw new Error("Acesso negado ao estabelecimento.");
     }
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // 2. Ler production_started_at de system_settings usando supabaseAdmin (Server-Side Only)
     const { data: settings } = await supabaseAdmin
