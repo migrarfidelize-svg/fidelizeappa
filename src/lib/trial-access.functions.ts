@@ -20,7 +20,6 @@ export const getMyTrialAccess = createServerFn({ method: "POST" })
       .maybeSingle();
     if (memberError || !membership) throw new Error("Sem acesso a este estabelecimento.");
 
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as any;
     const { data: subscription, error } = await db.from("subscriptions")
       .select("provider,status,current_period_end")
