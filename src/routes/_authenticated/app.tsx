@@ -76,13 +76,17 @@ function isBillingExempt(pathname: string) {
 
 export const Route = createFileRoute("/_authenticated/app")({
   beforeLoad: async ({ location }) => {
-    try {
-      const { resolveAuthenticatedDestination } = await import("@/lib/destination-resolver");
-      const to = await resolveAuthenticatedDestination();
-      if (to === "/onboarding" || to === "/carteira") throw redirect({ to });
-    } catch (e) {
-      if (e && typeof e === "object" && ("isRedirect" in e || "to" in e)) throw e;
+    // The same signed-in super admin may also own a business. Merchant mode
+    // is permitted only for an existing, active establishment membership.
+    // Never send an administrator through the new-business onboarding flow.
+    const { getAuthenticatedAccountAccess } = await import("@/lib/account-access.functions");
+    const access = await getAuthenticatedAccountAccess();
+    if (access.isSuperAdmin) {
+      if (!access.hasEstablishment) throw redirect({ to: "/hash" });
+      return;
     }
+    if (access.accountType === "customer") throw redirect({ to: "/carteira" });
+    if (!access.hasEstablishment) throw redirect({ to: "/onboarding" });
 
     if (isBillingExempt(location.pathname)) return;
 
@@ -223,7 +227,9 @@ function AppLayout() {
   const queryClient = useQueryClient();
   const getEsts = useServerFn(getMyEstablishments);
   const getAdmin = useServerFn(getAdminStatus);
-  const { data: memberships, isLoading } = useQuery({ queryKey: ["memberships"], queryFn: () => getEsts() });
+  const { data: memberships, isLoading, isError: membershipsError, refetch: retryMemberships } = useQuery({
+    queryKey: ["memberships"], queryFn: () => getEsts(), retry: 1,
+  });
   const { data: adminStatus } = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdmin() });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -386,11 +392,31 @@ function AppLayout() {
   const FLAT_ALLOWED = filteredGroups.flatMap((g) => ('items' in g ? g.items : [g]));
 
   if (isLoading) return <RouteLoading label="Carregando seu painel…" />;
+  if (membershipsError) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-background p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-7 text-center shadow-sm">
+          <Shield className="mx-auto h-8 w-8 text-primary" />
+          <h1 className="mt-4 font-display text-xl font-bold">Não foi possível consultar suas empresas</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Sua conta continua ativa. Uma falha de conexão não significa que você precisa cadastrar uma nova empresa.</p>
+          <Button className="mt-5 w-full" onClick={() => void retryMemberships()}>Tentar novamente</Button>
+          {adminStatus?.isAdmin && <Link className="mt-4 block text-sm text-primary underline" to="/hash">Voltar ao painel administrativo</Link>}
+        </div>
+      </div>
+    );
+  }
   if (!memberships?.length) {
-    if (typeof window !== "undefined" && !pathname.startsWith("/onboarding")) {
-      navigate({ to: "/onboarding" });
-    }
-    return <RouteLoading label="Configurando sua empresa…" />;
+    return (
+      <div className="grid min-h-dvh place-items-center bg-background p-6">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-7 text-center">
+          <h1 className="font-display text-xl font-bold">Nenhuma empresa vinculada</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Não encontramos um estabelecimento ativo associado a esta sessão.</p>
+          <Button className="mt-5" onClick={() => navigate({ to: adminStatus?.isAdmin ? "/hash" : "/onboarding" })}>
+            {adminStatus?.isAdmin ? "Voltar ao administrador" : "Configurar minha empresa"}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
@@ -583,6 +609,20 @@ function AppLayout() {
               <AnimatePresence mode="wait">
                 <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }} className="relative min-w-0 px-4 py-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:px-6 md:py-7 md:pb-7 max-w-[1400px] w-full mx-auto">
                   <PanelTransition />
+                  {adminStatus?.isAdmin && (
+                    <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Shield className="h-5 w-5 shrink-0 text-primary" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold">Visualização do lojista · {activeEst?.name}</p>
+                          <p className="text-xs text-muted-foreground">Você continua como administrador. Alterações realizadas neste painel são reais.</p>
+                        </div>
+                      </div>
+                      <Link to="/hash" className="inline-flex h-9 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-background px-4 text-xs font-semibold text-primary transition-colors hover:bg-primary/10">
+                        Voltar ao administrador
+                      </Link>
+                    </div>
+                  )}
                   {trialRestricted ? (
                     <div className="mx-auto max-w-xl rounded-3xl border border-primary/20 bg-card p-8 text-center shadow-lg md:p-12">
                       <div className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary"><Shield className="h-7 w-7" /></div>
