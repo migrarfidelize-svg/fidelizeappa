@@ -874,7 +874,7 @@ export const getDashboardData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
     const est = data.establishment_id;
 
     // 1. Validar vínculo explicitamente, antes de usar o cliente server-only.
