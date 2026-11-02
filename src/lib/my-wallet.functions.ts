@@ -2,6 +2,39 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { attachEstablishmentCore, AttachEstablishmentError, type AttachDb } from "@/lib/my-wallet-core";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
+/**
+ * PostgREST versions with a stale validator clock can reject a valid user
+ * access token as PGRST303 ("JWT issued at future"). Authentication is still
+ * validated by requireSupabaseAuth via Supabase Auth / getClaims.
+ *
+ * During that *specific* upstream outage, wallet GET handlers may read through
+ * the server-only service role. Every private query MUST still be scoped to
+ * context.userId or to IDs obtained from that user's scoped records.
+ * Do not use this helper in mutation handlers or other generic endpoints.
+ */
+async function getWalletReadClient(context: {
+  supabase: SupabaseClient<Database>;
+  userId: string;
+}): Promise<SupabaseClient<Database>> {
+  const { error } = await context.supabase
+    .from("customers")
+    .select("id")
+    .eq("user_id", context.userId)
+    .limit(1);
+
+  if (!error) return context.supabase;
+  if (error.code !== "PGRST303" || !/JWT issued at future/i.test(error.message)) {
+    throw error;
+  }
+
+  console.warn("[wallet] PostgREST clock skew (PGRST303); switching scoped reads to server");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin;
+}
+
 
 // Reexporta o erro para consumidores existentes.
 export { AttachEstablishmentError };
@@ -19,7 +52,8 @@ export const getMyAccountType = createServerFn({ method: "GET" })
 export const getMyWallet = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: rows, error } = await context.supabase
+    const readDb = await getWalletReadClient(context);
+    const { data: rows, error } = await readDb
       .from("customers")
       .select(
         `id, name, code, access_token, last_visit_at, visits_count, tier, pinned_at,
@@ -37,7 +71,7 @@ export const getMyWallet = createServerFn({ method: "GET" })
     if (!customerIds.length) return [];
 
     // Load cards + campaigns for progress
-    const { data: cards, error: cardsError } = await context.supabase
+    const { data: cards, error: cardsError } = await readDb
       .from("loyalty_cards")
       .select(
         `id, customer_id, stamps, cycle, updated_at,
@@ -285,6 +319,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ slug: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
+    const readDb = await getWalletReadClient(context);
   const normalizedSlug = data.slug.trim().toLowerCase();
 
   const { supabaseAdmin } = await import(
@@ -301,7 +336,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   if (establishmentError) throw establishmentError;
   if (!establishment) return null;
 
-  const { data: row, error } = await context.supabase
+  const { data: row, error } = await readDb
     .from("customers")
     .select(
       `id, name, code, access_token, last_visit_at, visits_count, tier, referral_code,
@@ -318,7 +353,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
   if (!row) return null;
 
 
-    const { data: cards } = await context.supabase
+    const { data: cards } = await readDb
       .from("loyalty_cards")
       .select(
         `id, stamps, cycle, updated_at, created_at,
@@ -333,7 +368,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
     let recentStamps: Array<{ id: string; createdAt: string; reverted: boolean; campaignName: string | null }> = [];
     let redeemedRewards: Array<{ id: string; unlockedAt: string; redeemedAt: string; campaignName: string; rewardTitle: string }> = [];
     if (cardIds.length) {
-      const { data: sRows } = await context.supabase
+      const { data: sRows } = await readDb
         .from("stamps")
         .select("id, card_id, created_at, reverted_at")
         .in("card_id", cardIds)
@@ -349,7 +384,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
         campaignName: cardName.get(s.card_id) ?? null,
       }));
 
-      const { data: rRows } = await context.supabase
+      const { data: rRows } = await readDb
         .from("rewards")
         .select("id, card_id, unlocked_at, redeemed_at, campaign:campaigns!inner(name, reward_title)")
         .in("card_id", cardIds)
@@ -371,7 +406,7 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
     try {
       const { isShowcaseDestinationValid } = await import("@/lib/qr-target.server");
       hasMenu = await isShowcaseDestinationValid(
-        context.supabase,
+        readDb,
         (row.establishment as unknown as { id: string }).id,
         "menu"
       );
@@ -404,7 +439,8 @@ export const getMyEstablishmentCard = createServerFn({ method: "GET" })
 export const getMyRewards = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: customers, error: cErr } = await context.supabase
+    const readDb = await getWalletReadClient(context);
+    const { data: customers, error: cErr } = await readDb
       .from("customers")
       .select(`id, establishment:establishments!inner(id, slug, name, logo_url, primary_color, active)`)
       .eq("user_id", context.userId);
@@ -416,7 +452,7 @@ export const getMyRewards = createServerFn({ method: "GET" })
       campaignName: string; icon: string; establishment: any; ready: boolean; pct: number;
     }>;
 
-    const { data: cards, error } = await context.supabase
+    const { data: cards, error } = await readDb
       .from("loyalty_cards")
       .select(`id, customer_id, stamps, updated_at,
         campaign:campaigns!inner(id, name, stamps_required, reward_title, active, stamp_icon, primary_color)`)
@@ -428,7 +464,7 @@ export const getMyRewards = createServerFn({ method: "GET" })
     const cardIds = (cards ?? []).map((c) => c.id);
     const pendingByCard = new Map<string, { id: string; expiresAt: string | null }>();
     if (cardIds.length) {
-      const { data: rewardsRows } = await context.supabase
+      const { data: rewardsRows } = await readDb
         .from("rewards")
         .select("id, card_id, redeemed_at, unlocked_at, expires_at")
         .in("card_id", cardIds)
@@ -473,7 +509,8 @@ export const getMyRewards = createServerFn({ method: "GET" })
 export const getMyHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: customers, error: cErr } = await context.supabase
+    const readDb = await getWalletReadClient(context);
+    const { data: customers, error: cErr } = await readDb
       .from("customers")
       .select(`id, establishment:establishments!inner(id, slug, name, logo_url, primary_color)`)
       .eq("user_id", context.userId);
@@ -492,13 +529,13 @@ export const getMyHistory = createServerFn({ method: "GET" })
 
     // Conquistas do usuário (independem de ter cartão)
     const [{ data: myAchievs }, { data: catalog }] = await Promise.all([
-      context.supabase
+      readDb
         .from("customer_achievements")
         .select("achievement_code, unlocked_at")
         .eq("user_id", context.userId)
         .order("unlocked_at", { ascending: false })
         .limit(30),
-      context.supabase
+      readDb
         .from("achievements")
         .select("code, title, description, icon, rarity")
         .eq("is_active", true),
@@ -530,7 +567,7 @@ export const getMyHistory = createServerFn({ method: "GET" })
       return achievementItems as HistoryItem[];
     }
 
-    const { data: cards } = await context.supabase
+    const { data: cards } = await readDb
       .from("loyalty_cards")
       .select(`id, customer_id, campaign:campaigns!inner(name, reward_title)`)
       .in("customer_id", custIds);
@@ -543,13 +580,13 @@ export const getMyHistory = createServerFn({ method: "GET" })
     if (!cardIds.length) return achievementItems as HistoryItem[];
 
     const [{ data: stamps, error }, { data: redemptions }] = await Promise.all([
-      context.supabase
+      readDb
         .from("stamps")
         .select(`id, card_id, created_at, reverted_at`)
         .in("card_id", cardIds)
         .order("created_at", { ascending: false })
         .limit(120),
-      context.supabase
+      readDb
         .from("rewards")
         .select(`id, card_id, redeemed_at`)
         .in("card_id", cardIds)
@@ -598,15 +635,16 @@ export const getMyHistory = createServerFn({ method: "GET" })
 export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const readDb = await getWalletReadClient(context);
     // Estabelecimentos onde o usuário já tem cartão/registro — não excluímos,
     // apenas marcamos como "já visitados" para o cliente ver novidades/promoções.
-    const { data: mine } = await context.supabase
+    const { data: mine } = await readDb
       .from("customers")
       .select("establishment_id")
       .eq("user_id", context.userId);
     const visited = new Set((mine ?? []).map((r) => r.establishment_id));
 
-    const { data, error } = await context.supabase
+    const { data, error } = await readDb
       .from("establishments")
       .select("id, slug, name, logo_url, primary_color, address, city, description, segment, plan, created_at")
       .eq("active", true)
@@ -618,10 +656,10 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     const tiers = Array.from(new Set((data ?? []).map((e) => e.plan).filter(Boolean)));
 
     const [promoted, plansResult, showcasesResult] = await Promise.all([
-      fetchPromotedEstablishmentIds(context.supabase),
-      context.supabase.from("plans").select("id, tier").in("tier", tiers),
+      fetchPromotedEstablishmentIds(readDb),
+      readDb.from("plans").select("id, tier").in("tier", tiers),
       estIds.length
-        ? context.supabase
+        ? readDb
             .from("restaurant_menus")
             .select("establishment_id, kind")
             .in("establishment_id", estIds)
@@ -632,7 +670,7 @@ export const getDiscoveryEstablishments = createServerFn({ method: "GET" })
     const planIds = (plansResult.data ?? []).map((p) => p.id);
     const tierToPlanId = new Map<string, string>((plansResult.data ?? []).map((p) => [p.tier as string, p.id]));
 
-    const { data: features } = await context.supabase
+    const { data: features } = await readDb
       .from("plan_features")
       .select("plan_id, feature_key, enabled")
       .in("plan_id", planIds)
@@ -703,7 +741,8 @@ async function fetchPromotedEstablishmentIds(
 export const getPromotedEstablishmentIds = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const set = await fetchPromotedEstablishmentIds(context.supabase);
+    const readDb = await getWalletReadClient(context);
+    const set = await fetchPromotedEstablishmentIds(readDb);
     return Array.from(set);
   });
 
