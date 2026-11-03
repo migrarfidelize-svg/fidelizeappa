@@ -4,6 +4,7 @@ import { trackChannelEvent } from "@/lib/tracking";
 import type { BioCommerceLandingData } from "./BioCommerceLanding";
 
 const WHATSAPP_FALLBACK = "5562981006469";
+const INSTAGRAM_OFFICIAL = "https://www.instagram.com/karinynails/";
 const WELCOME_MESSAGE = "Olá, Kariny! Vim pelo seu link e gostaria de conhecer melhor seus serviços e consultar os horários disponíveis. Pode me ajudar?";
 const SERVICES = [
   ["01", "Alongamento de unhas", "Formatos, estilos e acabamentos sob consulta."],
@@ -54,7 +55,7 @@ export function KarinyNailsExclusivePage({ data }: { data: BioCommerceLandingDat
   const name = data.page?.title || est.name || "Kariny Nails";
   const phone = verifiedPhone(est.whatsapp) ?? WHATSAPP_FALLBACK;
   const whatsapp = "https://wa.me/" + phone + "?text=" + encodeURIComponent(WELCOME_MESSAGE);
-  const instagram = safeInstagram(est.instagram) ?? safeInstagram((data.page?.theme as any)?.instagram);
+  const instagram = safeInstagram(est.instagram) ?? safeInstagram((data.page?.theme as any)?.instagram) ?? INSTAGRAM_OFFICIAL;
   const cover = safeImage(data.page?.cover_url) ?? safeImage(est.cover_url) ?? photos[0]?.url;
   const avatar = safeImage(data.page?.logo_url) ?? safeImage(est.logo_url);
   const track = (label: string) => trackChannelEvent({ slug: est.slug || "kariny-nails", channel: "linktree", event_type: "link_click", ref_label: "kariny:" + label });
@@ -119,8 +120,12 @@ export function KarinyNailsExclusivePage({ data }: { data: BioCommerceLandingDat
         <section id="portfolio" className="mx-auto w-[calc(100%_-_32px)] max-w-[1160px] py-20 sm:w-[calc(100%_-_48px)] md:py-28">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-6"><div><p className="mb-4 text-[10px] font-bold uppercase tracking-[.23em] text-[#dcabba]">Inspiração e portfólio</p><h2 className="font-[Georgia] text-[clamp(2.5rem,5vw,4.7rem)] leading-[1.04] tracking-[-.05em]">O poder de um<br/><em className="text-[#e5b4c0]">belo acabamento.</em></h2></div>{instagram&&<a href={instagram} {...ext("portfolio:instagram")} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-xs font-semibold">Ver Instagram <ArrowUpRight size={15}/></a>}</div>
           {photos.length>0?<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-5">{photos.slice(0,6).map((pic,i)=><button type="button" key={pic.url} aria-label={"Ampliar foto "+(i+1)} onClick={()=>setSelected(i)} className="group relative aspect-[3/4] overflow-hidden rounded-[22px] border border-white/15 bg-[#302331]"><img src={pic.url} alt={pic.alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/><span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-5 pb-5 pt-12 text-left text-[10px] font-bold uppercase tracking-wider">Detalhe {i+1} <ArrowUpRight size={13} className="inline"/></span></button>)}</div>
-            :<div className="grid gap-3 sm:grid-cols-3">{[1,2,3].map(i=><div key={i} className="flex aspect-[3/4] flex-col items-center justify-center rounded-[22px] border border-[#d7a4b4]/15 bg-[radial-gradient(circle_at_20%_15%,#67485d,#251b2a_75%)] p-5 text-center"><Sparkles size={27} className="mb-5 text-[#dcabba]"/><span className="font-[Georgia] text-3xl italic text-[#f0cad3]">Seu estilo</span><span className="mt-3 text-[9px] font-bold uppercase tracking-[.2em] text-white/45">Portfólio em preparação</span></div>)}</div>}
-          <p className="mt-5 text-xs leading-6 text-white/45">{photos.length ? "Seleção de trabalhos cadastrados na Fidelize." : "Espaço reservado para fotografias reais dos trabalhos da Kariny."}</p>
+            :<div className="flex min-h-[280px] flex-col items-start justify-center gap-6 rounded-[24px] border border-[#d7a4b4]/20 bg-[radial-gradient(ellipse_at_top_right,#634359,#251b2a_70%)] p-7 sm:p-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[#dcabba]/35 px-4 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-[#f0c9d3]"><Sparkles size={15}/> Portfólio</span>
+              <div className="max-w-2xl"><h3 className="font-[Georgia] text-[clamp(2rem,5vw,3.5rem)] leading-tight tracking-tight">Inspire-se nos trabalhos da Kariny.</h3><p className="mt-4 text-sm leading-7 text-white/60">Explore os registros e detalhes publicados no Instagram oficial enquanto selecionamos os destaques para esta galeria.</p></div>
+              <a href={INSTAGRAM_OFFICIAL} {...ext("portfolio:trabalhos-instagram")} className="inline-flex min-h-[50px] items-center gap-3 rounded-full bg-[#f3dcd8] px-6 text-xs font-bold text-[#281821] hover:bg-white"><Instagram size={17}/> Ver trabalhos em @karinynails <ArrowUpRight size={15}/></a>
+            </div>}
+          {photos.length > 0 && <p className="mt-5 text-xs leading-6 text-white/45">Seleção de trabalhos cadastrados na Fidelize.</p>}
         </section>
         <section id="contato" className="border-t border-[#e8bfc9]/15 bg-[radial-gradient(ellipse_at_80%_25%,#5f3d51,#291a2b_60%,#1a121b)] py-20 md:py-28"><div className="mx-auto grid w-[calc(100%_-_32px)] max-w-[1160px] items-end gap-10 sm:w-[calc(100%_-_48px)] md:grid-cols-[1fr_auto]"><div><p className="mb-6 text-[10px] font-bold uppercase tracking-[.22em] text-[#dcabba]">Seu próximo momento de cuidado</p><h2 className="font-[Georgia] text-[clamp(3rem,7vw,6.7rem)] leading-[.98] tracking-[-.055em]">Seu horário.<br/><em className="text-[#e5b4c0]">Seu momento.</em></h2><p className="mt-7 max-w-md text-sm leading-7 text-white/60">Entre em contato com a Kariny para consultar a agenda e conhecer as possibilidades de atendimento.</p></div><div className="flex flex-col gap-3"><a href={whatsapp} {...ext("contato:whatsapp")} className="inline-flex min-h-[52px] items-center justify-center gap-3 rounded-full bg-[#f3dcd8] px-6 text-sm font-bold text-[#281821] hover:bg-white">Conversar no WhatsApp <MessageCircle size={17}/></a>{instagram&&<a href={instagram} {...ext("contato:instagram")} className="inline-flex min-h-[50px] items-center justify-center gap-3 rounded-full border border-white/30 px-6 text-sm font-semibold">Ver Instagram <Instagram size={17}/></a>}</div></div></section>
       </main>
