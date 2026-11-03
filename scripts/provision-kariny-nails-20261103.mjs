@@ -18,6 +18,7 @@ import { createClient } from "@supabase/supabase-js";
 const email = "karinynails@fidelize.app";
 const slug = "kariny-nails";
 const name = "Kariny Nails";
+const instagram = "https://www.instagram.com/karinynails/";
 const phone = "5562981006469";
 const message = "Olá, Kariny! Vim pelo seu link e gostaria de conhecer melhor seus serviços e consultar os horários disponíveis. Pode me ajudar?";
 const whatsapp = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
@@ -91,12 +92,15 @@ async function main() {
       slug,name,created_by:user.id,active:true,plan:"enterprise",
       segment:"Beleza e Nail Design",
       description:"Nail Design Studio. Atendimento e horários disponíveis mediante consulta.",
-      whatsapp:phone,phone,
+      whatsapp:phone,phone,instagram,
       primary_color:"#231823",accent_color:"#D9A8B6"
     }).select("id,created_by").single(),"Criar estabelecimento");
     console.log("Estabelecimento criado.");
   }
   if(business.created_by!==user.id)throw new Error("Proprietário incorreto; criação interrompida.");
+  // Keep the verified official Instagram connected on repeat runs too.
+  assertOk(await supabase.from("establishments").update({instagram})
+    .eq("id",business.id).eq("created_by",user.id),"Vincular Instagram da Kariny");
 
   const membership=assertOk(await supabase.from("establishment_members")
     .select("id,role,active").eq("user_id",user.id).eq("establishment_id",business.id).maybeSingle(),
@@ -132,12 +136,22 @@ async function main() {
       theme:{
         preset_id:"kariny-nails-editorial-2026",
         primary:"#231823",accent:"#D9A8B6",background:"#120D14",text:"#FFF9F5",
-        rounded:"xl",button_style:"glass",portfolio:[]
+        rounded:"xl",button_style:"glass",portfolio:[],instagram
       },
-      social:{whatsapp:phone}
+      social:{whatsapp:phone,instagram}
     }).select("id").single(),"Criar Bio Commerce");
     console.log("Página exclusiva publicada com galeria preparada para fotos reais.");
-  } else console.log("Bio Commerce existente preservado.");
+  } else {
+    const saved=assertOk(await supabase.from("link_tree_pages")
+      .select("social,theme").eq("id",page.id).single(),"Ler configuração Bio Commerce");
+    const oldSocial=saved.social && typeof saved.social==="object" && !Array.isArray(saved.social) ? saved.social : {};
+    const oldTheme=saved.theme && typeof saved.theme==="object" && !Array.isArray(saved.theme) ? saved.theme : {};
+    assertOk(await supabase.from("link_tree_pages").update({
+      social:{...oldSocial,instagram,whatsapp:phone},
+      theme:{...oldTheme,instagram}
+    }).eq("id",page.id),"Atualizar Instagram da página");
+    console.log("Bio Commerce preservado; Instagram vinculado.");
+  }
 
   const linkExists=assertOk(await supabase.from("link_tree_links")
     .select("id").eq("page_id",page.id).eq("kind","whatsapp").limit(1).maybeSingle(),
