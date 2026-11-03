@@ -4,6 +4,7 @@ import { getBioCommerceRuntimeData } from "@/lib/bio-commerce-runtime.functions"
 import { useChannelPageView } from "@/lib/tracking";
 import { GoogleMapsReviewsSection } from "@/components/bio-commerce/GoogleMapsReviewsSection";
 import { GynRaceExclusivePage } from "@/components/bio-commerce/GynRaceExclusivePage";
+import { KarinyNailsExclusivePage } from "@/components/bio-commerce/KarinyNailsExclusivePage";
 
 const EMPTY_BLOCK_DATA: BioCommerceBlockData = { menu: [], catalog: [], reviews: [], stats: null };
 
@@ -17,6 +18,9 @@ export function BioCommercePublicPageV3({ data, slug }: { data: BioCommerceLandi
   const commerceSlug = String(data.establishment?.slug || slug);
   if (slug.toLowerCase() === "gynrace" && commerceSlug.toLowerCase() === "gynrace") {
     return <GynRaceExclusivePage data={data} />;
+  }
+  if (slug.toLowerCase() === "kariny-nails" && commerceSlug.toLowerCase() === "kariny-nails") {
+    return <KarinyNailsExclusivePage data={data} />;
   }
 
   return <GenericPublicPage data={data} slug={slug} commerceSlug={commerceSlug} />;

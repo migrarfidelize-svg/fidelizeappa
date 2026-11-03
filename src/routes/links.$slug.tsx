@@ -17,9 +17,10 @@ export const Route = createFileRoute("/links/$slug")({
     applySeoCacheHeaders({
       // A página exclusiva muda com maior frequência e não deve reutilizar
       // HTML de uma edição antiga durante a implantação do tema Racing.
-      ...(params.slug.toLowerCase() === "gynrace" ? { sMaxAge: 0, staleWhileRevalidate: 0 } : {}),
+      ...(["gynrace", "kariny-nails"].includes(params.slug.toLowerCase()) ? { sMaxAge: 0, staleWhileRevalidate: 0 } : {}),
       version: [
         params.slug.toLowerCase() === "gynrace" ? "gynrace-racing-2026-10-29" : "",
+        params.slug.toLowerCase() === "kariny-nails" ? "kariny-nails-editorial-2026-11-03" : "",
         (data as any).page?.updated_at,
         (data as any).establishment?.updated_at,
         (data as any).establishment?.logo_url,

@@ -53,21 +53,22 @@ export const getMyPermissions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ establishment_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Descobre papel + super_admin
-    const { data: superRow } = await supabase.rpc("is_super_admin", { _user: userId });
-    const isSuper = !!superRow;
-
-    const { data: member } = await supabase
-      .from("establishment_members")
-      .select("id, role, active")
-      .eq("establishment_id", data.establishment_id)
-      .eq("user_id", userId)
-      .maybeSingle();
-
+    const { userId } = context;
+    // JWT already verified. Get the authoritative role and this user's own
+    // membership through the server-only DB client, avoiding PGRST303.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: superRow, error: superError }, { data: member, error: memberError }] = await Promise.all([
+      supabaseAdmin.from("app_roles").select("user_id")
+        .eq("user_id", userId).eq("role", "super_admin").maybeSingle(),
+      supabaseAdmin.from("establishment_members").select("id, role, active")
+        .eq("establishment_id", data.establishment_id).eq("user_id", userId).maybeSingle(),
+    ]);
+    if (superError || memberError) throw new Error("Falha ao verificar as permissões.");
+    const isSuper = Boolean(superRow);
     const role = (member?.role ?? "staff") as MemberRole;
     const active = !!member?.active;
+    if (!active && !isSuper) throw new Error("Sem acesso a este estabelecimento.");
+    const supabase = supabaseAdmin;
 
     let overrides: Record<string, boolean> = {};
     if (member?.id) {

@@ -3,8 +3,8 @@ import { useState, type ChangeEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Copy, Link2, Share2, Wallet, Users, TrendingUp, Clock3, Upload, Image, Film, ArrowUpRight, ShieldCheck } from "lucide-react";
-import { getAffiliateDashboard, updateAffiliateProfile, requestAffiliateWithdrawal, saveAffiliateAsset } from "@/lib/affiliate.functions";
+import { Copy, Link2, Share2, Wallet, Users, TrendingUp, Clock3, Upload, Image as ImageIcon, Film, ArrowUpRight, ShieldCheck, Check, Download, MessageCircle, ExternalLink } from "lucide-react";
+import { getAffiliateDashboard, updateAffiliateProfile, requestAffiliateWithdrawal, saveAffiliateAsset, setFeaturedAffiliateAsset } from "@/lib/affiliate.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,47 @@ import { RouteLoading } from "@/components/RouteLoading";
 export const Route = createFileRoute("/_authenticated/app/afiliados")({ component: AffiliateMerchantPage });
 const brl = (n:number) => new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n||0);
 const dt = (s:string) => new Date(s).toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
+
+/** Cria thumbnail horizontal para a prévia social, mantendo o original intacto. */
+async function createSocialPoster(file: File): Promise<Blob | null> {
+  let objectUrl: string | null = null;
+  try {
+    objectUrl=URL.createObjectURL(file);
+    const isVideo=file.type.startsWith("video/");
+    const media = isVideo ? document.createElement("video") : document.createElement("img");
+    if (isVideo) {
+      const v=media as HTMLVideoElement;
+      v.muted=true; v.playsInline=true; v.preload="auto";
+    }
+    await new Promise<void>((resolve,reject)=>{
+      const timeout=window.setTimeout(()=>reject(new Error("Prévia indisponível para este formato.")),10000);
+      const done=()=>{window.clearTimeout(timeout);resolve();};
+      const fail=()=>{window.clearTimeout(timeout);reject(new Error("Formato não suportado pelo navegador."));};
+      if(isVideo){(media as HTMLVideoElement).onloadeddata=done;(media as HTMLVideoElement).onerror=fail;}
+      else {(media as HTMLImageElement).onload=done;(media as HTMLImageElement).onerror=fail;}
+      media.src=objectUrl!;
+      if(isVideo)void (media as HTMLVideoElement).load();
+    });
+    const width=isVideo?(media as HTMLVideoElement).videoWidth:(media as HTMLImageElement).naturalWidth;
+    const height=isVideo?(media as HTMLVideoElement).videoHeight:(media as HTMLImageElement).naturalHeight;
+    if(width<=0||height<=0)throw new Error("Dimensões do arquivo inválidas.");
+    const canvas=document.createElement("canvas");canvas.width=1200;canvas.height=630;
+    const ctx=canvas.getContext("2d");
+    if(!ctx)throw new Error("Canvas indisponível.");
+    ctx.fillStyle="#130d2b";ctx.fillRect(0,0,1200,630);
+    const fill=Math.max(1200/width,630/height);
+    ctx.save();ctx.filter="blur(38px) brightness(0.44)";
+    ctx.drawImage(media,(1200-width*fill)/2,(630-height*fill)/2,width*fill,height*fill);
+    ctx.restore();
+    const fit=Math.min(1100/width,560/height);
+    const fw=width*fit,fh=height*fit;
+    ctx.drawImage(media,(1200-fw)/2,(630-fh)/2,fw,fh);
+    return await new Promise<Blob>((resolve,reject)=>canvas.toBlob(
+      blob=>blob?resolve(blob):reject(new Error("Não foi possível gerar a capa do link.")),"image/jpeg",0.86));
+  } catch { return null; }
+  finally{if(objectUrl)URL.revokeObjectURL(objectUrl);}
+}
+
 function Stat({label,value,icon:Icon,detail}:{label:string;value:string;icon:any;detail?:string}) {
   return <div className="rounded-3xl border border-white/10 bg-white/[.04] p-5">
     <div className="mb-5 flex items-center justify-between"><span className="text-sm text-white/55">{label}</span><Icon className="h-5 w-5 text-violet-300"/></div>
@@ -25,6 +66,7 @@ function AffiliateMerchantPage(){
   const save = useServerFn(updateAffiliateProfile);
   const withdraw = useServerFn(requestAffiliateWithdrawal);
   const saveAsset = useServerFn(saveAffiliateAsset);
+  const setFeatured = useServerFn(setFeaturedAffiliateAsset);
   const qc=useQueryClient();
   const {data,isLoading,error}=useQuery({queryKey:["affiliate-my-dashboard"],queryFn:()=>get()});
   const [code,setCode]=useState("");
@@ -34,10 +76,49 @@ function AffiliateMerchantPage(){
   const [format,setFormat]=useState<"feed"|"story"|"reels"|"square"|"landscape">("story");
   const [uploading,setUploading]=useState(false);
   const [busy,setBusy]=useState(false);
+  const [selecting,setSelecting]=useState<string|null>(null);
+  const [sharing,setSharing]=useState(false);
   const acc=data?.account;
   const activeCode=code || acc?.code || "";
-  const link=activeCode ? `https://afidelize.app/?ref=${encodeURIComponent(activeCode)}`:"";
+  const isLinkSaved=activeCode===acc?.code;
+  const activeAsset=data?.assets.find((asset:any)=>asset.id===acc?.featured_asset_id);
+  const cacheVersion=acc?.updated_at?new Date(acc.updated_at).getTime():(activeAsset?.id || "");
+  const link=acc?.code ? `https://afidelize.app/indicar/${encodeURIComponent(acc.code)}?v=${encodeURIComponent(String(cacheVersion))}`:"";
+  const previewImage=activeAsset?.preview_url || (activeAsset?.media_type==="image" ? activeAsset.media_url : null);
+  const shareText=`${acc?.custom_title || "Conheça a Fidelize e transforme clientes em fãs da sua marca."}\n${link}`;
   const refresh=()=>qc.invalidateQueries({queryKey:["affiliate-my-dashboard"]});
+  async function selectCreative(assetId:string){
+    if(!data)return;
+    setSelecting(assetId);
+    try{
+      await setFeatured({data:{establishment_id:data.establishmentId,asset_id:assetId}});
+      toast.success("Criativo definido como capa do seu link.");
+      await refresh();
+    }catch(e){toast.error(e instanceof Error?e.message:"Não foi possível selecionar a capa.");}
+    finally{setSelecting(null);}
+  }
+  function shareWhatsapp(){
+    if(!isLinkSaved){toast.error("Salve primeiro o identificador personalizado.");return;}
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`,"_blank","noopener,noreferrer");
+  }
+  async function shareImageAndLink(){
+    if(!activeAsset || !isLinkSaved){toast.error("Selecione um criativo e salve seu link.");return;}
+    if(!navigator.share){toast.info("Compartilhamento de arquivos não disponível neste navegador. Use o WhatsApp ou baixe a imagem.");return;}
+    setSharing(true);
+    try {
+      const response=await fetch(activeAsset.media_url);
+      if(!response.ok)throw new Error("Não foi possível carregar o criativo.");
+      const blob=await response.blob();
+      const extension=activeAsset.media_type==="video"?"mp4":blob.type==="image/png"?"png":blob.type==="image/webp"?"webp":"jpg";
+      const mime=blob.type || (extension==="mp4"?"video/mp4":"image/jpeg");
+      const file=new File([blob],`fidelize-afiliado.${extension}`,{type:mime});
+      if(!navigator.canShare?.({files:[file]}))throw new Error("Este aplicativo não aceita compartilhar o arquivo e o link juntos.");
+      await navigator.share({files:[file],text:shareText});
+    } catch(e) {
+      if(e instanceof Error && e.name==="AbortError")return;
+      toast.error(e instanceof Error?e.message:"Compartilhamento indisponível.");
+    }finally{setSharing(false);}
+  }
   async function handleSave(){
     if(!data)return;setBusy(true);
     try{await save({data:{establishment_id:data.establishmentId,code:activeCode,title:title||acc?.custom_title||""}});toast.success("Link personalizado atualizado.");await refresh();}
@@ -67,8 +148,21 @@ function AffiliateMerchantPage(){
       const upload=await supabase.storage.from(bucket).upload(path,file,{upsert:false,contentType:file.type});
       if(upload.error)throw upload.error;
       const url=supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-      await saveAsset({data:{establishment_id:data.establishmentId,media_url:url,media_type:isImage?"image":"video",format,title:file.name.slice(0,90)}});
-      toast.success("Criativo adicionado à biblioteca.");await refresh();
+      // Gera thumbnail 1200x630 para as redes (inclusive quando o original é vertical).
+      const poster=await createSocialPoster(file);
+      let previewUrl:string|null=null;
+      if(poster){
+        const user=(await supabase.auth.getUser()).data.user;
+        if(!user)throw new Error("Sessão expirada. Entre novamente.");
+        const posterPath=`${user.id}/affiliates/${data.establishmentId}/previews/${crypto.randomUUID()}.jpg`;
+        const posterUpload=await supabase.storage.from("logos").upload(posterPath,poster,{upsert:false,contentType:"image/jpeg"});
+        if(posterUpload.error)throw posterUpload.error;
+        previewUrl=supabase.storage.from("logos").getPublicUrl(posterPath).data.publicUrl;
+      }
+      await saveAsset({data:{establishment_id:data.establishmentId,media_url:url,preview_url:previewUrl,media_type:isImage?"image":"video",format,title:file.name.slice(0,90)}});
+      toast.success("Criativo salvo e vinculado ao seu link de indicação.");
+      if(!poster)toast.info("O arquivo foi salvo, mas o navegador não conseguiu gerar uma capa horizontal.");
+      await refresh();
     }catch(e){toast.error(e instanceof Error?e.message:"Erro ao enviar arquivo.");}
     finally{setUploading(false);event.target.value="";}
   }
@@ -97,7 +191,25 @@ function AffiliateMerchantPage(){
         <div className="grid gap-2"><label className="text-xs font-bold">Identificador</label><Input value={activeCode} onChange={e=>setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))} maxLength={40}/></div>
         <div className="grid gap-2"><label className="text-xs font-bold">Título personalizado da campanha</label><Input value={title||acc?.custom_title||""} maxLength={90} placeholder="Minha indicação Fidelize" onChange={e=>setTitle(e.target.value)}/></div>
         <div className="rounded-xl border bg-muted/30 p-3 text-xs break-all">{link}</div>
-        <div className="flex flex-wrap gap-2"><Button onClick={handleSave} disabled={busy}>Salvar personalização</Button><Button variant="outline" onClick={async()=>{try{await navigator.clipboard.writeText(link);toast.success("Link copiado!");}catch{toast.error("Não foi possível copiar.");}}}><Copy className="mr-2 h-4 w-4"/>Copiar</Button><Button variant="outline" onClick={()=>{if(navigator.share)void navigator.share({url:link,title:"Conheça a Fidelize"});else void navigator.clipboard.writeText(link);}}><Share2 className="mr-2 h-4 w-4"/>Compartilhar</Button></div>
+        {!isLinkSaved && <p className="text-xs text-amber-600">Salve seu identificador para que o novo link comece a funcionar.</p>}
+        <div className="flex flex-wrap gap-2"><Button onClick={handleSave} disabled={busy}>Salvar personalização</Button>
+          <Button variant="outline" disabled={!isLinkSaved} onClick={async()=>{try{await navigator.clipboard.writeText(link);toast.success("Link com capa copiado!");}catch{toast.error("Não foi possível copiar.");}}}><Copy className="mr-2 h-4 w-4"/>Copiar</Button>
+          <Button variant="outline" disabled={!isLinkSaved} onClick={shareWhatsapp}><MessageCircle className="mr-2 h-4 w-4"/>WhatsApp</Button>
+          <Button variant="outline" disabled={!activeAsset||!isLinkSaved||sharing} onClick={()=>void shareImageAndLink()}><Share2 className="mr-2 h-4 w-4"/>{sharing?"Compartilhando…":"Enviar arquivo + link"}</Button>
+        </div>
+        <div className="overflow-hidden rounded-2xl border bg-muted/20">
+          <div className="grid sm:grid-cols-[200px_1fr]">
+            <div className="grid aspect-[1.91/1] place-items-center bg-[#0e0921] sm:aspect-auto">
+              {previewImage?<img src={previewImage} alt="Imagem que será mostrada na prévia do link" className="h-full w-full object-cover"/>:<ImageIcon className="h-8 w-8 text-violet-300"/>}
+            </div>
+            <div className="space-y-2 p-4">
+              <p className="text-xs font-bold uppercase tracking-wider text-violet-500">Prévia do compartilhamento</p>
+              <p className="text-sm font-bold">{acc?.custom_title || "Conheça a Fidelize"}</p>
+              <p className="text-xs text-muted-foreground">Esta {previewImage?"imagem será a miniatura exibida pelo link nas redes compatíveis.":"página ainda não tem uma imagem de capa. Selecione ou envie um criativo abaixo."}</p>
+              <p className="break-all text-[11px] text-muted-foreground">{link}</p>
+            </div>
+          </div>
+        </div>
       </CardContent></Card>
       <Card className="rounded-3xl"><CardContent className="space-y-4 p-6">
         <div className="flex items-center gap-2"><Wallet className="h-5 w-5 text-violet-500"/><h2 className="text-lg font-bold">Solicitar saque</h2></div>
@@ -112,7 +224,19 @@ function AffiliateMerchantPage(){
       <p className="text-sm text-muted-foreground">Envie sua própria imagem ou vídeo para divulgar o seu link. Escolha o formato: feed, stories, reels, quadrado ou horizontal.</p>
       <div className="flex flex-wrap items-center gap-3"><select value={format} onChange={e=>setFormat(e.target.value as typeof format)} className="h-10 rounded-xl border bg-background px-3 text-sm"><option value="story">Story 9:16</option><option value="reels">Reels 9:16</option><option value="feed">Feed 4:5</option><option value="square">Quadrado 1:1</option><option value="landscape">Horizontal 16:9</option></select>
       <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold"><Upload className="h-4 w-4"/>{uploading?"Enviando…":"Adicionar criativo"}<input type="file" className="sr-only" accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm" disabled={uploading} onChange={handleAsset}/></label></div>
-      {data.assets.length===0?<div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">Seus criativos aparecerão aqui.</div>:<div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">{data.assets.map((asset:any)=><a key={asset.id} href={asset.media_url} target="_blank" rel="noreferrer" className="overflow-hidden rounded-2xl border bg-muted/10"><div className="flex aspect-[4/3] items-center justify-center bg-muted">{asset.media_type==="image"?<img src={asset.media_url} alt={asset.title} className="h-full w-full object-cover"/>:<video src={asset.media_url} className="h-full w-full object-cover" muted playsInline preload="metadata" controls aria-label={asset.title}/>}</div><p className="truncate p-3 text-xs">{asset.title||asset.format}</p></a>)}</div>}
+      {data.assets.length===0?<div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhum criativo enviado. Adicione uma imagem ou vídeo para aparecer nesta biblioteca e no seu link de afiliado.</div>:<div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{data.assets.map((asset:any)=>{const selected=asset.id===acc?.featured_asset_id;const canFeature=asset.media_type==="image"||Boolean(asset.preview_url);return <div key={asset.id} className={`overflow-hidden rounded-2xl border bg-card shadow-sm transition ${selected?"border-violet-500 ring-2 ring-violet-500/30":"border-border"}`}>
+          <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-muted">
+            {asset.media_type==="image"?<img src={asset.media_url} alt={asset.title||"Criativo do afiliado"} loading="lazy" className="h-full w-full object-contain"/>:<video src={asset.media_url} poster={asset.preview_url||undefined} className="h-full w-full object-contain" muted playsInline preload="metadata" controls aria-label={asset.title}/>}
+            {selected&&<span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white shadow-lg"><Check className="h-3 w-3"/>CAPA DO LINK</span>}
+          </div>
+          <div className="space-y-2 p-3"><p className="truncate text-xs font-bold">{asset.title||"Criativo sem título"}</p><p className="text-[11px] text-muted-foreground">{asset.format.toUpperCase()} · {asset.media_type==="image"?"Imagem":"Vídeo"}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant={selected?"secondary":"outline"} disabled={selected||!canFeature||selecting===asset.id} onClick={()=>void selectCreative(asset.id)} className="flex-1 text-xs">{selected?"Em destaque":selecting===asset.id?"Selecionando…":"Usar no link"}</Button>
+              <Button size="sm" variant="ghost" asChild><a href={asset.media_url} target="_blank" rel="noreferrer" title="Abrir criativo"><ExternalLink className="h-4 w-4"/></a></Button>
+            </div>
+            {!canFeature&&<p className="text-[11px] text-amber-600">Este vídeo precisa de uma capa de prévia para ser destacado.</p>}
+          </div>
+        </div>})}</div>}
     </CardContent></Card>
     <div className="grid gap-5 xl:grid-cols-2">
       <Card className="rounded-3xl"><CardContent className="p-6"><h2 className="mb-4 text-lg font-bold">Indicações recentes</h2><div className="space-y-3">{data.referrals.length?data.referrals.slice(0,20).map((r:any)=><div key={r.id} className="flex justify-between gap-3 border-b pb-3 text-sm"><div><p className="font-semibold">{r.establishments?.name||"Empresa indicada"}</p><p className="text-xs text-muted-foreground">{dt(r.registered_at)}</p></div><span className="text-xs text-muted-foreground">{data.commissions.some((c:any)=>c.referral_id===r.id&&c.status==="confirmed")?"Compra aprovada":"Aguardando compra"}</span></div>):<p className="text-sm text-muted-foreground">Nenhum cadastro indicado.</p>}</div></CardContent></Card>

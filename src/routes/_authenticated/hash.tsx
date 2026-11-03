@@ -113,11 +113,12 @@ function AdminLayout() {
     localStorage.setItem("admin-sidebar-collapsed", String(isSidebarCollapsed));
   }, [isSidebarCollapsed]);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-status"],
     queryFn: () => getStatus(),
     staleTime: 0,
     refetchOnMount: "always",
+    retry: 1,
   });
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -135,6 +136,23 @@ function AdminLayout() {
 
 
   if (isLoading) return <RouteLoading label="Verificando permissões…" />;
+
+  if (isError) {
+    return (
+      <div className="min-h-dvh grid place-items-center bg-muted/30 px-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600"><Shield className="h-7 w-7" /></div>
+            <h1 className="font-display text-2xl font-bold">Não foi possível verificar seu acesso</h1>
+            <p className="text-sm text-muted-foreground">
+              A verificação de permissões está temporariamente indisponível. Isso não significa que sua conta perdeu o acesso administrativo.
+            </p>
+            <Button className="w-full" onClick={() => void refetch()}>Tentar novamente</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!data?.isAdmin) {
     return (
