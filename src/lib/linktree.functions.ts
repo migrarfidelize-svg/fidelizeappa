@@ -139,9 +139,9 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
     if (storedPageError) throw new Error(storedPageError.message);
 
     const storedTheme = (storedPage?.theme ?? {}) as Record<string, unknown>;
-    const exclusive = storedTheme.preset_id === "gynrace-racing-2026";
+    const exclusive = storedTheme.preset_id === "gynrace-racing-2026" || storedTheme.preset_id === "kariny-nails-editorial-2026";
     const nextTheme = exclusive
-      ? { ...storedTheme, ...data.theme, preset_id: "gynrace-racing-2026", google_reviews: storedTheme.google_reviews }
+      ? { ...storedTheme, ...data.theme, preset_id: storedTheme.preset_id, google_reviews: storedTheme.google_reviews, portfolio: storedTheme.portfolio, instagram: storedTheme.instagram }
       : data.theme;
 
     const patch: Database["public"]["Tables"]["link_tree_pages"]["Insert"] = {
