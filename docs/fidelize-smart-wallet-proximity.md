@@ -15,4 +15,7 @@ O Google escolhe o texto dos avisos.
 3. Publicar em ambiente de teste; escolher loja-piloto, salvar e clicar
    "Atualizar cartões já salvos".
 4. Testar em iPhone e Android físicos com permissões.
+   **Importante:** para passes Apple já salvos, a sincronização atual marca o passe
+   como alterado, mas o sistema ainda não envia o push silencioso APNs.
+   Até implementar APNs, pode ser necessário reinstalar o passe no iPhone.
 5. Desativar na loja e ressincronizar para reverter.
