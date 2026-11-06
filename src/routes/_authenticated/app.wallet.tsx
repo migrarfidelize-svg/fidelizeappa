@@ -174,7 +174,7 @@ function WalletPage() {
   const resyncing = useMutation({
     mutationFn: () => resync({ data: { establishment_id: estId!, origin: window.location.origin } }),
     onSuccess: (r) => toast.info(
-      `Google: ${r.googleUpdated} cartão(ões) atualizado(s). Apple: ${r.appleAwaiting} aguardando atualização pelo iOS.`,
+      `Google: ${r.googleUpdated} atualizado(s). Apple: ${r.appleNotified} sinalizado(s), ${r.appleAwaiting} aguardando.`,
       { description: r.googleFailed || r.googleUnconfigured
           ? `${r.googleFailed} falha(s) e ${r.googleUnconfigured} sem credenciais Google. Revise a integração.`
           : "O iPhone pode precisar atualizar ou reinstalar o passe existente para reconhecer a nova localização." },
