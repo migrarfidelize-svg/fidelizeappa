@@ -99,5 +99,12 @@ export const resyncWalletPasses = createServerFn({ method: "POST" })
 
     const { syncEstablishmentWallets } = await import("@/lib/wallet-sync.server");
     const results = await syncEstablishmentWallets(data.establishment_id, origin);
-    return { total: results.length, updated: results.filter((r) => r.google === "updated" || r.apple === "flagged").length };
+    return {
+      total: results.length,
+      updated: results.filter((r) => r.google === "updated").length,
+      googleUpdated: results.filter((r) => r.google === "updated").length,
+      appleAwaiting: results.filter((r) => r.apple === "flagged").length,
+      googleFailed: results.filter((r) => r.google === "error").length,
+      googleUnconfigured: results.filter((r) => r.google === "unconfigured").length,
+    };
   });
