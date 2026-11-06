@@ -24,6 +24,13 @@ const settingsSchema = z.object({
     tier: z.boolean(), reward: z.boolean(), expiry: z.boolean(), contact: z.boolean(),
   }),
   validity_days: z.number().int().min(0).max(3650).nullable(),
+  proximity_enabled: z.boolean(),
+  proximity_latitude: z.number().min(-90).max(90).nullable(),
+  proximity_longitude: z.number().min(-180).max(180).nullable(),
+  proximity_message: z.string().max(120).nullable(),
+}).superRefine((s, ctx) => {
+  if (s.proximity_enabled && (s.proximity_latitude == null || s.proximity_longitude == null))
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["proximity_latitude"], message: "Informe as coordenadas da loja." });
 });
 
 export const getWalletSettings = createServerFn({ method: "GET" })
@@ -92,5 +99,13 @@ export const resyncWalletPasses = createServerFn({ method: "POST" })
 
     const { syncEstablishmentWallets } = await import("@/lib/wallet-sync.server");
     const results = await syncEstablishmentWallets(data.establishment_id, origin);
-    return { total: results.length, updated: results.filter((r) => r.google === "updated" || r.apple === "flagged").length };
+    return {
+      total: results.length,
+      updated: results.filter((r) => r.google === "updated").length,
+      googleUpdated: results.filter((r) => r.google === "updated").length,
+      appleAwaiting: results.filter((r) => r.apple === "flagged").length,
+      appleNotified: results.filter((r) => r.apple === "notified").length,
+      googleFailed: results.filter((r) => r.google === "error").length,
+      googleUnconfigured: results.filter((r) => r.google === "unconfigured").length,
+    };
   });
