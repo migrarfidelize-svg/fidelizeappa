@@ -104,6 +104,7 @@ export const resyncWalletPasses = createServerFn({ method: "POST" })
       updated: results.filter((r) => r.google === "updated").length,
       googleUpdated: results.filter((r) => r.google === "updated").length,
       appleAwaiting: results.filter((r) => r.apple === "flagged").length,
+      appleNotified: results.filter((r) => r.apple === "notified").length,
       googleFailed: results.filter((r) => r.google === "error").length,
       googleUnconfigured: results.filter((r) => r.google === "unconfigured").length,
     };
