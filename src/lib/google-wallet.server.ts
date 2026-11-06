@@ -1,6 +1,7 @@
 // Google Wallet (Loyalty) — assinatura RS256 + REST API.
 // Server-only (usa credenciais de service account). Worker-safe: node-forge + fetch.
 import forge from "node-forge";
+import { getProximityLocations } from "@/lib/wallet-proximity";
 import {
   type WalletPassModel, tierLabel,
 } from "@/lib/wallet-pass.server";
@@ -114,6 +115,8 @@ export function buildObject(creds: GoogleCreds, model: WalletPassModel, origin: 
     id: objectId,
     classId,
     state: "ACTIVE",
+    // merchantLocations (locations[] é obsoleto); [] remove ao desativar.
+    merchantLocations: getProximityLocations(s),
     accountId: model.customer.code,
     accountName: model.customer.name,
     ...(f.points ? { loyaltyPoints: { label: "Pontos", balance: { int: model.points } } } : {}),

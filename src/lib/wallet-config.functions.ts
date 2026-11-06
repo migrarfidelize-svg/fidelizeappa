@@ -24,6 +24,13 @@ const settingsSchema = z.object({
     tier: z.boolean(), reward: z.boolean(), expiry: z.boolean(), contact: z.boolean(),
   }),
   validity_days: z.number().int().min(0).max(3650).nullable(),
+  proximity_enabled: z.boolean(),
+  proximity_latitude: z.number().min(-90).max(90).nullable(),
+  proximity_longitude: z.number().min(-180).max(180).nullable(),
+  proximity_message: z.string().max(120).nullable(),
+}).superRefine((s, ctx) => {
+  if (s.proximity_enabled && (s.proximity_latitude == null || s.proximity_longitude == null))
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["proximity_latitude"], message: "Informe as coordenadas da loja." });
 });
 
 export const getWalletSettings = createServerFn({ method: "GET" })
