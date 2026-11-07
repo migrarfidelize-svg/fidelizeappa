@@ -35,6 +35,10 @@ export type WalletSettings = {
   barcode_format: string;
   fields: WalletFieldFlags;
   validity_days: number | null;
+  proximity_enabled: boolean;
+  proximity_latitude: number | null;
+  proximity_longitude: number | null;
+  proximity_message: string | null;
 };
 
 export type WalletPassModel = {
@@ -68,6 +72,10 @@ export function defaultWalletSettings(establishment_id: string, primary?: string
     barcode_format: "QR_CODE",
     fields: DEFAULT_WALLET_FIELDS,
     validity_days: null,
+    proximity_enabled: false,
+    proximity_latitude: null,
+    proximity_longitude: null,
+    proximity_message: null,
   };
 }
 

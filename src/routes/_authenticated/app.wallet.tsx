@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Wallet, Loader2, RefreshCw, Smartphone, Apple, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Wallet, Loader2, RefreshCw, Smartphone, Apple, CheckCircle2, AlertTriangle, MapPin, BellRing, LocateFixed } from "lucide-react";
 
 import { getMyEstablishments } from "@/lib/loyalty.functions";
 import { getWalletSettings, saveWalletSettings, resyncWalletPasses } from "@/lib/wallet-config.functions";
@@ -74,6 +74,36 @@ function WalletPage() {
   const [showQr, setShowQr] = useState(true);
   const [showBarcode, setShowBarcode] = useState(false);
   const [validity, setValidity] = useState<string>("");
+  const [proximityEnabled, setProximityEnabled] = useState(false);
+  const [proximityLat, setProximityLat] = useState("");
+  const [proximityLng, setProximityLng] = useState("");
+  const [proximityMessage, setProximityMessage] = useState("");
+  const [locating, setLocating] = useState(false);
+  const lat = proximityLat.trim() === "" ? NaN : Number(proximityLat);
+  const lng = proximityLng.trim() === "" ? NaN : Number(proximityLng);
+  const validLocation = Number.isFinite(lat) && Math.abs(lat) <= 90 &&
+    Number.isFinite(lng) && Math.abs(lng) <= 180;
+
+  function captureStoreLocation() {
+    if (!navigator.geolocation) {
+      toast.error("Este navegador não permite capturar a localização.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setProximityLat(coords.latitude.toFixed(6));
+        setProximityLng(coords.longitude.toFixed(6));
+        setLocating(false);
+        toast.success("Coordenadas capturadas. Confirme se são da loja.");
+      },
+      () => {
+        setLocating(false);
+        toast.error("Localização indisponível. Informe as coordenadas manualmente.");
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
+    );
+  }
   const [fields, setFields] = useState<Record<FieldKey, boolean>>({
     customer: true, code: true, stamps: true, points: true,
     tier: true, reward: true, expiry: true, contact: true,
@@ -96,6 +126,10 @@ function WalletPage() {
       setShowQr(s.show_qr !== false);
       setShowBarcode(!!s.show_barcode);
       setValidity(s.validity_days == null ? "" : String(s.validity_days));
+      setProximityEnabled(s.proximity_enabled === true);
+      setProximityLat(s.proximity_latitude == null ? "" : String(s.proximity_latitude));
+      setProximityLng(s.proximity_longitude == null ? "" : String(s.proximity_longitude));
+      setProximityMessage((s.proximity_message as string) ?? "");
       if (s.fields) setFields({ ...fields, ...(s.fields as Record<FieldKey, boolean>) });
     } else {
       setBg(cfg.data.defaults.primary_color || "#5B21B6");
@@ -124,10 +158,14 @@ function WalletPage() {
           barcode_format: "QR_CODE" as const,
           fields,
           validity_days: validity === "" ? null : Number(validity),
+          proximity_enabled: proximityEnabled,
+          proximity_latitude: proximityLat.trim() ? Number(proximityLat) : null,
+          proximity_longitude: proximityLng.trim() ? Number(proximityLng) : null,
+          proximity_message: proximityMessage.trim() || null,
         },
       }),
     onSuccess: () => {
-      toast.success("Carteira digital atualizada!");
+      toast.success("Configurações salvas! Para ativar nos cartões existentes, clique em Atualizar cartões já salvos.");
       qc.invalidateQueries({ queryKey: ["wallet-settings", estId] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao salvar"),
@@ -135,7 +173,12 @@ function WalletPage() {
 
   const resyncing = useMutation({
     mutationFn: () => resync({ data: { establishment_id: estId!, origin: window.location.origin } }),
-    onSuccess: (r) => toast.success(`${r.total} cartão(ões) reenviado(s) para as carteiras.`),
+    onSuccess: (r) => toast.info(
+      `Google: ${r.googleUpdated} atualizado(s). Apple: ${r.appleNotified} sinalizado(s), ${r.appleAwaiting} aguardando.`,
+      { description: r.googleFailed || r.googleUnconfigured
+          ? `${r.googleFailed} falha(s) e ${r.googleUnconfigured} sem credenciais Google. Revise a integração.`
+          : "O iPhone pode precisar atualizar ou reinstalar o passe existente para reconhecer a nova localização." },
+    ),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Falha ao ressincronizar"),
   });
 
@@ -193,6 +236,70 @@ function WalletPage() {
                     <Label htmlFor="a">Oferecer Apple Wallet</Label>
                     <Switch id="a" checked={appleEnabled} onCheckedChange={setAppleEnabled} />
                   </div>
+                </CardContent>
+              </Card>
+
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <BellRing className="h-4 w-4" /> Avisos inteligentes por proximidade
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <Label htmlFor="nearby-alert" className="font-semibold">Avisar quando o cliente estiver perto</Label>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Exibe o cartão da loja na carteira nativa quando o dispositivo considerar o local relevante.
+                      </p>
+                    </div>
+                    <Switch id="nearby-alert" checked={proximityEnabled} onCheckedChange={setProximityEnabled} />
+                  </div>
+                  {proximityEnabled && (
+                    <div className="space-y-4 border-t pt-4">
+                      <p className="rounded-xl bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
+                        <MapPin className="mr-1 inline h-3.5 w-3.5" />
+                        Marque a localização exata do estabelecimento. Apple e Google controlam o alcance e a apresentação do aviso; não há garantia de exibição em toda visita.
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <Label htmlFor="nearby-lat">Latitude</Label>
+                          <Input id="nearby-lat" type="number" min={-90} max={90} step="any"
+                            placeholder="-22.300000" value={proximityLat} onChange={(e) => setProximityLat(e.target.value)} />
+                        </div>
+                        <div>
+                          <Label htmlFor="nearby-lng">Longitude</Label>
+                          <Input id="nearby-lng" type="number" min={-180} max={180} step="any"
+                            placeholder="-49.100000" value={proximityLng} onChange={(e) => setProximityLng(e.target.value)} />
+                        </div>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={captureStoreLocation} disabled={locating}>
+                        {locating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LocateFixed className="mr-2 h-4 w-4" />}
+                        Usar minha localização atual
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Use a localização atual apenas se estiver na loja. Caso contrário, copie as coordenadas do Google Maps.
+                      </p>
+                      <div>
+                        <Label htmlFor="nearby-message">Mensagem de relevância (Apple Wallet)</Label>
+                        <Input id="nearby-message" maxLength={120} value={proximityMessage}
+                          onChange={(e) => setProximityMessage(e.target.value)}
+                          placeholder="Você está pertinho! Aproveite seu cartão fidelidade." />
+                        <p className="mt-1 text-xs text-muted-foreground">O Google Wallet determina automaticamente o texto de seu aviso.</p>
+                      </div>
+                      {validLocation && (
+                        <div className="overflow-hidden rounded-xl border">
+                          <iframe title="Mapa da loja" className="h-48 w-full" loading="lazy"
+                            referrerPolicy="no-referrer"
+                            src={`https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`} />
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        Após salvar, clique em <strong>Atualizar cartões já salvos</strong> para sincronizar os passes existentes.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -264,7 +371,13 @@ function WalletPage() {
               </Card>
 
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => saving.mutate()} disabled={saving.isPending || !estId}>
+                <Button onClick={() => {
+                  if (proximityEnabled && !validLocation) {
+                    toast.error("Informe latitude e longitude válidas para ativar o aviso.");
+                    return;
+                  }
+                  saving.mutate();
+                }} disabled={saving.isPending || !estId}>
                   {saving.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Salvar alterações
                 </Button>
                 <Button variant="outline" onClick={() => resyncing.mutate()} disabled={resyncing.isPending || !estId}>

@@ -9571,6 +9571,10 @@ export type Database = {
           show_qr: boolean
           updated_at: string
           validity_days: number | null
+          proximity_enabled: boolean
+          proximity_latitude: number | null
+          proximity_longitude: number | null
+          proximity_message: string | null
         }
         Insert: {
           apple_enabled?: boolean
@@ -9591,6 +9595,10 @@ export type Database = {
           show_qr?: boolean
           updated_at?: string
           validity_days?: number | null
+          proximity_enabled?: boolean
+          proximity_latitude?: number | null
+          proximity_longitude?: number | null
+          proximity_message?: string | null
         }
         Update: {
           apple_enabled?: boolean
@@ -9611,6 +9619,10 @@ export type Database = {
           show_qr?: boolean
           updated_at?: string
           validity_days?: number | null
+          proximity_enabled?: boolean
+          proximity_latitude?: number | null
+          proximity_longitude?: number | null
+          proximity_message?: string | null
         }
         Relationships: [
           {
