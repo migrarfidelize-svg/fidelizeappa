@@ -30,78 +30,108 @@ const DEFAULT_SVGS: Record<string, React.ReactNode> = {
  * Cache evita repetir o trabalho nas cópias do loop infinito.
  */
 const blackLogoCache = new Map<string, Promise<string | null>>();
+
+/**
+ * Converte somente a parte reconhecível da marca para preto.
+ * Arquivos opacos precisam ter um fundo sólido identificável pelos cantos;
+ * sem isso, usamos o nome em preto em vez de transformar a foto/fundo em um retângulo.
+ */
 function toBlackLogo(source: string): Promise<string | null> {
   const cached = blackLogoCache.get(source);
   if (cached) return cached;
+
   const job = new Promise<string | null>((resolve) => {
     const image = new Image();
     image.crossOrigin = "anonymous";
     image.onload = () => {
       try {
-        const w = Math.max(1, image.naturalWidth);
-        const h = Math.max(1, image.naturalHeight);
-        const ratio = Math.min(1, 900 / Math.max(w, h));
+        const width = Math.max(1, image.naturalWidth);
+        const height = Math.max(1, image.naturalHeight);
+        const ratio = Math.min(1, 900 / Math.max(width, height));
         const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(w * ratio));
-        canvas.height = Math.max(1, Math.round(h * ratio));
+        canvas.width = Math.max(1, Math.round(width * ratio));
+        canvas.height = Math.max(1, Math.round(height * ratio));
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) return resolve(null);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
         const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const d = pixels.data;
-        const sampleCorner = (x: number, y: number) => {
-          const i = (y * canvas.width + x) * 4;
-          return [d[i], d[i + 1], d[i + 2], d[i + 3]];
+        const data = pixels.data;
+        const at = (x: number, y: number) => {
+          const index = (y * canvas.width + x) * 4;
+          return [data[index], data[index + 1], data[index + 2], data[index + 3]];
         };
         const corners = [
-          sampleCorner(0, 0),
-          sampleCorner(canvas.width - 1, 0),
-          sampleCorner(0, canvas.height - 1),
-          sampleCorner(canvas.width - 1, canvas.height - 1),
+          at(0, 0),
+          at(canvas.width - 1, 0),
+          at(0, canvas.height - 1),
+          at(canvas.width - 1, canvas.height - 1),
         ];
-        const lightBg = corners.filter(([red, green, blue, alpha]) =>
-          alpha > 245 && red > 229 && green > 229 && blue > 229).length >= 3;
-        const darkBg = !lightBg && corners.filter(([red, green, blue, alpha]) =>
-          alpha > 245 && red < 27 && green < 27 && blue < 27).length >= 3;
-        for (let i = 0; i < d.length; i += 4) {
-          const alpha = d[i + 3];
-          if (alpha === 0) continue;
-          let finalAlpha = alpha;
-          if (lightBg) {
-            // Remoção de branco, preservando amarelo, rosa e demais logos como tinta preta.
-            finalAlpha = Math.min(alpha, Math.round((255 - Math.min(d[i], d[i + 1], d[i + 2])) * 3));
-          } else if (darkBg) {
-            // Logotipos claros sobre placas pretas também viram tinta preta sem a placa.
-            finalAlpha = Math.min(alpha, Math.round(Math.max(d[i], d[i + 1], d[i + 2]) * 3));
-          }
-          d[i] = 0; d[i + 1] = 0; d[i + 2] = 0; d[i + 3] = finalAlpha;
+        const isTransparent = corners.filter((corner) => corner[3] <= 24).length >= 3;
+        let background: number[] | null = null;
+
+        if (!isTransparent) {
+          // Fundo branco, preto, rosa ou outra cor: só o removemos se for uniforme.
+          // Imagens com fotografias, gradientes ou bordas ambíguas não são achatadas.
+          if (corners.some((corner) => corner[3] < 245)) return resolve(null);
+          const distance = (a: number[], b: number[]) =>
+            Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]));
+          const group = corners
+            .map((corner) => corners.filter((other) => distance(corner, other) <= 28))
+            .sort((a, b) => b.length - a.length)[0];
+          if (group.length < 3) return resolve(null);
+          background = [0, 1, 2].map((channel) =>
+            group.reduce((sum, corner) => sum + corner[channel], 0) / group.length,
+          );
         }
+
+        let visiblePixels = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const sourceAlpha = data[i + 3];
+          let alpha = sourceAlpha;
+          if (background) {
+            const delta = Math.max(
+              Math.abs(data[i] - background[0]),
+              Math.abs(data[i + 1] - background[1]),
+              Math.abs(data[i + 2] - background[2]),
+            );
+            // Suaviza as bordas antialiasing, sem preservar a cor da placa de fundo.
+            alpha = Math.min(sourceAlpha, Math.round(sourceAlpha * Math.min(1, Math.max(0, (delta - 12) / 48))));
+          }
+          data[i] = 0;
+          data[i + 1] = 0;
+          data[i + 2] = 0;
+          data[i + 3] = alpha;
+          if (alpha > 24) visiblePixels++;
+        }
+
+        // Proteção contra logos sem contraste e áreas inteiras preenchidas.
+        const occupied = visiblePixels / (canvas.width * canvas.height);
+        if (visiblePixels < 12 || occupied > 0.64) return resolve(null);
         ctx.putImageData(pixels, 0, 0);
 
-        // Recorta margens transparentes embutidas no arquivo enviado.
-        // Assim Cimed, WePink e marcas longas ocupam a mesma area visual.
         let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1;
         for (let y = 0; y < canvas.height; y++) {
           for (let x = 0; x < canvas.width; x++) {
-            if (d[(y * canvas.width + x) * 4 + 3] <= 18) continue;
+            if (data[(y * canvas.width + x) * 4 + 3] <= 24) continue;
             minX = Math.min(minX, x); maxX = Math.max(maxX, x);
             minY = Math.min(minY, y); maxY = Math.max(maxY, y);
           }
         }
         if (maxX < minX || maxY < minY) return resolve(null);
-        const width = maxX - minX + 1;
-        const height = maxY - minY + 1;
-        const pad = Math.max(2, Math.round(Math.max(width, height) * 0.025));
+        const croppedWidth = maxX - minX + 1;
+        const croppedHeight = maxY - minY + 1;
+        const padding = Math.max(2, Math.round(Math.max(croppedWidth, croppedHeight) * 0.025));
         const cropped = document.createElement("canvas");
-        cropped.width = width + pad * 2;
-        cropped.height = height + pad * 2;
+        cropped.width = croppedWidth + padding * 2;
+        cropped.height = croppedHeight + padding * 2;
         cropped.getContext("2d")?.drawImage(
-          canvas, minX, minY, width, height,
-          pad, pad, width, height,
+          canvas, minX, minY, croppedWidth, croppedHeight,
+          padding, padding, croppedWidth, croppedHeight,
         );
         resolve(cropped.toDataURL("image/png"));
       } catch {
-        // Ex.: servidor da imagem não permite CORS. CSS continua monocromático.
+        // Imagem com CORS bloqueado ou formato incompatível: manter o wordmark legível.
         resolve(null);
       }
     };
@@ -113,31 +143,35 @@ function toBlackLogo(source: string): Promise<string | null> {
 }
 
 function BrandLogo({ item }: { item: BrandItem }) {
-  const [broken, setBroken] = useState(false);
   const [monochromeUrl, setMonochromeUrl] = useState<string | null>(null);
   const name = item.name?.trim() || "Marca";
   const svg = DEFAULT_SVGS[name.toLowerCase()];
 
   useEffect(() => {
     let active = true;
-    setBroken(false);
     setMonochromeUrl(null);
-    if (item.img) toBlackLogo(item.img).then((url) => { if (active) setMonochromeUrl(url); });
+    if (item.img) {
+      void toBlackLogo(item.img).then((url) => {
+        if (active) setMonochromeUrl(url);
+      });
+    }
     return () => { active = false; };
   }, [item.img]);
 
-  if (item.img && !broken) {
+  // Nunca exibir uma imagem não tratada: seu fundo pode virar um bloco preto.
+  // Durante a conversão ou no caso de falha, exibimos a marca por nome/glifo.
+  if (monochromeUrl) {
     return (
       <img
         className="fidelize-brand-logo-image"
-        src={monochromeUrl ?? item.img}
+        src={monochromeUrl}
         alt={name}
         width={180}
         height={68}
         loading="lazy"
         decoding="async"
         draggable={false}
-        onError={() => setBroken(true)}
+        onError={() => setMonochromeUrl(null)}
       />
     );
   }
@@ -183,7 +217,7 @@ export function BrandMarquee({ brands }: { brands?: BrandItem[] } = {}) {
         .fidelize-brand-logo-image{
           display:block;width:172px;height:64px;max-width:100%;max-height:100%;
           object-fit:contain;object-position:center;
-          filter:grayscale(1) brightness(0);mix-blend-mode:multiply;
+          /* Conversão monocromática já feita em canvas; não pintar fundos com CSS. */
         }
         .fidelize-brand-logo-vector{display:grid;place-items:center;width:68px;height:62px;color:#101010}
         .fidelize-brand-logo-vector svg{display:block;width:100%;height:100%;object-fit:contain}
