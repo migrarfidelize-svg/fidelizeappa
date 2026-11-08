@@ -9,13 +9,14 @@
  *     e marca `rewards.redeemed_at`. O `rewards.redeemed_at` atua como
  *     nonce/idempotência natural (não é possível resgatar duas vezes).
  *
- * Segurança: o segredo HMAC é derivado do `SUPABASE_URL` do projeto, disponível
- * apenas no runtime do servidor (nunca no bundle do cliente). O token contém
- * `{ rid, uid, exp, n }` codificados em base64url + assinatura HMAC-SHA256.
+ * Segurança: a chave HMAC deve ser aleatória e configurada em REDEEM_HMAC_SECRET
+ * somente no runtime do servidor. Falha fechada na ausência dessa chave.
+ * O token contém `{ rid, uid, eid, exp, n }` + assinatura HMAC-SHA256.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { signRedeemPayload, verifyRedeemSignature } from "@/lib/redeem-token.server";
 
 const TOKEN_TTL_MS = 60_000; // 60s
 const PREFIX = "RDM1";
@@ -28,24 +29,6 @@ function b64urlDecode(s: string): Buffer {
   return Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/") + pad, "base64");
 }
 
-async function signingKey(): Promise<Buffer> {
-  const { createHash } = await import("crypto");
-  const seed = (process.env.SUPABASE_URL ?? "") + "::redeem-v1";
-  return createHash("sha256").update(seed).digest();
-}
-
-async function sign(payload: string): Promise<string> {
-  const { createHmac } = await import("crypto");
-  const key = await signingKey();
-  return b64urlEncode(createHmac("sha256", key).update(payload).digest());
-}
-
-async function verify(payload: string, sig: string): Promise<boolean> {
-  const expected = await sign(payload);
-  if (expected.length !== sig.length) return false;
-  const { timingSafeEqual } = await import("crypto");
-  return timingSafeEqual(Buffer.from(expected), Buffer.from(sig));
-}
 
 interface RedeemPayload { rid: string; uid: string; eid: string; exp: number; n: string; }
 
@@ -70,7 +53,8 @@ export const issueRedeemToken = createServerFn({ method: "POST" })
     const ownerUid =
       // deno-lint-ignore no-explicit-any
       (reward as any).loyalty_cards?.customers?.user_id as string | undefined;
-    if (ownerUid && ownerUid !== userId) throw new Error("Sem permissão para esta recompensa.");
+    // Sem vínculo verificado, não é possível afirmar que o usuário é o dono.
+    if (!ownerUid || ownerUid !== userId) throw new Error("Sem permissão para esta recompensa.");
 
     const { randomBytes } = await import("crypto");
     const exp = Date.now() + TOKEN_TTL_MS;
@@ -82,7 +66,7 @@ export const issueRedeemToken = createServerFn({ method: "POST" })
       n: b64urlEncode(randomBytes(9)),
     };
     const body = b64urlEncode(Buffer.from(JSON.stringify(payload)));
-    const sig = await sign(body);
+    const sig = signRedeemPayload(body);
     const token = `${PREFIX}.${body}.${sig}`;
     return { token, expiresAt: exp };
   });
@@ -100,7 +84,7 @@ export const consumeRedeemToken = createServerFn({ method: "POST" })
     const parts = data.token.split(".");
     if (parts.length !== 3 || parts[0] !== PREFIX) throw new Error("QR de resgate inválido.");
     const [, body, sig] = parts;
-    const ok = await verify(body, sig);
+    const ok = verifyRedeemSignature(body, sig);
     if (!ok) throw new Error("Assinatura inválida — QR alterado ou de outro projeto.");
 
     let payload: RedeemPayload;
@@ -108,7 +92,14 @@ export const consumeRedeemToken = createServerFn({ method: "POST" })
       payload = JSON.parse(b64urlDecode(body).toString("utf-8")) as RedeemPayload;
     } catch { throw new Error("QR corrompido."); }
 
-    if (Date.now() > payload.exp) throw new Error("QR expirado. Peça ao cliente para gerar novamente.");
+    if (!z.string().uuid().safeParse(payload.rid).success ||
+        !z.string().uuid().safeParse(payload.uid).success ||
+        !z.string().uuid().safeParse(payload.eid).success ||
+        !Number.isFinite(payload.exp) || payload.exp <= Date.now() ||
+        payload.exp > Date.now() + TOKEN_TTL_MS ||
+        typeof payload.n !== "string" || payload.n.length < 8) {
+      throw new Error("QR inválido ou expirado. Peça ao cliente para gerar novamente.");
+    }
 
     const { data: reward, error } = await supabase
       .from("rewards")

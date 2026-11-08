@@ -32,6 +32,9 @@ import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowsView } from "@/components/crm/FlowsView";
 import { FlowEditor } from "@/components/crm/FlowEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
+import { SupportModePanel } from "@/components/crm/inbox/SupportModePanel";
+import { setPlatformSupportMode } from "@/lib/crm/platform-support-bot.functions";
+import type { SupportMode } from "@/lib/crm/platform-support-bot.core";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
 import { TemplateManager } from "@/components/crm/TemplateManager";
 import { QuickRepliesManager } from "@/components/crm/QuickReplies";
@@ -89,11 +92,9 @@ const NAV_GROUPS = [
 
 function AtendimentoCommandDeck() {
   const contextFn = useServerFn(getInboxContext);
-  const [establishmentId, setEstablishmentId] = useState<string | null>(null);
-
   const ctx = useQuery({
-    queryKey: ["inbox-context", establishmentId],
-    queryFn: () => contextFn({ data: { establishmentId } }),
+    queryKey: ["inbox-context", "fidelize-platform"],
+    queryFn: () => contextFn({ data: {} }),
     staleTime: 60_000,
   });
 
@@ -106,7 +107,7 @@ function AtendimentoCommandDeck() {
     );
   }
 
-  return <Workspace ctx={ctx.data!} onSwitchEstablishment={setEstablishmentId} />;
+  return <Workspace ctx={ctx.data!} />;
 }
 
 function KpiChip({ label, value, tone }: { label: string; value: number; tone?: "danger" }) {
@@ -123,7 +124,7 @@ function KpiChip({ label, value, tone }: { label: string; value: number; tone?: 
   );
 }
 
-function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablishment: (id: string) => void }) {
+function Workspace({ ctx }: { ctx: any }) {
   const qc = useQueryClient();
   const est = ctx.establishmentId as string;
   useCRMRealtime(est);
@@ -151,6 +152,7 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
   const queueDeleteFn = useServerFn(deleteInboxQueue);
   const reasonSaveFn = useServerFn(saveInboxCloseReason);
   const presenceFn = useServerFn(setMyInboxPresence);
+  const setModeFn = useServerFn(setPlatformSupportMode);
 
   const setup = useQuery({ queryKey: ["inbox-setup", est], queryFn: () => setupFn({ data: { establishmentId: est } }), staleTime: 60_000 });
   const stats = useQuery({ queryKey: ["crm-stats", est], queryFn: () => statsFn({ data: { establishmentId: est } }), refetchInterval: 60_000 });
@@ -209,6 +211,15 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
       tagFn({ data: { establishmentId: est, conversationId: selectedId!, ...vars } }),
     onSuccess: invalidate,
     onError: (e: any) => toast.error(e?.message || "Falha ao alterar etiqueta."),
+  });
+
+  const modeMutation = useMutation({
+    mutationFn: (mode: SupportMode) => setModeFn({ data: { mode } }),
+    onSuccess: (_, mode) => {
+      qc.invalidateQueries({ queryKey: ["inbox-context", "fidelize-platform"] });
+      toast.success(mode === "bot" ? "Bot econômico ativado." : "Atendimento com IA ativado.");
+    },
+    onError: (error: Error) => toast.error(error?.message || "Não foi possível alterar o atendimento."),
   });
 
   const setupMutation = useMutation({
@@ -285,16 +296,9 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
             <h1 className="truncate text-sm font-semibold leading-tight">Central de Atendimento</h1>
             <p className="truncate text-[11px] text-muted-foreground">{ctx.establishmentName} · WhatsApp</p>
           </div>
-          {ctx.isSuper && ctx.establishments?.length > 0 && (
-            <Select value={est} onValueChange={onSwitchEstablishment}>
-              <SelectTrigger className="h-8 w-[220px] text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ctx.establishments.map((e: any) => (
-                  <SelectItem key={e.id} value={e.id} className="text-xs">{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-semibold text-primary sm:inline-flex">
+            Atendimento Fidelize
+          </span>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <KpiChip label="Fila" value={stats.data?.waiting ?? 0} />
             <KpiChip label="Minhas" value={stats.data?.mine ?? 0} />
@@ -421,10 +425,19 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
                 <Tabs defaultValue="operacao">
                   <TabsList>
                     <TabsTrigger value="operacao" className="text-xs">Operação</TabsTrigger>
+                    <TabsTrigger value="bot" className="text-xs">Bot / IA</TabsTrigger>
                     <TabsTrigger value="respostas" className="text-xs">Respostas</TabsTrigger>
                     <TabsTrigger value="equipe" className="text-xs">Equipe</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="operacao" className="mt-3">
+                  <TabsContent value="bot" className="mt-3">
+                     <SupportModePanel
+                       mode={ctx.supportMode as SupportMode}
+                       canManage={Boolean(ctx.canManage)}
+                       saving={modeMutation.isPending}
+                       onChange={(mode) => modeMutation.mutate(mode)}
+                     />
+                   </TabsContent>
+                   <TabsContent value="operacao" className="mt-3">
                     <InboxOperationSettings
                       queues={setup.data?.queues ?? []}
                       closeReasons={setup.data?.closeReasons ?? []}

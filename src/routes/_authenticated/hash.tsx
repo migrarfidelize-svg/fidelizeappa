@@ -154,7 +154,8 @@ function AdminLayout() {
     );
   }
 
-  if (!data?.isAdmin) {
+  const isInboxStaff = !data?.isAdmin && Boolean(data?.canAccessInbox);
+  if (!data?.isAdmin && !(isInboxStaff && pathname.startsWith("/hash/atendimento"))) {
     return (
       <div className="min-h-dvh grid place-items-center bg-muted/30 px-4">
         <Card className="max-w-md w-full">
@@ -181,7 +182,8 @@ function AdminLayout() {
   }
 
   const isItemActive = (n: NavItem) => (n.exact ? pathname === n.to : pathname.startsWith(n.to));
-  const allItems: NavItem[] = [OVERVIEW, ATENDIMENTO, ...NAV_GROUPS.flatMap((g) => g.items)];
+  const visibleGroups = isInboxStaff ? [] : NAV_GROUPS;
+  const allItems: NavItem[] = isInboxStaff ? [ATENDIMENTO] : [OVERVIEW, ATENDIMENTO, ...NAV_GROUPS.flatMap((g) => g.items)];
   const activeNav = allItems.find(isItemActive) ?? OVERVIEW;
 
   const closeMobile = () => setMobileOpen(false);
@@ -223,9 +225,9 @@ function AdminLayout() {
 
   const renderNav = (onNavigate?: () => void, forceExpanded = false) => (
     <nav className={cn("nav-dense flex flex-1 flex-col gap-[var(--nav-gap)] overflow-y-auto overflow-x-hidden py-[var(--nav-py)]", isSidebarCollapsed ? "px-1" : "px-2.5")}>
-      {renderNavItem(OVERVIEW, onNavigate)}
+      {!isInboxStaff && renderNavItem(OVERVIEW, onNavigate)}
       {renderNavItem(ATENDIMENTO, onNavigate)}
-      {NAV_GROUPS.map((g) => {
+      {visibleGroups.map((g) => {
         const GroupIcon = g.icon;
         const groupActive = g.items.some(isItemActive);
         const expanded = openGroups.includes(g.key);
@@ -318,7 +320,7 @@ function AdminLayout() {
           )}
         >
           <div className="flex h-14 items-center gap-2 border-b border-border/60 px-3 overflow-hidden">
-            <Link to="/hash" aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
+            <Link to={isInboxStaff ? "/hash/atendimento" : "/hash"} aria-label="Fidelize Admin" className="flex min-w-0 items-center gap-2">
               <LogoMark size={20} className="text-primary" />
               {!isSidebarCollapsed && <span className="font-display text-sm font-bold whitespace-nowrap">Fidelize</span>}
             </Link>

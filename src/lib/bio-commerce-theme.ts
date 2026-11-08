@@ -9,7 +9,24 @@ export type BioCommercePresetId =
   | "event-pulse"
   | "clean-health"
   | "executive-pro"
-  | "creator-ember";
+  | "creator-ember"
+  | "v4-food-table"
+  | "v4-beauty-atelier"
+  | "v4-beauty-serene"
+  | "v4-fashion-couture"
+  | "v4-fashion-capsule"
+  | "v4-fitness-arena"
+  | "v4-fitness-club"
+  | "v4-pet-play"
+  | "v4-pet-care"
+  | "v4-events-spotlight"
+  | "v4-events-festival"
+  | "v4-health-clinic"
+  | "v4-health-serene"
+  | "v4-services-ledger"
+  | "v4-services-studio"
+  | "v4-education-masterclass"
+  | "v4-education-studio";
 
 export type BioCommerceNicheId =
   | "food"
@@ -176,6 +193,126 @@ export const BIO_COMMERCE_PRESETS: BioCommercePreset[] = [
     layout: "editorial", hero_style: "immersive", card_style: "elevated", background_effect: "ambient", font_style: "bold",
     content_width: "comfortable", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "icons",
   },
+  // V4: opt-in. Presets antigos e paginas exclusivas nao sofrem migracao automatica.
+  {
+    preset_id: "v4-food-table", niche_id: "food", label: "Mesa de Autor", niche: "Gastronomia",
+    description: "Gastronomia editorial com hero lateral e vitrine de pratos em composição assimétrica.",
+    primary: "#d7ad72", accent: "#86523d", background: "#17110f", text: "#faf3e8", button_style: "outline", rounded: "md",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "ambient", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-beauty-atelier", niche_id: "beauty", label: "Atelier Vinho", niche: "Beleza e estética",
+    description: "Direção editorial de beleza: serviços em destaque, portfólio visual e agendamento.",
+    primary: "#e1a8ad", accent: "#a66586", background: "#22121d", text: "#fff3f4", button_style: "outline", rounded: "lg",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "soft-glow", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "icons",
+  },
+  {
+    preset_id: "v4-beauty-serene", niche_id: "beauty", label: "Serene Studio", niche: "Beleza e estética",
+    description: "Minimalismo claro de spa e bem-estar com hierarquia limpa, espaços generosos e agendamento.",
+    primary: "#7e8a6e", accent: "#d8bcac", background: "#f5f0ea", text: "#282e29", button_style: "solid", rounded: "xl",
+    layout: "classic", hero_style: "minimal", card_style: "soft", background_effect: "solid", font_style: "clean",
+    content_width: "comfortable", motion: "smooth", motion_intensity: "low", product_style: "grid", social_style: "compact",
+  },
+  {
+    preset_id: "v4-fashion-couture", niche_id: "fashion", label: "Couture Editorial", niche: "Moda e varejo",
+    description: "Lookbook sofisticado com hero lateral, tipografia editorial e vitrines de coleção.",
+    primary: "#dcccb3", accent: "#9c7057", background: "#191919", text: "#fcf8f1", button_style: "outline", rounded: "sm",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "solid", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-fashion-capsule", niche_id: "fashion", label: "Capsule Gallery", niche: "Moda e varejo",
+    description: "Varejo minimalista e catálogo em grade, com foco nas fotografias de produto.",
+    primary: "#1f1f1f", accent: "#92775f", background: "#f4f2ed", text: "#212121", button_style: "solid", rounded: "sm",
+    layout: "commerce", hero_style: "minimal", card_style: "outline", background_effect: "solid", font_style: "clean",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "grid", social_style: "icons",
+  },
+  {
+    preset_id: "v4-fitness-arena", niche_id: "fitness", label: "Arena Performance", niche: "Fitness e esportes",
+    description: "Identidade atlética com hero lateral e grade de planos de treino.",
+    primary: "#ff672e", accent: "#f4d164", background: "#100c0d", text: "#fff8f3", button_style: "solid", rounded: "sm",
+    layout: "bento", hero_style: "split", card_style: "outline", background_effect: "ambient", font_style: "bold",
+    content_width: "wide", motion: "smooth", motion_intensity: "high", product_style: "grid", social_style: "buttons",
+  },
+  {
+    preset_id: "v4-fitness-club", niche_id: "fitness", label: "Motion Club", niche: "Fitness e esportes",
+    description: "Esporte premium em preto e prata, foco em programas e apresentação editorial.",
+    primary: "#e6efec", accent: "#51c1b5", background: "#101516", text: "#f7faf8", button_style: "outline", rounded: "md",
+    layout: "editorial", hero_style: "minimal", card_style: "elevated", background_effect: "ambient", font_style: "bold",
+    content_width: "wide", motion: "smooth", motion_intensity: "medium", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-pet-play", niche_id: "pet", label: "Pet Play", niche: "Pet shop",
+    description: "Comunicação alegre, serviços em grade e navegação de fácil leitura.",
+    primary: "#f2a442", accent: "#74b7aa", background: "#fff8ec", text: "#332b24", button_style: "solid", rounded: "full",
+    layout: "bento", hero_style: "brand", card_style: "soft", background_effect: "mesh", font_style: "modern",
+    content_width: "comfortable", motion: "smooth", motion_intensity: "medium", product_style: "grid", social_style: "buttons",
+  },
+  {
+    preset_id: "v4-pet-care", niche_id: "pet", label: "Pet Care Studio", niche: "Pet shop",
+    description: "Veterinária e cuidados premium com apresentação lateral e serviços editoriais.",
+    primary: "#a2c2b9", accent: "#d4bea2", background: "#172522", text: "#f1f8f5", button_style: "outline", rounded: "lg",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "soft-glow", font_style: "clean",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "icons",
+  },
+  {
+    preset_id: "v4-events-spotlight", niche_id: "events", label: "Spotlight Night", niche: "Eventos",
+    description: "Eventos noturnos com composição lateral, atrações e cartões editoriais.",
+    primary: "#f0b45a", accent: "#ce518a", background: "#110d1a", text: "#fff7ee", button_style: "solid", rounded: "md",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "aurora", font_style: "bold",
+    content_width: "wide", motion: "smooth", motion_intensity: "high", product_style: "editorial", social_style: "buttons",
+  },
+  {
+    preset_id: "v4-events-festival", niche_id: "events", label: "Festival Grid", niche: "Eventos",
+    description: "Agenda em destaque, quadros organizados e identidade digital de alto contraste.",
+    primary: "#a8fc61", accent: "#8e74f8", background: "#0f1117", text: "#f7fff1", button_style: "solid", rounded: "lg",
+    layout: "bento", hero_style: "minimal", card_style: "outline", background_effect: "ambient", font_style: "modern",
+    content_width: "wide", motion: "smooth", motion_intensity: "medium", product_style: "grid", social_style: "icons",
+  },
+  {
+    preset_id: "v4-health-clinic", niche_id: "health", label: "Clínica Editorial", niche: "Saúde e bem-estar",
+    description: "Clínicas com tipografia séria, hero dividido e apresentação clara dos serviços.",
+    primary: "#347e7a", accent: "#b0c8bb", background: "#f5faf7", text: "#193732", button_style: "solid", rounded: "md",
+    layout: "editorial", hero_style: "split", card_style: "soft", background_effect: "solid", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-health-serene", niche_id: "health", label: "Serene Care", niche: "Saúde e bem-estar",
+    description: "Bem-estar com hero minimalista e serviços facilmente acessíveis em grade.",
+    primary: "#5d9e9f", accent: "#9fbfae", background: "#ecf5f3", text: "#253e42", button_style: "outline", rounded: "xl",
+    layout: "classic", hero_style: "minimal", card_style: "soft", background_effect: "soft-glow", font_style: "clean",
+    content_width: "comfortable", motion: "smooth", motion_intensity: "low", product_style: "grid", social_style: "icons",
+  },
+  {
+    preset_id: "v4-services-ledger", niche_id: "services", label: "Ledger & Partners", niche: "Serviços profissionais",
+    description: "Consultoria com página institucional minimalista e serviços editoriais.",
+    primary: "#d2bd93", accent: "#9caabc", background: "#111720", text: "#f5f4f1", button_style: "outline", rounded: "sm",
+    layout: "editorial", hero_style: "minimal", card_style: "elevated", background_effect: "solid", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-services-studio", niche_id: "services", label: "Studio Profissional", niche: "Serviços profissionais",
+    description: "Prestação de serviços com marca protagonista, portfólio e módulos em grade.",
+    primary: "#5f93e9", accent: "#8abfb8", background: "#111825", text: "#f6faff", button_style: "solid", rounded: "lg",
+    layout: "bento", hero_style: "brand", card_style: "glass", background_effect: "ambient", font_style: "modern",
+    content_width: "wide", motion: "smooth", motion_intensity: "medium", product_style: "grid", social_style: "buttons",
+  },
+  {
+    preset_id: "v4-education-masterclass", niche_id: "education", label: "Masterclass Edition", niche: "Criadores e cursos",
+    description: "Mentorias e cursos com apresentação lateral, módulos editoriais e CTA de inscrição.",
+    primary: "#edb36a", accent: "#d18175", background: "#211815", text: "#fff5ed", button_style: "solid", rounded: "sm",
+    layout: "editorial", hero_style: "split", card_style: "elevated", background_effect: "ambient", font_style: "editorial",
+    content_width: "wide", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "compact",
+  },
+  {
+    preset_id: "v4-education-studio", niche_id: "education", label: "Creator Studio", niche: "Criadores e cursos",
+    description: "Produtos digitais e materiais de criadores em grade, com marca em primeiro plano.",
+    primary: "#c6ee8c", accent: "#86bee3", background: "#111719", text: "#f4fbf1", button_style: "solid", rounded: "lg",
+    layout: "bento", hero_style: "brand", card_style: "outline", background_effect: "mesh", font_style: "modern",
+    content_width: "wide", motion: "smooth", motion_intensity: "medium", product_style: "grid", social_style: "buttons",
+  }
 ];
 
 const ADAPTIVE_DEFAULTS: Required<Pick<

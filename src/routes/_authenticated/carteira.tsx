@@ -28,6 +28,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getMyWallet, getMyRewards } from "@/lib/my-wallet.functions";
+import { clearWalletCache } from "@/lib/offline-wallet-cache";
 import { InboxBellBadge } from "@/components/wallet/InboxBellBadge";
 import { WalletQrSheet } from "@/components/wallet/WalletQrSheet";
 
@@ -255,6 +256,7 @@ const profileInitials = profileName
                     const { supabase } = await import("@/integrations/supabase/client");
                     const isPwa = window.matchMedia("(display-mode: standalone)").matches;
                     await supabase.auth.signOut();
+                    clearWalletCache();
                     window.location.href = isPwa ? "/auth?source=pwa" : "/";
                   }}
                 >

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   BadgeCheck,
@@ -36,9 +36,10 @@ import {
   X,
   Youtube,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { toast } from "sonner";
 import { createBioCommerceOrder } from "@/lib/bio-commerce-order.functions";
+import { getBioCommerceCatalogPage } from "@/lib/bio-commerce-runtime.functions";
 import { getPublicYouTubeFeed } from "@/lib/youtube-feed.functions";
 import {
   getBioCommerceNiche,
@@ -87,6 +88,15 @@ function rgba(hex: string, alpha: number, fallback = "rgba(255,255,255,.12)") {
   const g = parseInt(raw.slice(2, 4), 16);
   const b = parseInt(raw.slice(4, 6), 16);
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function readableCtaText(hex: string) {
+  const source = String(hex ?? "").replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(source)) return "#ffffff";
+  const channels = [0, 2, 4].map((i) => parseInt(source.slice(i, i + 2), 16) / 255);
+  const linear = channels.map((c) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  return luminance > 0.179 ? "#111318" : "#ffffff";
 }
 
 function money(value: number | null | undefined, currency = "BRL") {
@@ -216,6 +226,8 @@ export function BioCommerceLanding({
   const [storyIndex, setStoryIndex] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [catalogMode, setCatalogMode] = useState<CatalogMode>(null);
+  const [remoteProducts, setRemoteProducts] = useState<BioCommerceProduct[]>([]);
+  const [highlightProduct, setHighlightProduct] = useState<BioCommerceProduct | null>(null);
   const showcaseRef = useRef<HTMLElement | null>(null);
   const linkHubRef = useRef<HTMLElement | null>(null);
 
@@ -231,12 +243,12 @@ export function BioCommerceLanding({
   const secondaryProducts = mode === "links" ? [] : (primarySource === "menu" ? catalogProducts : menuProducts).slice(0, 12);
   const allProducts = useMemo(() => {
     const seen = new Set<string>();
-    return [...menuProducts, ...catalogProducts].filter((product) => {
+    return [...menuProducts, ...catalogProducts, ...remoteProducts, ...(highlightProduct ? [highlightProduct] : [])].filter((product) => {
       if (!product?.id || seen.has(product.id)) return false;
       seen.add(product.id);
       return true;
     });
-  }, [menuProducts, catalogProducts]);
+  }, [menuProducts, catalogProducts, remoteProducts, highlightProduct]);
 
   const reviews = (blockData.reviews ?? []).filter((review) => (review.rating ?? 0) >= 4).slice(0, 4);
   const richLinks = links.filter((link: any) => RICH_KINDS.has(link.kind) && !["menu_carousel", "reviews"].includes(link.kind));
@@ -259,8 +271,15 @@ export function BioCommerceLanding({
 
   const openStory = (product: BioCommerceProduct) => {
     const index = allProducts.findIndex((item) => item.id === product.id);
-    if (index < 0 || !interactive) return;
-    setStoryIndex(index);
+    if (!interactive) return;
+    if (index < 0) {
+      // Um produto carregado após paginação também abre no Story, mesmo
+      // se ainda não fazia parte dos 60 destaques iniciais.
+      setHighlightProduct(product);
+      setStoryIndex(allProducts.length);
+    } else {
+      setStoryIndex(index);
+    }
     track(`product:${product.name}`, product.id);
   };
 
@@ -293,16 +312,57 @@ export function BioCommerceLanding({
     window.open(target, "_blank", "noopener,noreferrer");
   };
 
+  const v4Enabled = String(theme.preset_id ?? "").startsWith("v4-");
   const heroCta = mode === "commerce"
     ? niche.primary_cta
     : mode === "booking"
       ? booking.cta.replace("este serviço", "agora")
       : primaryLink?.label || "Ver meus links";
 
+  const renderProductCollection = (products: BioCommerceProduct[]) => {
+    if (!v4Enabled || theme.product_style === "carousel") {
+      return <AutoProductRail products={products} theme={theme} radius={radius} motionEnabled={motionEnabled} embedded={embedded} interactive={interactive} mode={mode} cart={cart} onOpen={openStory} onBook={bookProduct} onTrack={track} />;
+    }
+    const productStyle = theme.product_style === "editorial" ? "editorial" : "grid";
+    return <div data-bc-v4-product-style={productStyle} className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
+      {products.map((product) => <ProductCard key={product.id} product={product} theme={theme} radius={radius} embedded={embedded} interactive={interactive} mode={mode} cart={cart} onOpen={() => openStory(product)} onBook={() => bookProduct(product)} onTrack={track} />)}
+    </div>;
+  };
+
   return (
-    <div className={`${fontClass} relative min-h-full overflow-x-hidden`} style={{ background: theme.background, color: theme.text }}>
+    <div className={`${fontClass} relative min-h-full overflow-x-hidden ${v4Enabled ? "bc-v4-theme" : ""}`} data-bc-v4-layout={v4Enabled ? theme.layout : undefined} data-bc-v4-buttons={v4Enabled ? theme.button_style : undefined} style={{ background: theme.background, color: theme.text, "--bc-v4-cta-fg": readableCtaText(theme.primary), "--bc-v4-border": rgba(theme.primary, 0.68), "--bc-v4-glass": rgba(theme.primary, 0.2) } as CSSProperties}>
       <Ambient theme={theme} motionEnabled={motionEnabled} embedded={embedded} />
-      <style>{`.bc-v8-scroll::-webkit-scrollbar{display:none}.bc-v8-scroll{scrollbar-width:none}.bc-v8-grain{background-image:radial-gradient(circle at 1px 1px,currentColor 1px,transparent 0);background-size:24px 24px}`}</style>
+      <style>{`.bc-v8-scroll::-webkit-scrollbar{display:none}.bc-v8-scroll{scrollbar-width:none}.bc-v8-grain{background-image:radial-gradient(circle at 1px 1px,currentColor 1px,transparent 0);background-size:24px 24px}
+      .bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content{max-width:min(64%,680px);margin-left:0;margin-right:auto;align-items:flex-start;text-align:left}
+      .bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content p{margin-left:0}
+      .bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content>button{align-self:flex-start}
+      .bc-v4-theme [data-bc-v4-hero="split"]>div::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.68),rgba(0,0,0,.18) 66%,transparent)}
+      .bc-v4-theme [data-bc-v4-hero="minimal"] .bc-v4-hero-content{margin:auto;max-width:780px}
+      .bc-v4-theme [data-bc-v4-hero="minimal"] .bc-v4-hero-content h1{font-weight:600;letter-spacing:-.055em}
+      .bc-v4-theme [data-bc-v4-hero="brand"] .bc-v4-hero-content{margin:auto}
+      .bc-v4-theme [data-bc-v4-hero="brand"] .bc-v4-hero-content>div:first-child{transform:scale(1.13);margin-bottom:1rem}
+      .bc-v4-theme [data-bc-v4-product-style]>article{width:100%;max-width:none;min-width:0;flex-shrink:1}
+      .bc-v4-theme [data-bc-v4-product-style="editorial"]>article:first-child{grid-column:span 2}
+      .bc-v4-theme [data-bc-v4-product-style="editorial"]>article:first-child>div:first-child{height:310px}
+      .bc-v4-theme[data-bc-v4-layout="editorial"] #bio-commerce-vitrine{padding-top:3.5rem}
+      .bc-v4-theme[data-bc-v4-layout="editorial"] #bio-commerce-vitrine h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.06em;font-size:clamp(2rem,5vw,3.6rem);line-height:1.05}
+      .bc-v4-theme[data-bc-v4-layout="editorial"] #bio-commerce-vitrine>article{border-radius:.65rem;min-height:520px}
+      .bc-v4-theme[data-bc-v4-layout="editorial"] [data-bc-v4-product-style="editorial"]>article{border-radius:.45rem}
+      .bc-v4-theme[data-bc-v4-layout="editorial"] [data-bc-v4-product-style="editorial"]>article:first-child{grid-column:span 2}
+      .bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;overflow:visible;padding-right:0}
+      .bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid>button{width:100%;min-height:112px}
+      .bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid>button:first-child{grid-column:span 2;min-height:130px}
+      .bc-v4-theme[data-bc-v4-layout="bento"] #bio-commerce-vitrine>article{min-height:330px}
+      .bc-v4-theme[data-bc-v4-layout="commerce"] [data-bc-v4-product-style]>article{border-radius:1rem}
+      .bc-v4-theme[data-bc-v4-layout="classic"] #bio-commerce-vitrine{max-width:900px;margin-inline:auto}
+      .bc-v4-theme[data-bc-v4-layout="classic"] #bio-commerce-vitrine h2{font-weight:600;letter-spacing:-.025em}
+      .bc-v4-theme button[style*="linear-gradient"]{color:var(--bc-v4-cta-fg)!important}
+      .bc-v4-theme[data-bc-v4-buttons="outline"] button[style*="linear-gradient"]{background:transparent!important;color:inherit!important;border:1px solid var(--bc-v4-border)!important;box-shadow:none!important}
+      .bc-v4-theme[data-bc-v4-buttons="glass"] button[style*="linear-gradient"]{background:var(--bc-v4-glass)!important;color:inherit!important;border:1px solid var(--bc-v4-border)!important;backdrop-filter:blur(18px)}
+      .bc-v4-theme .bc-v4-link-grid:focus-visible{outline:2px solid currentColor}
+      @media(min-width:640px){.bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid>button:first-child{grid-column:span 2;grid-row:span 2;min-height:230px}}
+      @media(max-width:767px){.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content{max-width:100%;margin:auto;align-items:center;text-align:center}.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content p{margin-left:auto}.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content>button{align-self:stretch}.bc-v4-theme [data-bc-v4-hero="split"]>div::before{background:linear-gradient(180deg,transparent,rgba(0,0,0,.6))}}
+      `}</style>
 
       <div className={`relative z-10 mx-auto ${container} ${embedded ? "px-2 pb-8 pt-2" : "px-3 pb-28 pt-3 sm:px-6 sm:pt-6 lg:px-8"}`}>
         <Hero
@@ -335,8 +395,8 @@ export function BioCommerceLanding({
               title={mode === "booking" ? booking.title : explicitShowcase?.label || niche.showcase_title}
               theme={theme}
             />
-            <ProductSpotlight product={primaryProducts[0]} theme={theme} radius={radius} embedded={embedded} mode={mode} cart={cart} onOpen={() => openStory(primaryProducts[0])} onBook={() => bookProduct(primaryProducts[0])} />
-            {primaryProducts.length > 1 && <div className="mt-4"><AutoProductRail products={primaryProducts} theme={theme} radius={radius} motionEnabled={motionEnabled} embedded={embedded} interactive={interactive} mode={mode} cart={cart} onOpen={openStory} onBook={bookProduct} onTrack={track} /></div>}
+            <ProductSpotlight product={primaryProducts[0]} theme={theme} radius={radius} embedded={embedded} interactive={interactive} mode={mode} cart={cart} onOpen={() => openStory(primaryProducts[0])} onBook={() => bookProduct(primaryProducts[0])} />
+            {primaryProducts.length > 1 && <div className="mt-4">{renderProductCollection(v4Enabled && theme.product_style !== "carousel" ? primaryProducts.slice(1) : primaryProducts)}</div>}
             <button type="button" onClick={() => openInternalCatalog(primarySource === "menu" ? "menu" : "catalog")} className="mt-4 inline-flex items-center gap-1 text-xs font-bold opacity-70 transition hover:opacity-100">
               {primarySource === "menu" ? "Ver cardápio completo" : "Ver catálogo completo"}<ChevronRight className="h-3.5 w-3.5" />
             </button>
@@ -346,7 +406,7 @@ export function BioCommerceLanding({
         {secondaryProducts.length > 0 && (
           <section className="mt-9">
             <SectionHeading eyebrow="Mais opções" title={primarySource === "menu" ? "Produtos da loja" : "Mais para você"} theme={theme} />
-            <AutoProductRail products={secondaryProducts} theme={theme} radius={radius} motionEnabled={motionEnabled} embedded={embedded} interactive={interactive} mode={mode} cart={cart} onOpen={openStory} onBook={bookProduct} onTrack={track} />
+            {renderProductCollection(secondaryProducts)}
             <button type="button" onClick={() => openInternalCatalog(primarySource === "menu" ? "catalog" : "menu")} className="mt-4 inline-flex items-center gap-1 text-xs font-bold opacity-70 transition hover:opacity-100">
               {primarySource === "menu" ? "Ver catálogo completo" : "Ver cardápio completo"}<ChevronRight className="h-3.5 w-3.5" />
             </button>
@@ -391,7 +451,7 @@ export function BioCommerceLanding({
 
       <AnimatePresence>{storyIndex != null && allProducts[storyIndex] && <ProductStoryModal key={allProducts[storyIndex].id} products={allProducts} index={storyIndex} setIndex={setStoryIndex} onClose={() => setStoryIndex(null)} cart={cart} theme={theme} interactive={interactive} motionEnabled={motionEnabled} mode={mode} onBook={bookProduct} onTrack={track} />}</AnimatePresence>
       <AnimatePresence>{cartOpen && !embedded && mode === "commerce" && <CheckoutSheet slug={slug} products={allProducts} cart={cart} theme={theme} whatsapp={String(establishment.whatsapp ?? whatsappLink?.url ?? "")} onClose={() => setCartOpen(false)} onTrack={track} />}</AnimatePresence>
-      <AnimatePresence>{catalogMode && !embedded && <FullCatalogOverlay mode={catalogMode} products={catalogMode === "menu" ? menuProducts : catalogProducts} theme={theme} experienceMode={mode} cart={cart} onClose={() => setCatalogMode(null)} onOpen={openStory} onBook={bookProduct} />}</AnimatePresence>
+      <AnimatePresence>{catalogMode && !embedded && <FullCatalogOverlay slug={slug} onProductsLoaded={setRemoteProducts} mode={catalogMode} products={catalogMode === "menu" ? menuProducts : catalogProducts} theme={theme} experienceMode={mode} cart={cart} onClose={() => setCatalogMode(null)} onOpen={openStory} onBook={bookProduct} />}</AnimatePresence>
     </div>
   );
 }
@@ -412,7 +472,7 @@ function Ambient({ theme, motionEnabled, embedded }: { theme: any; motionEnabled
 
 function Hero({ embedded, cover, logo, title, description, theme, niche, mode, booking, stats, motionEnabled, cta, onPrimary, onShare }: any) {
   const heroHeight = embedded ? "min-h-[500px]" : "min-h-[620px] sm:min-h-[680px]";
-  return <motion.section initial={motionEnabled ? { opacity:0, y:18 } : false} animate={{ opacity:1, y:0 }} transition={{ duration: motionEnabled ? .45 : 0 }}><div className={`relative isolate overflow-hidden border ${embedded ? "rounded-[2.4rem]" : "rounded-[2rem] sm:rounded-[2.4rem]"} ${heroHeight}`} style={{ borderColor:rgba(theme.text,.12), boxShadow:`0 36px 110px ${rgba(theme.primary,.22)}` }}>{cover ? <motion.img src={cover} alt="" className="absolute inset-0 h-full w-full object-cover" initial={false} animate={motionEnabled ? { scale:[1.01,1.05,1.01] } : undefined} transition={motionEnabled ? { duration:18, repeat:Infinity, ease:"easeInOut" } : undefined} /> : <div className="absolute inset-0" style={{ background:`linear-gradient(135deg,${rgba(theme.primary,.48)},${rgba(theme.accent,.2)} 48%,${theme.background})` }} />}<div className="absolute inset-0" style={{ background: cover ? `linear-gradient(180deg,${rgba(theme.background,.04)},${rgba(theme.background,.16)} 28%,${rgba(theme.background,.72)} 67%,${theme.background})` : `linear-gradient(180deg,transparent,${rgba(theme.background,.92)})` }} /><div className="bc-v8-grain absolute inset-0 opacity-[.05]" style={{ color:theme.text }} /><div className={`relative z-10 flex ${heroHeight} flex-col justify-between ${embedded ? "p-5" : "p-5 sm:p-8 lg:p-10"}`}><div className="flex items-center justify-between gap-3"><span className="rounded-full border px-3 py-1.5 text-[9px] font-black uppercase tracking-[.22em] backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.2), background:rgba(theme.background,.3) }}>{mode === "booking" ? booking.eyebrow : mode === "links" ? "Todos os caminhos da marca" : niche.eyebrow}</span><button type="button" onClick={onShare} className="grid h-10 w-10 place-items-center rounded-full border backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.18), background:rgba(theme.background,.28) }} aria-label="Compartilhar"><Share2 className="h-4 w-4" /></button></div><div className="mx-auto flex w-full max-w-2xl flex-col items-center text-center"><div className="relative">{logo ? <img src={logo} alt={title} className={`${embedded ? "h-24 w-24" : "h-28 w-28 sm:h-32 sm:w-32"} rounded-[2rem] border object-cover shadow-2xl`} style={{ borderColor:rgba(theme.text,.26), boxShadow:`0 22px 68px ${rgba(theme.primary,.34)}` }} /> : <div className={`${embedded ? "h-24 w-24" : "h-28 w-28 sm:h-32 sm:w-32"} grid place-items-center rounded-[2rem] border text-4xl font-black text-white`} style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})`, borderColor:rgba(theme.text,.2) }}>{String(title)[0]?.toUpperCase() || "F"}</div>}<span title="Perfil Fidelize" className="absolute -bottom-1 -right-1 grid h-9 w-9 place-items-center rounded-full border-[3px] border-white bg-[#1689ff] shadow-[0_8px_24px_rgba(22,137,255,.45)]"><BadgeCheck className="h-5 w-5 fill-white text-[#1689ff]" /></span></div><h1 className={`${embedded ? "mt-5 text-3xl" : "mt-6 text-4xl sm:text-6xl"} font-black tracking-[-.04em]`}>{title}</h1><p className={`mx-auto mt-3 max-w-xl ${embedded ? "text-xs" : "text-sm sm:text-base"} leading-relaxed opacity-85`}>{description}</p>{stats && stats.count > 0 && <div className="mt-4 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.14), background:rgba(theme.background,.32) }}><Star className="h-3.5 w-3.5" style={{ color:theme.primary, fill:theme.primary }} /><strong>{stats.avg.toFixed(1)}</strong><span className="opacity-60">({stats.count} avaliações)</span></div>}<button type="button" onClick={onPrimary} className={`${embedded ? "mt-5" : "mt-6"} group flex w-full max-w-md items-center justify-center gap-3 rounded-full px-5 py-4 text-sm font-black text-white shadow-2xl transition hover:-translate-y-.5`} style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})`, boxShadow:`0 20px 55px ${rgba(theme.primary,.32)}` }}>{mode === "booking" ? <CalendarDays className="h-5 w-5" /> : mode === "commerce" ? <ShoppingBag className="h-5 w-5" /> : <ExternalLink className="h-5 w-5" />}{cta}<ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" /></button></div></div></div></motion.section>;
+  return <motion.section data-bc-v4-hero={String(theme.preset_id ?? "").startsWith("v4-") ? theme.hero_style : undefined} initial={motionEnabled ? { opacity:0, y:18 } : false} animate={{ opacity:1, y:0 }} transition={{ duration: motionEnabled ? .45 : 0 }}><div className={`relative isolate overflow-hidden border ${embedded ? "rounded-[2.4rem]" : "rounded-[2rem] sm:rounded-[2.4rem]"} ${heroHeight}`} style={{ borderColor:rgba(theme.text,.12), boxShadow:`0 36px 110px ${rgba(theme.primary,.22)}` }}>{cover ? <motion.img src={cover} alt="" className="absolute inset-0 h-full w-full object-cover" initial={false} animate={motionEnabled ? { scale:[1.01,1.05,1.01] } : undefined} transition={motionEnabled ? { duration:18, repeat:Infinity, ease:"easeInOut" } : undefined} /> : <div className="absolute inset-0" style={{ background:`linear-gradient(135deg,${rgba(theme.primary,.48)},${rgba(theme.accent,.2)} 48%,${theme.background})` }} />}<div className="absolute inset-0" style={{ background: cover ? `linear-gradient(180deg,${rgba(theme.background,.04)},${rgba(theme.background,.16)} 28%,${rgba(theme.background,.72)} 67%,${theme.background})` : `linear-gradient(180deg,transparent,${rgba(theme.background,.92)})` }} /><div className="bc-v8-grain absolute inset-0 opacity-[.05]" style={{ color:theme.text }} /><div className={`relative z-10 flex ${heroHeight} flex-col justify-between ${embedded ? "p-5" : "p-5 sm:p-8 lg:p-10"}`}><div className="flex items-center justify-between gap-3"><span className="rounded-full border px-3 py-1.5 text-[9px] font-black uppercase tracking-[.22em] backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.2), background:rgba(theme.background,.3) }}>{mode === "booking" ? booking.eyebrow : mode === "links" ? "Todos os caminhos da marca" : niche.eyebrow}</span><button type="button" onClick={onShare} className="grid h-10 w-10 place-items-center rounded-full border backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.18), background:rgba(theme.background,.28) }} aria-label="Compartilhar"><Share2 className="h-4 w-4" /></button></div><div className="bc-v4-hero-content mx-auto flex w-full max-w-2xl flex-col items-center text-center"><div className="relative">{logo ? <img src={logo} alt={title} className={`${embedded ? "h-24 w-24" : "h-28 w-28 sm:h-32 sm:w-32"} rounded-[2rem] border object-cover shadow-2xl`} style={{ borderColor:rgba(theme.text,.26), boxShadow:`0 22px 68px ${rgba(theme.primary,.34)}` }} /> : <div className={`${embedded ? "h-24 w-24" : "h-28 w-28 sm:h-32 sm:w-32"} grid place-items-center rounded-[2rem] border text-4xl font-black text-white`} style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})`, borderColor:rgba(theme.text,.2) }}>{String(title)[0]?.toUpperCase() || "F"}</div>}<span title="Perfil Fidelize" className="absolute -bottom-1 -right-1 grid h-9 w-9 place-items-center rounded-full border-[3px] border-white bg-[#1689ff] shadow-[0_8px_24px_rgba(22,137,255,.45)]"><BadgeCheck className="h-5 w-5 fill-white text-[#1689ff]" /></span></div><h1 className={`${embedded ? "mt-5 text-3xl" : "mt-6 text-4xl sm:text-6xl"} font-black tracking-[-.04em]`}>{title}</h1><p className={`mx-auto mt-3 max-w-xl ${embedded ? "text-xs" : "text-sm sm:text-base"} leading-relaxed opacity-85`}>{description}</p>{stats && stats.count > 0 && <div className="mt-4 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs backdrop-blur-xl" style={{ borderColor:rgba(theme.text,.14), background:rgba(theme.background,.32) }}><Star className="h-3.5 w-3.5" style={{ color:theme.primary, fill:theme.primary }} /><strong>{stats.avg.toFixed(1)}</strong><span className="opacity-60">({stats.count} avaliações)</span></div>}<button type="button" onClick={onPrimary} className={`${embedded ? "mt-5" : "mt-6"} group flex w-full max-w-md items-center justify-center gap-3 rounded-full px-5 py-4 text-sm font-black text-white shadow-2xl transition hover:-translate-y-.5`} style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})`, boxShadow:`0 20px 55px ${rgba(theme.primary,.32)}` }}>{mode === "booking" ? <CalendarDays className="h-5 w-5" /> : mode === "commerce" ? <ShoppingBag className="h-5 w-5" /> : <ExternalLink className="h-5 w-5" />}{cta}<ChevronRight className="h-4 w-4 transition group-hover:translate-x-1" /></button></div></div></div></motion.section>;
 }
 
 function SectionHeading({ eyebrow, title, theme }: { eyebrow:string; title:string; theme:any }) {
@@ -423,16 +483,22 @@ function LinkHub({ links, theme, radius, interactive, mode, track, openInternalC
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (direction: number) => ref.current?.scrollBy({ left: direction * Math.max(260, ref.current.clientWidth * .72), behavior:"smooth" });
   const cards = links;
-  return <div className="relative"><div className="mb-3 flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.22em] opacity-45">Acesso rápido</p><h2 className="mt-1 text-lg font-black">{mode === "links" ? "Escolha para onde ir" : "Tudo da marca em um toque"}</h2></div>{cards.length > 4 && <div className="hidden gap-2 sm:flex"><button onClick={() => scroll(-1)} className="grid h-9 w-9 place-items-center rounded-full border" style={surface(theme)} aria-label="Links anteriores"><ChevronLeft className="h-4 w-4" /></button><button onClick={() => scroll(1)} className="grid h-9 w-9 place-items-center rounded-full border" style={surface(theme)} aria-label="Próximos links"><ChevronRight className="h-4 w-4" /></button></div>}</div><div ref={ref} className="bc-v8-scroll flex gap-2 overflow-x-auto overscroll-x-contain pb-1 pr-8 scroll-smooth">{cards.map((link:any, index:number) => { const meta = KIND_META[link.kind] ?? KIND_META.custom; const Icon = meta.icon; return <button key={link.id ?? `${link.kind}-${index}`} type="button" onClick={() => openLink(link, interactive, track, openInternalCatalog)} className={`${radius} group flex min-h-[86px] w-[142px] shrink-0 flex-col items-start justify-between border p-3 text-left transition hover:-translate-y-.5 sm:w-[158px]`} style={surface(theme, index === 0 && mode === "links")}><span className="grid h-9 w-9 place-items-center rounded-2xl" style={{ background:rgba(theme.primary,.14), color:theme.primary }}><Icon className="h-4 w-4" /></span><span className="mt-3 line-clamp-2 text-xs font-black leading-tight">{link.label || meta.fallback}</span></button>; })}</div>{cards.length > 4 && <div className="pointer-events-none absolute inset-y-10 right-0 w-10 bg-gradient-to-l from-black/15 to-transparent sm:hidden" />}</div>;
+  const bento = String(theme.preset_id ?? "").startsWith("v4-") && theme.layout === "bento";
+  return <div className="relative"><div className="mb-3 flex items-center justify-between gap-3"><div><p className="text-[9px] font-black uppercase tracking-[.22em] opacity-45">Acesso rápido</p><h2 className="mt-1 text-lg font-black">{mode === "links" ? "Escolha para onde ir" : "Tudo da marca em um toque"}</h2></div>{cards.length > 4 && !bento && <div className="hidden gap-2 sm:flex"><button onClick={() => scroll(-1)} className="grid h-9 w-9 place-items-center rounded-full border" style={surface(theme)} aria-label="Links anteriores"><ChevronLeft className="h-4 w-4" /></button><button onClick={() => scroll(1)} className="grid h-9 w-9 place-items-center rounded-full border" style={surface(theme)} aria-label="Próximos links"><ChevronRight className="h-4 w-4" /></button></div>}</div><div ref={ref} className={`bc-v8-scroll flex gap-2 overflow-x-auto overscroll-x-contain pb-1 pr-8 scroll-smooth ${bento ? "bc-v4-link-grid" : ""}`}>{cards.map((link:any, index:number) => { const meta = KIND_META[link.kind] ?? KIND_META.custom; const Icon = meta.icon; return <button key={link.id ?? `${link.kind}-${index}`} type="button" onClick={() => openLink(link, interactive, track, openInternalCatalog)} className={`${radius} group flex min-h-[86px] w-[142px] shrink-0 flex-col items-start justify-between border p-3 text-left transition hover:-translate-y-.5 sm:w-[158px]`} style={surface(theme, index === 0 && mode === "links")}><span className="grid h-9 w-9 place-items-center rounded-2xl" style={{ background:rgba(theme.primary,.14), color:theme.primary }}><Icon className="h-4 w-4" /></span><span className="mt-3 line-clamp-2 text-xs font-black leading-tight">{link.label || meta.fallback}</span></button>; })}</div>{cards.length > 4 && !bento && <div className="pointer-events-none absolute inset-y-10 right-0 w-10 bg-gradient-to-l from-black/15 to-transparent sm:hidden" />}</div>;
 }
 
-function ProductSpotlight({ product, theme, radius, embedded, mode, cart, onOpen, onBook }: any) {
+function ProductSpotlight({ product, theme, radius, embedded, interactive, mode, cart, onOpen, onBook }: any) {
   if (!product) return null;
   const promo = product.promo_price != null && product.price != null && Number(product.promo_price) < Number(product.price);
   const variants = Array.isArray(product.variants) ? product.variants.filter((item:any) => item?.label) : [];
   const qty = cart.qtyOf(product.id);
-  const add = () => variants.length ? onOpen() : cart.add(product.id);
-  return <article className={`group relative overflow-hidden border ${radius} ${embedded ? "min-h-[300px]" : "min-h-[390px] sm:min-h-[450px]"}`} style={{ borderColor:rgba(theme.text,.12), boxShadow:`0 28px 90px ${rgba(theme.primary,.15)}` }}>{product.image_url ? <img src={product.image_url} alt={product.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.03]" /> : <div className="absolute inset-0" style={{ background:`linear-gradient(135deg,${rgba(theme.primary,.55)},${rgba(theme.accent,.18)},${theme.background})` }} />}<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" /><div className="absolute left-4 top-4 flex gap-2"><span className="rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.18em] text-white backdrop-blur-xl">Destaque</span>{promo && <span className="rounded-full px-3 py-1.5 text-[9px] font-black text-white" style={{ background:theme.primary }}>OFERTA</span>}</div><div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7"><div className="max-w-xl"><h3 className={`${embedded ? "text-2xl" : "text-3xl sm:text-4xl"} font-black leading-[1.02] tracking-[-.04em]`}>{product.name}</h3>{product.short_desc && <p className="mt-3 line-clamp-2 text-sm text-white/70">{product.short_desc}</p>}<div className="mt-4 flex items-end gap-3"><strong className="text-2xl font-black" style={{ color:theme.primary }}>{money(promo ? product.promo_price : product.price, product.currency ?? "BRL")}</strong>{promo && <span className="pb-1 text-sm text-white/40 line-through">{money(product.price, product.currency ?? "BRL")}</span>}</div><div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={onOpen} className="rounded-full border border-white/20 bg-black/35 px-4 py-3 text-xs font-black backdrop-blur-xl">Ver detalhes</button>{mode === "booking" ? <button type="button" onClick={onBook} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-xs font-black text-white" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}><CalendarDays className="h-4 w-4" />Agendar</button> : <button type="button" onClick={add} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-xs font-black text-white" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}><ShoppingBag className="h-4 w-4" />{qty > 0 ? `${qty} na sacola` : variants.length ? "Escolher opção" : "Adicionar"}</button>}</div></div></div></article>;
+  const outOfStock = product.stock_status === "out_of_stock";
+  const add = () => {
+    if (!interactive || outOfStock) return;
+    if (variants.length) return onOpen();
+    cart.add(product.id);
+  };
+  return <article className={`group relative overflow-hidden border ${radius} ${embedded ? "min-h-[300px]" : "min-h-[390px] sm:min-h-[450px]"}`} style={{ borderColor:rgba(theme.text,.12), boxShadow:`0 28px 90px ${rgba(theme.primary,.15)}` }}>{product.image_url ? <img src={product.image_url} alt={product.name} className="absolute inset-0 h-full w-full object-cover transition duration-1000 group-hover:scale-[1.03]" /> : <div className="absolute inset-0" style={{ background:`linear-gradient(135deg,${rgba(theme.primary,.55)},${rgba(theme.accent,.18)},${theme.background})` }} />}<div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" /><div className="absolute left-4 top-4 flex gap-2"><span className="rounded-full border border-white/20 bg-black/35 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.18em] text-white backdrop-blur-xl">Destaque</span>{promo && <span className="rounded-full px-3 py-1.5 text-[9px] font-black text-white" style={{ background:theme.primary }}>OFERTA</span>}</div><div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7"><div className="max-w-xl"><h3 className={`${embedded ? "text-2xl" : "text-3xl sm:text-4xl"} font-black leading-[1.02] tracking-[-.04em]`}>{product.name}</h3>{product.short_desc && <p className="mt-3 line-clamp-2 text-sm text-white/70">{product.short_desc}</p>}<div className="mt-4 flex items-end gap-3"><strong className="text-2xl font-black" style={{ color:theme.primary }}>{money(promo ? product.promo_price : product.price, product.currency ?? "BRL")}</strong>{promo && <span className="pb-1 text-sm text-white/40 line-through">{money(product.price, product.currency ?? "BRL")}</span>}</div><div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={onOpen} className="rounded-full border border-white/20 bg-black/35 px-4 py-3 text-xs font-black backdrop-blur-xl">Ver detalhes</button>{mode === "booking" ? <button type="button" disabled={outOfStock || !interactive} onClick={onBook} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-50" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}><CalendarDays className="h-4 w-4" />{outOfStock ? "Indisponível" : "Agendar"}</button> : <button type="button" disabled={outOfStock || !interactive} onClick={add} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-50" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}><ShoppingBag className="h-4 w-4" />{outOfStock ? "Esgotado" : qty > 0 ? `${qty} na sacola` : variants.length ? "Escolher opção" : "Adicionar"}</button>}</div></div></div></article>;
 }
 
 function AutoProductRail({ products, theme, radius, motionEnabled, embedded, interactive, mode, cart, onOpen, onBook, onTrack }: any) {
@@ -515,9 +581,163 @@ function SocialAction({ link, theme, interactive, track }: any) {
   const meta=KIND_META[link.kind] ?? KIND_META.custom; const Icon=meta.icon; return <a href={interactive ? normalizeUrl(link.kind,link.url) : undefined} onClick={(event) => { if (!interactive) event.preventDefault(); else track(`social:${link.label || link.kind}`,link.id); }} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition hover:-translate-y-.5" style={surface(theme)}><Icon className="h-4 w-4" style={{ color:theme.primary }} />{link.label || meta.fallback}</a>;
 }
 
-function FullCatalogOverlay({ mode, products, theme, experienceMode, cart, onClose, onOpen, onBook }: any) {
-  useEffect(() => { const old=document.body.style.overflow; document.body.style.overflow="hidden"; return () => { document.body.style.overflow=old; }; }, []);
-  return <motion.div className="fixed inset-0 z-[180] overflow-y-auto bg-black/90 text-white backdrop-blur-2xl" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><div className="mx-auto min-h-dvh max-w-6xl px-3 pb-24 pt-4 sm:px-6"><div className="sticky top-3 z-30 flex items-center justify-between rounded-3xl border border-white/10 bg-black/55 px-4 py-3 backdrop-blur-2xl"><div><p className="text-[9px] font-black uppercase tracking-[.22em]" style={{ color:theme.primary }}>Bio Commerce</p><h2 className="text-xl font-black">{mode === "menu" ? "Cardápio completo" : "Catálogo completo"}</h2></div><button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full border border-white/15"><X className="h-5 w-5" /></button></div>{products.length ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{products.map((product:any) => { const promo=product.promo_price != null && product.price != null && Number(product.promo_price) < Number(product.price); const qty=cart.qtyOf(product.id); return <article key={product.id} className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[.055]"><button type="button" onClick={() => onOpen(product)} className="block w-full text-left"><div className="relative aspect-[4/5] overflow-hidden bg-white/5">{product.image_url ? <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><ShoppingBag className="h-8 w-8 opacity-30" /></div>}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" /><div className="absolute inset-x-3 bottom-3"><h3 className="line-clamp-2 text-sm font-black">{product.name}</h3><strong className="mt-1 block text-sm" style={{ color:theme.primary }}>{money(promo ? product.promo_price : product.price,product.currency ?? "BRL")}</strong></div></div></button><div className="p-3"><p className="line-clamp-2 min-h-8 text-[11px] text-white/55">{product.short_desc || "Toque para ver detalhes."}</p><button onClick={() => experienceMode === "booking" ? onBook(product) : cart.add(product.id)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-black" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}>{experienceMode === "booking" ? <><CalendarDays className="h-4 w-4" />Agendar</> : <>{qty > 0 ? `${qty} na sacola` : <><Plus className="h-4 w-4" />Adicionar</>}</>}</button></div></article>; })}</div> : <div className="mt-14 rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">Nenhum item publicado nesta vitrine.</div>}</div></motion.div>;
+function FullCatalogOverlay({
+  slug, mode, products, theme, experienceMode, cart,
+  onClose, onOpen, onBook, onProductsLoaded,
+}: {
+  slug: string;
+  mode: "menu" | "catalog";
+  products: BioCommerceProduct[];
+  theme: any;
+  experienceMode: ExperienceMode;
+  cart: any;
+  onClose: () => void;
+  onOpen: (product: BioCommerceProduct) => void;
+  onBook: (product: BioCommerceProduct) => void;
+  onProductsLoaded: React.Dispatch<React.SetStateAction<BioCommerceProduct[]>>;
+}) {
+  const fetchCatalog = useServerFn(getBioCommerceCatalogPage);
+  const query = useInfiniteQuery({
+    queryKey: ["bio-commerce-complete-catalog", slug, mode],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => fetchCatalog({
+      data: { slug, kind: mode, offset: pageParam, limit: 60 },
+    }),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.hasMore
+        ? pages.reduce((total, page) => total + page.items.length, 0)
+        : undefined,
+    staleTime: 60_000,
+  });
+
+  const loaded = useMemo(() => (
+    query.data?.pages.flatMap((page) => page.items) ?? products
+  ), [query.data, products]);
+
+  useEffect(() => {
+    if (!query.data) return;
+    const received = query.data.pages.flatMap((page) => page.items);
+    onProductsLoaded((prev) => {
+      const merged = new Map(prev.map((item) => [item.id, item]));
+      for (const item of received) merged.set(item.id, item);
+      return Array.from(merged.values());
+    });
+  }, [query.data, onProductsLoaded]);
+
+  useEffect(() => {
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", escape);
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      window.removeEventListener("keydown", escape);
+    };
+  }, [onClose]);
+
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={mode === "menu" ? "Cardápio completo" : "Catálogo completo"}
+      className="fixed inset-0 z-[180] overflow-y-auto bg-black/90 text-white backdrop-blur-2xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="mx-auto min-h-dvh max-w-6xl px-3 pb-24 pt-4 sm:px-6">
+        <div className="sticky top-3 z-30 flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-black/75 px-4 py-3 backdrop-blur-2xl">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[.2em]" style={{ color: theme.primary }}>
+              Bio Commerce
+            </p>
+            <h2 className="text-lg font-bold sm:text-xl">
+              {mode === "menu" ? "Cardápio completo" : "Catálogo completo"}
+            </h2>
+            <p className="text-xs text-white/60">
+              {loaded.length} {loaded.length === 1 ? "item carregado" : "itens carregados"}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar catálogo"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/20 bg-white/5">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {query.isError && (
+          <div role="alert" className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-white/80">
+            Não foi possível carregar o restante da vitrine.
+            <button type="button" onClick={() => void query.refetch()} className="ml-2 font-bold underline">
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {loaded.length > 0 ? (
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {loaded.map((product) => {
+              const promo = product.promo_price != null && product.price != null &&
+                Number(product.promo_price) < Number(product.price);
+              const out = product.stock_status === "out_of_stock";
+              const variants = Array.isArray(product.variants) && product.variants.some((variant: { label?: string | null }) => variant?.label);
+              const qty = cart.qtyOf(product.id);
+              return (
+                <article key={product.id} className="min-w-0 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[.055]">
+                  <button type="button" onClick={() => onOpen(product)} className="block w-full text-left">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-white/5">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="grid h-full place-items-center"><ShoppingBag className="h-8 w-8 opacity-30" /></div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                      {out && <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold">Esgotado</span>}
+                      <div className="absolute inset-x-3 bottom-3">
+                        <h3 className="line-clamp-2 text-sm font-bold">{product.name}</h3>
+                        <strong className="mt-1 block text-sm" style={{ color: theme.primary }}>
+                          {money(promo ? product.promo_price : product.price, product.currency ?? "BRL")}
+                        </strong>
+                      </div>
+                    </div>
+                  </button>
+                  <div className="p-3">
+                    <p className="line-clamp-2 min-h-8 text-[11px] text-white/65">
+                      {product.short_desc || "Toque para ver detalhes."}
+                    </p>
+                    <button type="button" disabled={out} onClick={() => {
+                      if (experienceMode === "booking") return onBook(product);
+                      if (variants) return onOpen(product);
+                      cart.add(product.id);
+                    }}
+                      className="mt-3 flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      style={{ background: `linear-gradient(135deg,${theme.primary},${theme.accent})` }}>
+                      {out ? "Indisponível" : experienceMode === "booking"
+                        ? <><CalendarDays className="h-4 w-4" /> Agendar</>
+                        : variants ? "Escolher opção" : qty > 0 ? `${qty} na sacola` : <><Plus className="h-4 w-4" /> Adicionar</>}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-14 rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">
+            {query.isLoading ? "Carregando itens publicados..." : "Nenhum item publicado nesta vitrine."}
+          </div>
+        )}
+
+        {query.hasNextPage && (
+          <button type="button" onClick={() => void query.fetchNextPage()}
+            disabled={query.isFetchingNextPage}
+            className="mx-auto mt-8 flex min-h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 py-3 text-sm font-semibold disabled:opacity-50">
+            {query.isFetchingNextPage ? "Carregando..." : "Carregar mais produtos"}
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
 }
 
 function CartDock({ count, total, theme, onOpen }: any) {

@@ -1,0 +1,73 @@
+name: Validar intervenção Fidelize (sem deploy)
+
+on:
+  push:
+    branches:
+      - fix/fidelize-cirurgica-crm-bio-20261107
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fidelize-v4-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testes:
+    name: Testes unitários de segurança e temas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Validar isolamento CRM, cache wallet e biblioteca V4
+        run: bunx vitest run src/lib/crm/platform-inbox-authorization.test.ts src/lib/offline-wallet-cache.test.ts src/lib/bio-commerce-v4-themes.test.ts src/lib/redeem-token.server.test.ts
+
+  suite:
+    name: Regressão completa de testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Executar todos os testes Vitest
+        run: bunx vitest run
+
+  build:
+    name: Build sem publicação
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Compilar aplicação
+        run: bun run build
+
+  typecheck:
+    name: Auditoria estática TypeScript (sem deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Gerar tipagem de rotas TanStack (sem deploy)
+        run: bun run build
+      - name: Verificar tipos sem gerar arquivos
+        run: bunx tsc --noEmit --pretty false

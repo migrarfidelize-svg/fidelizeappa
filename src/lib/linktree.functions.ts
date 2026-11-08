@@ -150,7 +150,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       description: data.description ?? null,
       logo_url: data.logo_url ?? storedPage?.logo_url ?? null,
       cover_url: data.cover_url ?? storedPage?.cover_url ?? null,
-      theme: nextTheme,
+      theme: nextTheme as Database["public"]["Tables"]["link_tree_pages"]["Insert"]["theme"],
       social: data.social,
     };
     (patch as any).public_slug = publicSlug;
@@ -305,10 +305,14 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
 
     const { data: customPage } = await (supabaseAdmin as any)
       .from("link_tree_pages")
-      .select("establishment_id")
+      .select("establishment_id, published")
       .eq("public_slug", normalizedSlug)
       .maybeSingle();
 
+    // Respeita a publicação mesmo quando o endpoint público é chamado diretamente.
+    if (customPage && !customPage.published) {
+      return { menu: [], catalog: [], reviews: [], stats: null };
+    }
     let establishmentId = customPage?.establishment_id ?? null;
 
     if (!establishmentId) {
@@ -322,6 +326,17 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     }
 
     if (!establishmentId) {
+      return { menu: [], catalog: [], reviews: [], stats: null };
+    }
+
+    // Um slug customizado não contorna o bloqueio de loja desativada.
+    const { data: activeEstablishment } = await supabaseAdmin
+      .from("establishments")
+      .select("id")
+      .eq("id", establishmentId)
+      .eq("active", true)
+      .maybeSingle();
+    if (!activeEstablishment) {
       return { menu: [], catalog: [], reviews: [], stats: null };
     }
 
@@ -344,10 +359,18 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     const fetchItems = async (menu_id: string) => {
       const { data } = await supabaseAdmin
         .from("menu_items")
-        .select("id, name, short_desc, price, promo_price, image_url")
+        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, variants, stock_status, gallery, brand, sku, position")
         .eq("menu_id", menu_id)
-        .limit(12);
-      return data ?? [];
+        .eq("active", true)
+        .order("position", { ascending: true })
+        .limit(60);
+      return (data ?? []).map((item) => ({
+        ...item,
+        price: item.price == null ? null : Number(item.price),
+        promo_price: item.promo_price == null ? null : Number(item.promo_price),
+        variants: Array.isArray(item.variants) ? item.variants : [],
+        gallery: Array.isArray(item.gallery) ? item.gallery : [],
+      }));
     };
     const menu = menuRow ? await fetchItems(menuRow.id) : [];
     const catalog = catalogRow ? await fetchItems(catalogRow.id) : [];

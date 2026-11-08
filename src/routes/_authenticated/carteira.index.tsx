@@ -8,6 +8,7 @@ import { ChevronRight, Sparkles, Gift, Stamp, RotateCcw, Bell, Flame, Trophy, Ca
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { saveWalletCache, readWalletCache } from "@/lib/offline-wallet-cache";
+import { supabase } from "@/integrations/supabase/client";
 import {
   EmptyWalletState,
   WalletErrorState,
@@ -33,7 +34,9 @@ export const Route = createFileRoute("/_authenticated/carteira/")({
       return await context.queryClient.ensureQueryData(walletOpts);
     } catch (err) {
       // Offline-first: usa último snapshot em cache local se a rede falhar.
-      const cache = readWalletCache<WalletItem>();
+      // Cache restrito à sessão local: nunca restaurar dados de outra conta.
+      const { data: { session } } = await supabase.auth.getSession();
+      const cache = readWalletCache<WalletItem>(session?.user?.id);
       if (cache?.items?.length) {
         context.queryClient.setQueryData(walletOpts.queryKey, cache.items);
         return cache.items;
@@ -64,7 +67,12 @@ function WalletHome() {
 
   // Offline-first: persiste último estado da carteira para renderizar sem internet.
   useEffect(() => {
-    if (items.length) saveWalletCache(items);
+    if (!items.length) return;
+    let active = true;
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (active && session?.user?.id) saveWalletCache(items, session.user.id);
+    }).catch(() => undefined);
+    return () => { active = false; };
   }, [items]);
 
 

@@ -206,38 +206,37 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         linkPreview: false
       };
 
-      if (options.type === 'options' && options.options?.length > 0) {
-        if (options.options.length <= 3) {
-          endpoint = "/send/button";
-          payload = {
-            number: cleanPhone,
-            text: message,
-            buttons: options.options.map((o: any) => ({
-              type: "reply",
-              reply: {
-                id: o.value || o.label,
-                title: o.label
-              }
-            }))
-          };
-        } else {
-          endpoint = "/send/list";
-          payload = {
-            number: cleanPhone,
-            text: message,
-            title: "Opções",
-            buttonText: "Ver Opções",
-            sections: [
-              {
-                title: "Selecione uma opção",
-                rows: options.options.map((o: any) => ({
-                  id: o.value || o.label,
-                  title: o.label
-                }))
-              }
-            ]
-          };
+      const interactiveOptions = options.type === "options" && Array.isArray(options.options)
+        ? options.options.filter((entry: any) => entry && typeof entry.label === "string")
+        : [];
+      let fallbackText = message;
+      const nativeButtonsOnly = options.nativeButtonsOnly === true;
+      if (nativeButtonsOnly && (interactiveOptions.length === 0 || interactiveOptions.length > 3)) {
+        return { ok: false, message: "O atendimento Fidelize requer exatamente 3 botões nativos." };
+      }
+      if (interactiveOptions.length > 0) {
+        if (!nativeButtonsOnly) {
+          fallbackText = message + "\n\n" + interactiveOptions.map((entry: any, idx: number) =>
+            String(idx + 1) + ". " + entry.label
+          ).join("\n") + "\n\nResponda com o número da opção.";
         }
+        // uazapiGO v2.6.4: POST /send/menu, type=button e choices no
+        // formato "Rótulo|ID" para respostas nativas (sem reply:).
+        // Referência: https://docs.uazapi.com/endpoint/post/send~menu
+        endpoint = "/send/menu";
+        payload = interactiveOptions.length <= 3
+          ? {
+              number: cleanPhone, type: "button", text: message,
+              footerText: "Fidelize · Atendimento",
+              choices: interactiveOptions.map((entry: any) =>
+                entry.label + "|" + String(entry.value ?? entry.label)),
+            }
+          : {
+              number: cleanPhone, type: "list", text: message,
+              listButton: "Ver opções",
+              choices: ["[Selecione uma opção]", ...interactiveOptions.map((entry: any) =>
+                entry.label + "|" + String(entry.value ?? entry.label))],
+            };
       }
 
       console.log("[UAZAPI] Sending message", { endpoint });
@@ -251,7 +250,9 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok && endpoint !== "/send/text") {
+      // O suporte institucional exige botões reais, nunca substitui por menu numerado.
+      // Não enviar outra mensagem por texto caso a API rejeite /send/menu.
+      if (!response.ok && endpoint !== "/send/text" && !nativeButtonsOnly) {
         console.warn(`[UAZAPI] Endpoint ${endpoint} failed, falling back to /send/text`);
         const { response: fallbackRes, body: fallbackBody } = await timedFetch(`${baseUrl}/send/text`, {
           method: "POST",
@@ -261,7 +262,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
           },
           body: JSON.stringify({
             number: cleanPhone,
-            text: message,
+            text: fallbackText,
             linkPreview: false
           })
         });
@@ -317,10 +318,15 @@ export const uazapiOtp: WhatsAppOTPProvider = {
   parseWebhook(body: any) {
     function extractInteractiveValue(msg: any) {
       // v1/v2 Interactive Button Response
-      const buttonId = 
-        msg?.selectedButtonId || 
-        msg?.buttonResponse?.selectedButtonId || 
-        msg?.buttonsResponseMessage?.selectedButtonId;
+      const buttonId =
+        msg?.buttonOrListid ||
+        msg?.buttonOrListId ||
+        msg?.interactive?.button_reply?.id ||
+        msg?.selectedButtonId ||
+        msg?.buttonResponse?.selectedButtonId ||
+        msg?.buttonsResponseMessage?.selectedButtonId ||
+        msg?.message?.buttonsResponseMessage?.selectedButtonId ||
+        msg?.message?.templateButtonReplyMessage?.selectedId;
 
       if (buttonId) return String(buttonId);
 
@@ -452,12 +458,18 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         : undefined,
     ];
 
+    // Priorizar o identificador do botão: o webhook pode trazer também
+    // o texto da mensagem original, que não é a escolha do cliente.
     const text =
+      extractInteractiveValue(msg) ||
+      extractInteractiveValue(root) ||
+      extractInteractiveValue(body) ||
+      extractInteractiveValue(baileysMessage) ||
       possibleTexts.find(
         (value) =>
           typeof value === "string" &&
           value.trim().length > 0
-      )?.trim() || extractInteractiveValue(msg) || extractInteractiveValue(root) || extractInteractiveValue(body) || extractInteractiveValue(baileysMessage) || "";
+      )?.trim() || "";
 
     const remoteMessageId = String(
       msg?.messageid ||
