@@ -14,6 +14,7 @@ function query(data: unknown) {
   const q: any = {};
   q.select = vi.fn(() => q);
   q.eq = vi.fn(() => q);
+  q.in = vi.fn(() => q);
   q.maybeSingle = vi.fn(async () => ({ data, error: null }));
   return q;
 }
@@ -82,6 +83,6 @@ describe("Central de Atendimento Fidelize - isolamento institucional", () => {
       table === "app_roles" ? query({ user_id: "admin-1" }) : query(null)
     ));
     await expect(authorizeInbox({}, "admin-1"))
-      .rejects.toThrow(/workspace.*nao configurado/i);
+      .rejects.toThrow(/workspace.*n[aã]o configurado/i);
   });
 });
