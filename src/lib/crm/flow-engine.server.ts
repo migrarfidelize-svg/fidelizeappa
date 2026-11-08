@@ -311,7 +311,37 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   if (conversationResult.error || !conversationResult.data) throw conversationResult.error ?? new Error("CRM_CONVERSATION_NOT_FOUND");
   const conv = conversationResult.data;
   
-  if (conv.status !== "bot" || (conv as any).bot_paused === true || (conv.metadata as any)?.support?.active) return { ok: true, action: "ignored" };
+  if (conv.status !== "bot" || (conv as any).bot_paused === true || (conv.metadata as any)?.support?.active) {
+    // O clique explícito em "Voltar ao menu" cancela uma espera ainda não assumida
+    // por um atendente. Nunca liberar conversas já atribuídas a humanos.
+    const wantsMenu = messageBody.trim() === "fidelize_menu";
+    if (wantsMenu && conv.status === "waiting" && !conv.assigned_to &&
+        (conv.metadata as any)?.support?.active &&
+        await isPlatformSupportWorkspace(conv.establishment_id)) {
+      const currentMeta = (conv.metadata as Record<string, any>) || {};
+      const nextMeta = {
+        ...currentMeta,
+        support: { ...(currentMeta.support || {}), active: false },
+      };
+      const updated = await supabaseAdmin.from("crm_conversations").update({
+        status: "bot", bot_paused: false, queue_id: null, waiting_since: null,
+        metadata: nextMeta,
+      }).eq("id", conv.id).eq("establishment_id", conv.establishment_id)
+        .eq("status", "waiting").is("assigned_to", null).select("id").maybeSingle();
+      if (updated.error) throw updated.error;
+      if (!updated.data) return { ok: true, action: "ignored" };
+      const resolved = await supabaseAdmin.from("crm_support_tickets").update({
+        status: "resolved", resolved_at: new Date().toISOString(),
+      }).eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id)
+        .in("status", ["open", "in_progress"]);
+      if (resolved.error) throw resolved.error;
+      conv.metadata = nextMeta;
+      conv.status = "bot";
+      conv.bot_paused = false;
+      return sendPlatformMenu(conv);
+    }
+    return { ok: true, action: "ignored" };
+  }
 
   const input = messageBody.trim().toLocaleLowerCase("pt-BR");
 
