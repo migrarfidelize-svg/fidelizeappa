@@ -215,18 +215,21 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         return { ok: false, message: "O atendimento Fidelize requer exatamente 3 botões nativos." };
       }
       if (interactiveOptions.length > 0) {
-        fallbackText = message + "\n\n" + interactiveOptions.map((entry: any, idx: number) =>
-          String(idx + 1) + ". " + entry.label
-        ).join("\n") + "\n\nResponda com o número da opção.";
-        // UAZAPI Go v2: /send/menu com choices; /send/button era incompatível
-        // com o contrato público documentado.
+        if (!nativeButtonsOnly) {
+          fallbackText = message + "\n\n" + interactiveOptions.map((entry: any, idx: number) =>
+            String(idx + 1) + ". " + entry.label
+          ).join("\n") + "\n\nResponda com o número da opção.";
+        }
+        // uazapiGO v2.6.4: POST /send/menu, type=button e choices no
+        // formato "Rótulo|ID" para respostas nativas (sem reply:).
+        // Referência: https://docs.uazapi.com/endpoint/post/send~menu
         endpoint = "/send/menu";
         payload = interactiveOptions.length <= 3
           ? {
               number: cleanPhone, type: "button", text: message,
               footerText: "Fidelize · Atendimento",
               choices: interactiveOptions.map((entry: any) =>
-                entry.label + "|reply:" + String(entry.value ?? entry.label)),
+                entry.label + "|" + String(entry.value ?? entry.label)),
             }
           : {
               number: cleanPhone, type: "list", text: message,
