@@ -11,17 +11,15 @@
 ## Mensagem inicial
 Olá! Você está falando com a Fidelize. Como podemos ajudar? Escolha uma das opções:
 
-1. **Suporte**
-2. **Planos**
-3. **Sugestões**
+**Suporte** · **Planos** · **Sugestões** (exatamente três botões clicáveis, sem números).
 
-UAZAPI usa mensagem interativa `/send/menu` com `type=button` e três `choices` estáveis; se botão falhar, cai para texto numerado para que o cliente responda 1/2/3.
+UAZAPI usa mensagem interativa `/send/menu` com `type=button` e três `choices` estáveis. **Não há fallback numerado no suporte Fidelize**: caso a UAZAPI rejeite o envio interativo, a API retorna falha, registrada pelo webhook para reprocessamento ou investigação. Não envia menu textual por números. A apresentação visual final é controlada pelo aplicativo WhatsApp e pela compatibilidade do dispositivo/provedor.
 
 ## Comportamento
 - **Suporte:** resposta de fila; cria/reutiliza ticket institucional, fila **Suporte**, tags **Suporte** e **Aguardando atendimento**; estado `waiting`, `bot_paused=true`. Não faz perguntas livres nem chama IA. Um membro autorizado assume a conversa manualmente na Inbox.
 - **Planos:** lê somente `plans.is_active=true` e `archived_at IS NULL` do banco, em `display_order`; envia nome, mensalidade/anuidade e descrição, sem preços codificados no bot. Novos preços editados pelo admin serão usados no próximo atendimento.
 - **Sugestões:** solicita uma mensagem; a próxima mensagem recebida já fica registrada em `crm_messages`, marca tag **Sugestões**, confirma recebimento e não demanda intervenção imediata.
-- **Voltar:** resposta `menu` ou `0` retorna os três botões. Conversa de suporte aguarda funcionário; depois de encerrada, nova mensagem reabre no menu.
+- **Voltar:** mensagem `menu` retorna os três botões. Conversa de suporte aguarda funcionário; depois de encerrada, nova mensagem reabre no menu.
 - **IA:** retorna à engine existente, não cria IA nova nem usa IA quando modo Bot está ativo.
 
 ## Proteções
@@ -33,7 +31,7 @@ UAZAPI usa mensagem interativa `/send/menu` com `type=button` e três `choices` 
 
 ## Homologação obrigatória
 1. Confirmar provedor UAZAPI conectado ao WhatsApp institucional e capacidade real de botões na versão instalada.
-2. Enviar 'oi' e verificar 3 botões; testar fallback textual e clique em cada botão.
+2. Enviar 'oi' e verificar três botões reais, um clique em cada opção. Simular erro de `/send/menu` e confirmar que **nenhum texto numerado é enviado**.
 3. Verificar fila/tag/ticket e ausência de respostas durante espera; testar atendimento humano.
 4. Conferir que os planos recebidos refletem alterações reais do admin e excluem desativados.
 5. Confirmar sugestão armazenada, sem iniciar ticket; confirmar retorno ao menu.
