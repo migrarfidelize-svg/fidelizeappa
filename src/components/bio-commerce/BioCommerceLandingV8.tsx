@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   BadgeCheck,
@@ -39,6 +39,7 @@ import {
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { createBioCommerceOrder } from "@/lib/bio-commerce-order.functions";
+import { getBioCommerceCatalogPage } from "@/lib/bio-commerce-runtime.functions";
 import { getPublicYouTubeFeed } from "@/lib/youtube-feed.functions";
 import {
   getBioCommerceNiche,
@@ -216,6 +217,8 @@ export function BioCommerceLanding({
   const [storyIndex, setStoryIndex] = useState<number | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [catalogMode, setCatalogMode] = useState<CatalogMode>(null);
+  const [remoteProducts, setRemoteProducts] = useState<BioCommerceProduct[]>([]);
+  const [highlightProduct, setHighlightProduct] = useState<BioCommerceProduct | null>(null);
   const showcaseRef = useRef<HTMLElement | null>(null);
   const linkHubRef = useRef<HTMLElement | null>(null);
 
@@ -231,12 +234,12 @@ export function BioCommerceLanding({
   const secondaryProducts = mode === "links" ? [] : (primarySource === "menu" ? catalogProducts : menuProducts).slice(0, 12);
   const allProducts = useMemo(() => {
     const seen = new Set<string>();
-    return [...menuProducts, ...catalogProducts].filter((product) => {
+    return [...menuProducts, ...catalogProducts, ...remoteProducts, ...(highlightProduct ? [highlightProduct] : [])].filter((product) => {
       if (!product?.id || seen.has(product.id)) return false;
       seen.add(product.id);
       return true;
     });
-  }, [menuProducts, catalogProducts]);
+  }, [menuProducts, catalogProducts, remoteProducts, highlightProduct]);
 
   const reviews = (blockData.reviews ?? []).filter((review) => (review.rating ?? 0) >= 4).slice(0, 4);
   const richLinks = links.filter((link: any) => RICH_KINDS.has(link.kind) && !["menu_carousel", "reviews"].includes(link.kind));
@@ -259,8 +262,15 @@ export function BioCommerceLanding({
 
   const openStory = (product: BioCommerceProduct) => {
     const index = allProducts.findIndex((item) => item.id === product.id);
-    if (index < 0 || !interactive) return;
-    setStoryIndex(index);
+    if (!interactive) return;
+    if (index < 0) {
+      // Um produto carregado após paginação também abre no Story, mesmo
+      // se ainda não fazia parte dos 60 destaques iniciais.
+      setHighlightProduct(product);
+      setStoryIndex(allProducts.length);
+    } else {
+      setStoryIndex(index);
+    }
     track(`product:${product.name}`, product.id);
   };
 
@@ -415,7 +425,7 @@ export function BioCommerceLanding({
 
       <AnimatePresence>{storyIndex != null && allProducts[storyIndex] && <ProductStoryModal key={allProducts[storyIndex].id} products={allProducts} index={storyIndex} setIndex={setStoryIndex} onClose={() => setStoryIndex(null)} cart={cart} theme={theme} interactive={interactive} motionEnabled={motionEnabled} mode={mode} onBook={bookProduct} onTrack={track} />}</AnimatePresence>
       <AnimatePresence>{cartOpen && !embedded && mode === "commerce" && <CheckoutSheet slug={slug} products={allProducts} cart={cart} theme={theme} whatsapp={String(establishment.whatsapp ?? whatsappLink?.url ?? "")} onClose={() => setCartOpen(false)} onTrack={track} />}</AnimatePresence>
-      <AnimatePresence>{catalogMode && !embedded && <FullCatalogOverlay mode={catalogMode} products={catalogMode === "menu" ? menuProducts : catalogProducts} theme={theme} experienceMode={mode} cart={cart} onClose={() => setCatalogMode(null)} onOpen={openStory} onBook={bookProduct} />}</AnimatePresence>
+      <AnimatePresence>{catalogMode && !embedded && <FullCatalogOverlay slug={slug} onProductsLoaded={setRemoteProducts} mode={catalogMode} products={catalogMode === "menu" ? menuProducts : catalogProducts} theme={theme} experienceMode={mode} cart={cart} onClose={() => setCatalogMode(null)} onOpen={openStory} onBook={bookProduct} />}</AnimatePresence>
     </div>
   );
 }
@@ -539,9 +549,163 @@ function SocialAction({ link, theme, interactive, track }: any) {
   const meta=KIND_META[link.kind] ?? KIND_META.custom; const Icon=meta.icon; return <a href={interactive ? normalizeUrl(link.kind,link.url) : undefined} onClick={(event) => { if (!interactive) event.preventDefault(); else track(`social:${link.label || link.kind}`,link.id); }} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition hover:-translate-y-.5" style={surface(theme)}><Icon className="h-4 w-4" style={{ color:theme.primary }} />{link.label || meta.fallback}</a>;
 }
 
-function FullCatalogOverlay({ mode, products, theme, experienceMode, cart, onClose, onOpen, onBook }: any) {
-  useEffect(() => { const old=document.body.style.overflow; document.body.style.overflow="hidden"; return () => { document.body.style.overflow=old; }; }, []);
-  return <motion.div className="fixed inset-0 z-[180] overflow-y-auto bg-black/90 text-white backdrop-blur-2xl" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}><div className="mx-auto min-h-dvh max-w-6xl px-3 pb-24 pt-4 sm:px-6"><div className="sticky top-3 z-30 flex items-center justify-between rounded-3xl border border-white/10 bg-black/55 px-4 py-3 backdrop-blur-2xl"><div><p className="text-[9px] font-black uppercase tracking-[.22em]" style={{ color:theme.primary }}>Bio Commerce</p><h2 className="text-xl font-black">{mode === "menu" ? "Cardápio completo" : "Catálogo completo"}</h2></div><button onClick={onClose} className="grid h-11 w-11 place-items-center rounded-full border border-white/15"><X className="h-5 w-5" /></button></div>{products.length ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{products.map((product:any) => { const promo=product.promo_price != null && product.price != null && Number(product.promo_price) < Number(product.price); const qty=cart.qtyOf(product.id); return <article key={product.id} className="overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[.055]"><button type="button" onClick={() => onOpen(product)} className="block w-full text-left"><div className="relative aspect-[4/5] overflow-hidden bg-white/5">{product.image_url ? <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center"><ShoppingBag className="h-8 w-8 opacity-30" /></div>}<div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" /><div className="absolute inset-x-3 bottom-3"><h3 className="line-clamp-2 text-sm font-black">{product.name}</h3><strong className="mt-1 block text-sm" style={{ color:theme.primary }}>{money(promo ? product.promo_price : product.price,product.currency ?? "BRL")}</strong></div></div></button><div className="p-3"><p className="line-clamp-2 min-h-8 text-[11px] text-white/55">{product.short_desc || "Toque para ver detalhes."}</p><button onClick={() => experienceMode === "booking" ? onBook(product) : cart.add(product.id)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-black" style={{ background:`linear-gradient(135deg,${theme.primary},${theme.accent})` }}>{experienceMode === "booking" ? <><CalendarDays className="h-4 w-4" />Agendar</> : <>{qty > 0 ? `${qty} na sacola` : <><Plus className="h-4 w-4" />Adicionar</>}</>}</button></div></article>; })}</div> : <div className="mt-14 rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">Nenhum item publicado nesta vitrine.</div>}</div></motion.div>;
+function FullCatalogOverlay({
+  slug, mode, products, theme, experienceMode, cart,
+  onClose, onOpen, onBook, onProductsLoaded,
+}: {
+  slug: string;
+  mode: "menu" | "catalog";
+  products: BioCommerceProduct[];
+  theme: any;
+  experienceMode: ExperienceMode;
+  cart: any;
+  onClose: () => void;
+  onOpen: (product: BioCommerceProduct) => void;
+  onBook: (product: BioCommerceProduct) => void;
+  onProductsLoaded: React.Dispatch<React.SetStateAction<BioCommerceProduct[]>>;
+}) {
+  const fetchCatalog = useServerFn(getBioCommerceCatalogPage);
+  const query = useInfiniteQuery({
+    queryKey: ["bio-commerce-complete-catalog", slug, mode],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => fetchCatalog({
+      data: { slug, kind: mode, offset: pageParam, limit: 60 },
+    }),
+    getNextPageParam: (lastPage, pages) =>
+      lastPage.hasMore
+        ? pages.reduce((total, page) => total + page.items.length, 0)
+        : undefined,
+    staleTime: 60_000,
+  });
+
+  const loaded = useMemo(() => (
+    query.data?.pages.flatMap((page) => page.items) ?? products
+  ), [query.data, products]);
+
+  useEffect(() => {
+    if (!query.data) return;
+    const received = query.data.pages.flatMap((page) => page.items);
+    onProductsLoaded((prev) => {
+      const merged = new Map(prev.map((item) => [item.id, item]));
+      for (const item of received) merged.set(item.id, item);
+      return Array.from(merged.values());
+    });
+  }, [query.data, onProductsLoaded]);
+
+  useEffect(() => {
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", escape);
+    return () => {
+      document.body.style.overflow = oldOverflow;
+      window.removeEventListener("keydown", escape);
+    };
+  }, [onClose]);
+
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={mode === "menu" ? "Cardápio completo" : "Catálogo completo"}
+      className="fixed inset-0 z-[180] overflow-y-auto bg-black/90 text-white backdrop-blur-2xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="mx-auto min-h-dvh max-w-6xl px-3 pb-24 pt-4 sm:px-6">
+        <div className="sticky top-3 z-30 flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-black/75 px-4 py-3 backdrop-blur-2xl">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[.2em]" style={{ color: theme.primary }}>
+              Bio Commerce
+            </p>
+            <h2 className="text-lg font-bold sm:text-xl">
+              {mode === "menu" ? "Cardápio completo" : "Catálogo completo"}
+            </h2>
+            <p className="text-xs text-white/60">
+              {loaded.length} {loaded.length === 1 ? "item carregado" : "itens carregados"}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Fechar catálogo"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/20 bg-white/5">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {query.isError && (
+          <div role="alert" className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-white/80">
+            Não foi possível carregar o restante da vitrine.
+            <button type="button" onClick={() => void query.refetch()} className="ml-2 font-bold underline">
+              Tentar novamente
+            </button>
+          </div>
+        )}
+
+        {loaded.length > 0 ? (
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {loaded.map((product) => {
+              const promo = product.promo_price != null && product.price != null &&
+                Number(product.promo_price) < Number(product.price);
+              const out = product.stock_status === "out_of_stock";
+              const variants = Array.isArray(product.variants) && product.variants.some((variant) => variant?.label);
+              const qty = cart.qtyOf(product.id);
+              return (
+                <article key={product.id} className="min-w-0 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[.055]">
+                  <button type="button" onClick={() => onOpen(product)} className="block w-full text-left">
+                    <div className="relative aspect-[4/5] overflow-hidden bg-white/5">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="grid h-full place-items-center"><ShoppingBag className="h-8 w-8 opacity-30" /></div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                      {out && <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold">Esgotado</span>}
+                      <div className="absolute inset-x-3 bottom-3">
+                        <h3 className="line-clamp-2 text-sm font-bold">{product.name}</h3>
+                        <strong className="mt-1 block text-sm" style={{ color: theme.primary }}>
+                          {money(promo ? product.promo_price : product.price, product.currency ?? "BRL")}
+                        </strong>
+                      </div>
+                    </div>
+                  </button>
+                  <div className="p-3">
+                    <p className="line-clamp-2 min-h-8 text-[11px] text-white/65">
+                      {product.short_desc || "Toque para ver detalhes."}
+                    </p>
+                    <button type="button" disabled={out} onClick={() => {
+                      if (experienceMode === "booking") return onBook(product);
+                      if (variants) return onOpen(product);
+                      cart.add(product.id);
+                    }}
+                      className="mt-3 flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                      style={{ background: `linear-gradient(135deg,${theme.primary},${theme.accent})` }}>
+                      {out ? "Indisponível" : experienceMode === "booking"
+                        ? <><CalendarDays className="h-4 w-4" /> Agendar</>
+                        : variants ? "Escolher opção" : qty > 0 ? `${qty} na sacola` : <><Plus className="h-4 w-4" /> Adicionar</>}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="mt-14 rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">
+            {query.isLoading ? "Carregando itens publicados..." : "Nenhum item publicado nesta vitrine."}
+          </div>
+        )}
+
+        {query.hasNextPage && (
+          <button type="button" onClick={() => void query.fetchNextPage()}
+            disabled={query.isFetchingNextPage}
+            className="mx-auto mt-8 flex min-h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 py-3 text-sm font-semibold disabled:opacity-50">
+            {query.isFetchingNextPage ? "Carregando..." : "Carregar mais produtos"}
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
 }
 
 function CartDock({ count, total, theme, onOpen }: any) {
