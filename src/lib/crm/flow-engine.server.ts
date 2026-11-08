@@ -74,6 +74,7 @@ async function updateState(conv: any, flowId: string | null, stepId: string | nu
 }
 
 async function handoff(conv: any, confirmation: string, routing?: { queueId: string; category: string }) {
+  const wasAlreadyWaiting = Boolean((conv.metadata as any)?.support?.active);
   const existing = await (supabaseAdmin as any).from("crm_support_tickets").select("id")
     .eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id).in("status", ["open", "in_progress"]).maybeSingle();
   if (existing.error) throw existing.error;
@@ -99,7 +100,9 @@ async function handoff(conv: any, confirmation: string, routing?: { queueId: str
   
   if (updated.error) throw updated.error;
   
-  if (!(conv.metadata as any)?.support?.active) {
+  // O estado anterior deve ser capturado ANTES do update de banco:
+  // mocks e clientes distintos podem refletir o novo metadata no mesmo objeto.
+  if (!wasAlreadyWaiting) {
     await sendAndPersist(conv, confirmation, {}, "support_handoff");
   }
   
