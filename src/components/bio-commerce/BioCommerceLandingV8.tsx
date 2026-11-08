@@ -681,7 +681,7 @@ function FullCatalogOverlay({
               const promo = product.promo_price != null && product.price != null &&
                 Number(product.promo_price) < Number(product.price);
               const out = product.stock_status === "out_of_stock";
-              const variants = Array.isArray(product.variants) && product.variants.some((variant) => variant?.label);
+              const variants = Array.isArray(product.variants) && product.variants.some((variant: { label?: string | null }) => variant?.label);
               const qty = cart.qtyOf(product.id);
               return (
                 <article key={product.id} className="min-w-0 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[.055]">
