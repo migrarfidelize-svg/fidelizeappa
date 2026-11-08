@@ -216,7 +216,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       let fallbackText = message;
       const nativeButtonsOnly = options.nativeButtonsOnly === true;
       if (nativeButtonsOnly && (interactiveOptions.length === 0 || interactiveOptions.length > 3)) {
-        return { ok: false, message: "O atendimento Fidelize requer exatamente 3 botões nativos." };
+        return { ok: false, message: "Os botões nativos requerem de 1 a 3 opções válidas." };
       }
       if (interactiveOptions.length > 0) {
         if (!nativeButtonsOnly) {
