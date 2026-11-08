@@ -15,6 +15,7 @@ function query(data: unknown) {
   q.select = vi.fn(() => q);
   q.eq = vi.fn(() => q);
   q.in = vi.fn(() => q);
+  q.in = vi.fn(() => q);
   q.maybeSingle = vi.fn(async () => ({ data, error: null }));
   return q;
 }
