@@ -1,6 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+function emptyBioCommerceRuntime() {
+  return {
+    menu: [],
+    catalog: [],
+    menu_categories: [],
+    catalog_categories: [],
+    reviews: [],
+    stats: null,
+  };
+}
+
 /**
  * Dados públicos ricos usados pela Bio Commerce.
  *
@@ -16,9 +27,12 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
 
     const { data: page } = await (supabaseAdmin as any)
       .from("link_tree_pages")
-      .select("establishment_id")
+      .select("establishment_id, published")
       .eq("public_slug", normalized)
       .maybeSingle();
+
+    // Uma Bio Commerce despublicada nunca pode expor produtos via RPC público.
+    if (page && !page.published) return emptyBioCommerceRuntime();
 
     let establishmentId = page?.establishment_id as string | null | undefined;
 
@@ -32,16 +46,16 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
       establishmentId = est?.id ?? null;
     }
 
-    if (!establishmentId) {
-      return {
-        menu: [],
-        catalog: [],
-        menu_categories: [],
-        catalog_categories: [],
-        reviews: [],
-        stats: null,
-      };
-    }
+    if (!establishmentId) return emptyBioCommerceRuntime();
+
+    const { data: owner, error: ownerError } = await supabaseAdmin
+      .from("establishments")
+      .select("id")
+      .eq("id", establishmentId)
+      .eq("active", true)
+      .maybeSingle();
+    if (ownerError) throw new Error("Falha ao validar a loja.");
+    if (!owner) return emptyBioCommerceRuntime();
 
     const { data: menus } = await supabaseAdmin
       .from("restaurant_menus")
