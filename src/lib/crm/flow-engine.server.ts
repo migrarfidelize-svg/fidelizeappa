@@ -191,7 +191,9 @@ async function processPlatformSupportBot(conv: any, inbound: string): Promise<Fl
       const queueId = await ensurePlatformSupportQueue(conv.establishment_id);
       await ensurePlatformTag(conv, "Suporte", "#6366f1");
       await ensurePlatformTag(conv, "Aguardando atendimento", "#f59e0b");
-      return handoff(conv, SUPPORT_QUEUE_TEXT, { queueId, category: "suporte" });
+      const queued = await handoff(conv, SUPPORT_QUEUE_TEXT, { queueId, category: "suporte" });
+      await sendPlatformBackToMenu(conv);
+      return queued;
     }
     case "plans": {
       const result = await supabaseAdmin.from("plans")
