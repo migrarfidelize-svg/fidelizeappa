@@ -28,6 +28,20 @@ jobs:
       - name: Validar isolamento CRM, cache wallet e biblioteca V4
         run: bunx vitest run src/lib/crm/platform-inbox-authorization.test.ts src/lib/offline-wallet-cache.test.ts src/lib/bio-commerce-v4-themes.test.ts src/lib/redeem-token.server.test.ts
 
+  suite:
+    name: Regressão completa de testes unitários
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Executar todos os testes Vitest
+        run: bunx vitest run
+
   build:
     name: Build sem publicação
     runs-on: ubuntu-latest
