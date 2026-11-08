@@ -89,11 +89,9 @@ const NAV_GROUPS = [
 
 function AtendimentoCommandDeck() {
   const contextFn = useServerFn(getInboxContext);
-  const [establishmentId, setEstablishmentId] = useState<string | null>(null);
-
   const ctx = useQuery({
-    queryKey: ["inbox-context", establishmentId],
-    queryFn: () => contextFn({ data: { establishmentId } }),
+    queryKey: ["inbox-context", "fidelize-platform"],
+    queryFn: () => contextFn({ data: {} }),
     staleTime: 60_000,
   });
 
@@ -106,7 +104,7 @@ function AtendimentoCommandDeck() {
     );
   }
 
-  return <Workspace ctx={ctx.data!} onSwitchEstablishment={setEstablishmentId} />;
+  return <Workspace ctx={ctx.data!} />;
 }
 
 function KpiChip({ label, value, tone }: { label: string; value: number; tone?: "danger" }) {
@@ -123,7 +121,7 @@ function KpiChip({ label, value, tone }: { label: string; value: number; tone?: 
   );
 }
 
-function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablishment: (id: string) => void }) {
+function Workspace({ ctx }: { ctx: any }) {
   const qc = useQueryClient();
   const est = ctx.establishmentId as string;
   useCRMRealtime(est);
@@ -285,16 +283,9 @@ function Workspace({ ctx, onSwitchEstablishment }: { ctx: any; onSwitchEstablish
             <h1 className="truncate text-sm font-semibold leading-tight">Central de Atendimento</h1>
             <p className="truncate text-[11px] text-muted-foreground">{ctx.establishmentName} · WhatsApp</p>
           </div>
-          {ctx.isSuper && ctx.establishments?.length > 0 && (
-            <Select value={est} onValueChange={onSwitchEstablishment}>
-              <SelectTrigger className="h-8 w-[220px] text-xs"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {ctx.establishments.map((e: any) => (
-                  <SelectItem key={e.id} value={e.id} className="text-xs">{e.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-semibold text-primary sm:inline-flex">
+            Atendimento Fidelize
+          </span>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <KpiChip label="Fila" value={stats.data?.waiting ?? 0} />
             <KpiChip label="Minhas" value={stats.data?.mine ?? 0} />
