@@ -33,7 +33,32 @@ export const getAdminStatus = createServerFn({ method: "GET" })
     if (role.error || total.error) {
       throw new Error("Não foi possível verificar as permissões administrativas.");
     }
-    return { isAdmin: Boolean(role.data), canBootstrap: total.count === 0, userId };
+
+    // Gerentes institucionais enxergam somente /hash/atendimento.
+    // Nenhuma permissão de administração global é concedida aqui.
+    let canAccessInbox = Boolean(role.data);
+    if (!canAccessInbox) {
+      const { data: institution, error: institutionError } = await supabaseAdmin
+        .from("establishments")
+        .select("id")
+        .eq("slug", "admin")
+        .eq("name", "Fidelize")
+        .maybeSingle();
+      if (institutionError) throw new Error("Não foi possível validar o atendimento.");
+      if (institution) {
+        const { data: member, error: memberError } = await supabaseAdmin
+          .from("establishment_members")
+          .select("user_id")
+          .eq("establishment_id", institution.id)
+          .eq("user_id", userId)
+          .eq("active", true)
+          .in("role", ["owner", "manager"])
+          .maybeSingle();
+        if (memberError) throw new Error("Não foi possível validar a equipe de atendimento.");
+        canAccessInbox = Boolean(member);
+      }
+    }
+    return { isAdmin: Boolean(role.data), canAccessInbox, canBootstrap: total.count === 0, userId };
   });
 
 export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
