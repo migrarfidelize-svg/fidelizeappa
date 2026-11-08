@@ -39,7 +39,8 @@ const FAQ_ITEMS: Array<[string, string]> = [
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>) => ({
     source: (search?.source as string) || undefined,
-  } as { source?: string }),
+    plano: typeof search?.plano === "string" ? search.plano.slice(0, 32) : undefined,
+  } as { source?: string; plano?: string }),
 
 
   head: () => ({
@@ -1352,6 +1353,15 @@ function Pricing() {
   const [activeIdx, setActiveIdx] = useState(1);
   
   const [prevIdx, setPrevIdx] = useState(1);
+  // Links do WhatsApp destacam o plano correspondente na landing.
+  useEffect(() => {
+    const slug = new URLSearchParams(window.location.search).get("plano");
+    const target = ["essencial", "profissional", "ilimitado", "empresarial"].indexOf(slug || "");
+    if (target >= 0) {
+      setActiveIdx(target);
+      setPrevIdx(target);
+    }
+  }, []);
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
