@@ -1,0 +1,42 @@
+name: Validar intervenção Fidelize (sem deploy)
+
+on:
+  push:
+    branches:
+      - fix/fidelize-cirurgica-crm-bio-20261107
+  pull_request:
+    branches:
+      - fix/affiliate-creatives-link-preview-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    name: Testes unitários de segurança e temas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Validar isolamento CRM, cache wallet e biblioteca V4
+        run: bunx vitest run src/lib/crm/platform-inbox-authorization.test.ts src/lib/offline-wallet-cache.test.ts src/lib/bio-commerce-v4-themes.test.ts
+
+  build:
+    name: Build sem publicação
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependências fixadas
+        run: bun install --frozen-lockfile
+      - name: Compilar aplicação
+        run: bun run build
