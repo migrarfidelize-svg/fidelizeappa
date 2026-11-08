@@ -747,113 +747,18 @@ export const getPromotedEstablishmentIds = createServerFn({ method: "GET" })
   });
 
 /**
- * Resolve login de cliente pelo WhatsApp. Design consciente: no fluxo
- * /carteira o WhatsApp é o único identificador/PIN. Se o usuário existir
- * com e-mail real (cadastros antigos ou vindos por QR/site), reencaixamos
- * a senha nas credenciais sintéticas do fluxo carteira e devolvemos o
- * e-mail correto para o cliente conseguir entrar apenas com o WhatsApp.
- * Retorna { found: false } quando não existe conta associada ao número.
+ * Endpoint legado descontinuado por seguranca.
+ *
+ * O fluxo anterior gerava uma senha deterministica a partir do telefone,
+ * alterava credenciais de usuarios sem validar posse do numero e devolvia
+ * a senha ao solicitante. Isso permitia tomada de conta.
+ *
+ * O login atual da carteira usa requestOTP + verifyOTP em /auth.
+ * Nunca restaurar acesso por telefone sem OTP validado no servidor.
  */
 export const resolveWalletLoginByWhatsapp = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ whatsapp: z.string().min(10) }).parse(d))
-  .handler(async ({ data }) => {
-    const digits = data.whatsapp.replace(/\D/g, "");
-    if (digits.length < 10) return { found: false as const };
-    const last8 = digits.slice(-8);
-    const syntheticEmail = `wa${digits}@carteira.fidelize.app`;
-    const syntheticPassword = `wa_${digits}_fidelize_v1`;
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const samePhone = (phone?: string | null) => {
-      const normalized = (phone ?? "").replace(/\D/g, "");
-      return normalized === digits || (last8.length === 8 && normalized.endsWith(last8));
-    };
-
-    let targetUserId: string | null = null;
-    let email: string | null = null;
-    let displayName = "Cliente";
-
-    // 1) Procura uma conta existente pelo telefone do perfil.
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("id, full_name, phone")
-      .not("phone", "is", null)
-      .limit(2000);
-    const profileMatch = (profiles ?? []).find((p) => samePhone(p.phone));
-    if (profileMatch?.id) {
-      targetUserId = profileMatch.id;
-      displayName = profileMatch.full_name ?? displayName;
-    }
-
-    // 2) Se ainda não achou, procura na base de clientes dos estabelecimentos.
-    // Isso cobre clientes criados pelo lojista/importação CSV, onde e-mail é opcional
-    // e `user_id` pode estar vazio até o primeiro acesso à carteira.
-    const { data: customers } = await supabaseAdmin
-      .from("customers")
-      .select("id, name, phone, user_id, establishment_id, created_at")
-      .not("phone", "is", null)
-      .order("created_at", { ascending: true })
-      .limit(3000);
-    const matchingCustomers = (customers ?? []).filter((c) => samePhone(c.phone));
-
-    if (!targetUserId) {
-      const linkedCustomer = matchingCustomers.find((c) => c.user_id);
-      if (linkedCustomer?.user_id) {
-        targetUserId = linkedCustomer.user_id;
-        displayName = linkedCustomer.name ?? displayName;
-      }
-    }
-
-    if (!targetUserId && matchingCustomers.length) {
-      displayName = matchingCustomers[0].name ?? displayName;
-      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-        email: syntheticEmail,
-        password: syntheticPassword,
-        email_confirm: true,
-        user_metadata: { full_name: displayName, phone: digits, whatsapp: digits },
-      });
-      if (createErr || !created?.user?.id) throw new Error(createErr?.message ?? "Não foi possível ativar a carteira.");
-      targetUserId = created.user.id;
-      email = syntheticEmail;
-    }
-
-    if (!targetUserId) return { found: false as const };
-
-    // Descobre o e-mail real no auth.users; se a conta foi criada agora, já temos o sintético.
-    if (!email) {
-      const { data: userRes, error: uErr } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
-      if (uErr || !userRes?.user?.email) return { found: false as const };
-      email = userRes.user.email;
-    }
-
-    // Reencaixa a senha para a senha sintética do fluxo carteira,
-    // e garante e-mail confirmado (sem exigir clique de confirmação).
-    await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
-      password: syntheticPassword,
-      email_confirm: true,
-      user_metadata: { full_name: displayName, phone: digits, whatsapp: digits },
-    });
-
-    await supabaseAdmin.from("profiles").upsert(
-      { id: targetUserId, full_name: displayName, phone: digits, account_type: "customer" },
-      { onConflict: "id" },
-    );
-
-    // Vincula todos os cadastros órfãos com o mesmo WhatsApp, sem quebrar o
-    // vínculo caso já exista outro cliente do mesmo usuário no estabelecimento.
-    for (const customer of matchingCustomers) {
-      if (customer.user_id) continue;
-      const { data: existing } = await supabaseAdmin
-        .from("customers")
-        .select("id")
-        .eq("establishment_id", customer.establishment_id)
-        .eq("user_id", targetUserId)
-        .maybeSingle();
-      if (existing?.id) continue;
-      await supabaseAdmin.from("customers").update({ user_id: targetUserId }).eq("id", customer.id);
-    }
-
-    return { found: true as const, email, password: syntheticPassword };
+  .handler(async () => {
+    throw new Error("Acesso por senha de WhatsApp desativado. Entre pelo codigo de verificacao enviado ao WhatsApp.");
   });
 
