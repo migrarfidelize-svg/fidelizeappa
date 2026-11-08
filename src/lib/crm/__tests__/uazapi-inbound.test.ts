@@ -33,6 +33,28 @@ describe("UAZAPI inbound safety", () => {
     };
     expect(uazapiOtp.parseWebhook?.(payload, {})?.text).toBe("fidelize_suggestions");
   });
+
+  it("preserva JID LID para respostas ao remetente", () => {
+    const inbound = uazapiOtp.parseWebhook?.({
+      message: { messageid: "lid-reply-1", sender: "123456789012345@lid", chatid: "123456789012345@lid", text: "oi" },
+    }, {});
+    expect(inbound?.fromPhone).toBe("123456789012345");
+    expect(inbound?.replyJid).toBe("123456789012345@lid");
+  });
+
+  it("prioriza PN resolvido em vez de interpretar LID como telefone", () => {
+    const inbound = uazapiOtp.parseWebhook?.({
+      message: {
+        messageid: "pn-reply-1",
+        sender: "123456789012345@lid",
+        sender_pn: "5511999999999@s.whatsapp.net",
+        chatid: "123456789012345@lid",
+        text: "oi",
+      },
+    }, {});
+    expect(inbound?.fromPhone).toBe("5511999999999");
+    expect(inbound?.replyJid).toBe("5511999999999@s.whatsapp.net");
+  });
   it("26. rejeita grupo", () => {
     expect(uazapiOtp.parseWebhook?.({ key: { id: "m3", remoteJid: "123@g.us" }, text: "oi" }, {})).toBeNull();
   });
