@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
-  PLATFORM_SUPPORT_OPTIONS, PLATFORM_BACK_TO_MENU_OPTIONS, SUPPORT_MENU_TEXT, SUPPORT_QUEUE_TEXT,
+  PLATFORM_SUPPORT_OPTIONS, PLATFORM_BACK_TO_MENU_OPTIONS, PLATFORM_SUPPORT_WAITING_OPTIONS,
+  SUPPORT_MENU_TEXT, SUPPORT_QUEUE_TEXT, SUPPORT_CLOSED_TEXT,
   SUPPORT_SUGGESTION_REQUEST, SUPPORT_SUGGESTION_RECEIVED, SUPPORT_NO_PLANS_TEXT,
   resolvePlatformSupportChoice, formatPlatformPlanCard, platformPlanLandingUrl, platformSupportMode,
 } from "./platform-support-bot.core";
@@ -104,7 +105,9 @@ async function handoff(conv: any, confirmation: string, routing?: { queueId: str
   // O estado anterior deve ser capturado ANTES do update de banco:
   // mocks e clientes distintos podem refletir o novo metadata no mesmo objeto.
   if (!wasAlreadyWaiting) {
-    await sendAndPersist(conv, confirmation, {}, "support_handoff");
+    await sendAndPersist(conv, confirmation, routing ? {
+      type: "options", options: PLATFORM_SUPPORT_WAITING_OPTIONS, nativeButtonsOnly: true,
+    } : {}, "support_handoff");
   }
   
   return { ok: true, action: "handoff" } as const;
@@ -191,9 +194,8 @@ async function processPlatformSupportBot(conv: any, inbound: string): Promise<Fl
       const queueId = await ensurePlatformSupportQueue(conv.establishment_id);
       await ensurePlatformTag(conv, "Suporte", "#6366f1");
       await ensurePlatformTag(conv, "Aguardando atendimento", "#f59e0b");
-      const queued = await handoff(conv, SUPPORT_QUEUE_TEXT, { queueId, category: "suporte" });
-      await sendPlatformBackToMenu(conv);
-      return queued;
+      // Uma única mensagem interativa oferece o retorno ou cancelamento da espera.
+      return handoff(conv, SUPPORT_QUEUE_TEXT, { queueId, category: "suporte" });
     }
     case "plans": {
       const result = await supabaseAdmin.from("plans")
@@ -314,32 +316,49 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   const conv = conversationResult.data;
   
   if (conv.status !== "bot" || (conv as any).bot_paused === true || (conv.metadata as any)?.support?.active) {
-    // O clique explícito em "Voltar ao menu" cancela uma espera ainda não assumida
-    // por um atendente. Nunca liberar conversas já atribuídas a humanos.
-    const wantsMenu = resolvePlatformSupportChoice(messageBody) === "menu";
-    if (wantsMenu && conv.status === "waiting" && !conv.assigned_to &&
+    // A saída da fila é permitida apenas enquanto nenhum humano assumiu.
+    // O botão de encerramento não toca em atendimentos humanos já atribuídos.
+    const choice = resolvePlatformSupportChoice(messageBody);
+    const wantsMenu = choice === "menu";
+    const wantsEnd = choice === "end_support";
+    if ((wantsMenu || wantsEnd) && conv.status === "waiting" && !conv.assigned_to &&
         (conv.metadata as any)?.support?.active &&
         await isPlatformSupportWorkspace(conv.establishment_id)) {
+      const now = new Date().toISOString();
       const currentMeta = (conv.metadata as Record<string, any>) || {};
       const nextMeta = {
         ...currentMeta,
-        support: { ...(currentMeta.support || {}), active: false },
+        support: {
+          ...(currentMeta.support || {}),
+          active: false,
+          ...(wantsEnd ? { cancelledAt: now } : {}),
+        },
+        flow_state: {
+          ...((currentMeta.flow_state as Record<string, any>) || {}),
+          mode: wantsEnd ? "platform_closed" : "platform_menu",
+          flowId: null, stepId: null, updatedAt: now,
+        },
       };
+      const nextStatus = wantsEnd ? "closed" : "bot";
       const updated = await supabaseAdmin.from("crm_conversations").update({
-        status: "bot", bot_paused: false, queue_id: null, waiting_since: null,
-        metadata: nextMeta,
+        status: nextStatus, bot_paused: false, queue_id: null, waiting_since: null,
+        closed_at: wantsEnd ? now : null, metadata: nextMeta,
       }).eq("id", conv.id).eq("establishment_id", conv.establishment_id)
         .eq("status", "waiting").is("assigned_to", null).select("id").maybeSingle();
       if (updated.error) throw updated.error;
       if (!updated.data) return { ok: true, action: "ignored" };
       const resolved = await supabaseAdmin.from("crm_support_tickets").update({
-        status: "resolved", resolved_at: new Date().toISOString(),
+        status: "resolved", resolved_at: now,
       }).eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id)
         .in("status", ["open", "in_progress"]);
       if (resolved.error) throw resolved.error;
       conv.metadata = nextMeta;
-      conv.status = "bot";
+      conv.status = nextStatus;
       conv.bot_paused = false;
+      if (wantsEnd) {
+        await sendAndPersist(conv, SUPPORT_CLOSED_TEXT, {}, "platform_bot_closed");
+        return { ok: true, action: "platform_closed" };
+      }
       return sendPlatformMenu(conv);
     }
     return { ok: true, action: "ignored" };
