@@ -361,6 +361,18 @@ export async function executeFlow(conversationId: string, messageBody: string): 
       }
       return sendPlatformMenu(conv);
     }
+    // Conversas de suporte abertas em versões antigas podem não ter os botões
+    // de navegação. O webhook recebe novas mensagens, mas o bot pausado as
+    // ignorava indefinidamente. Reoferecer as ações sem liberar a fila.
+    if (conv.status === "waiting" && !conv.assigned_to &&
+        (conv.metadata as any)?.support?.active &&
+        await isPlatformSupportWorkspace(conv.establishment_id)) {
+      await sendAndPersist(conv,
+        "Seu atendimento continua na fila. Você pode voltar ao menu ou encerrar a espera.",
+        { type: "options", options: PLATFORM_SUPPORT_WAITING_OPTIONS, nativeButtonsOnly: true },
+        "platform_bot_waiting_controls");
+      return { ok: true, action: "waiting_controls" };
+    }
     return { ok: true, action: "ignored" };
   }
 
