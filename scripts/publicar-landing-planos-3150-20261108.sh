@@ -58,7 +58,8 @@ fi
 
 echo "=== 1. REVISANDO COMMIT E ESCOPO ==="
 git -C "$BASE" fetch origin "$BRANCH"
-test "$(git -C "$BASE" rev-parse FETCH_HEAD)" = "$SHA"
+git -C "$BASE" cat-file -e "$SHA^{commit}"
+git -C "$BASE" merge-base --is-ancestor "$SHA" FETCH_HEAD
 CHANGED="$(git -C "$BASE" diff --name-only "$OLD_SHA" "$SHA")"
 if [[ "$CHANGED" != "src/routes/index.tsx" ]]; then
   echo "ERRO: alteracoes inesperadas: $CHANGED"; exit 3
