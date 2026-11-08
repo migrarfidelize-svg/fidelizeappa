@@ -1352,6 +1352,21 @@ function Pricing() {
   const [activeIdx, setActiveIdx] = useState(1);
   
   const [prevIdx, setPrevIdx] = useState(1);
+
+  // O CTA "Conhecer plano" do WhatsApp aponta para ?plano=slug#precos.
+  // No servidor publico 3150, o card iniciava sempre no Profissional.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("plano");
+    const slug = requested?.trim().toLowerCase() === "premium"
+      ? "ilimitado"
+      : requested?.trim().toLowerCase();
+    const index = ["essencial", "profissional", "ilimitado", "empresarial"].indexOf(slug || "");
+    if (index !== -1) {
+      setActiveIdx(index);
+      setPrevIdx(index);
+    }
+  }, []);
+
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
