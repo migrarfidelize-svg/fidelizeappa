@@ -1,4 +1,9 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  PLATFORM_SUPPORT_OPTIONS, SUPPORT_MENU_TEXT, SUPPORT_QUEUE_TEXT,
+  SUPPORT_SUGGESTION_REQUEST, SUPPORT_SUGGESTION_RECEIVED,
+  resolvePlatformSupportChoice, formatPlatformPlans, platformSupportMode,
+} from "./platform-support-bot.core";
 
 const DEFAULT_SUPPORT_TERMS = ["5", "suporte", "atendente", "falar com atendente", "falar com suporte", "humano", "ajuda humana"];
 const stepType = (step: any) => step?.payload?.type || step?.step_key;
@@ -68,7 +73,7 @@ async function updateState(conv: any, flowId: string | null, stepId: string | nu
   conv.metadata = { ...metadata, flow_state: flowState };
 }
 
-async function handoff(conv: any, confirmation: string) {
+async function handoff(conv: any, confirmation: string, routing?: { queueId: string; category: string }) {
   const existing = await (supabaseAdmin as any).from("crm_support_tickets").select("id")
     .eq("conversation_id", conv.id).eq("establishment_id", conv.establishment_id).in("status", ["open", "in_progress"]).maybeSingle();
   if (existing.error) throw existing.error;
@@ -83,12 +88,13 @@ async function handoff(conv: any, confirmation: string) {
   
   const metadata = { 
     ...((conv.metadata as object) || {}), 
-    support: { active: true, ticketId }, 
+    support: { active: true, ticketId, ...(routing ? { category: routing.category } : {}) },
     flow_state: { mode: "manual", flowId: null, stepId: null } 
   };
   
   const updated = await supabaseAdmin.from("crm_conversations").update({
     status: "waiting", assigned_to: null, assigned_at: null, metadata,
+    ...(routing ? { queue_id: routing.queueId, waiting_since: new Date().toISOString(), bot_paused: true } : {}),
   }).eq("id", conv.id).eq("establishment_id", conv.establishment_id);
   
   if (updated.error) throw updated.error;
@@ -98,6 +104,106 @@ async function handoff(conv: any, confirmation: string) {
   }
   
   return { ok: true, action: "handoff" } as const;
+}
+
+/** Somente a instância institucional (jamais contas de lojistas). */
+async function isPlatformSupportWorkspace(establishmentId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("establishments").select("id").eq("id", establishmentId)
+    .eq("slug", "admin").eq("name", "Fidelize").maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+async function ensurePlatformTag(conv: any, name: string, color: string) {
+  const query = () => supabaseAdmin.from("crm_tags").select("id")
+    .eq("establishment_id", conv.establishment_id).eq("name", name).limit(1).maybeSingle();
+  const found = await query();
+  if (found.error) throw found.error;
+  let tagId = found.data?.id;
+  if (!tagId) {
+    const made = await supabaseAdmin.from("crm_tags")
+      .insert({ establishment_id: conv.establishment_id, name, color })
+      .select("id").single();
+    if (made.error || !made.data) throw made.error ?? new Error("CRM_TAG_CREATE_FAILED");
+    tagId = made.data.id;
+  }
+  const attached = await supabaseAdmin.from("crm_conversation_tags").upsert({
+    establishment_id: conv.establishment_id, conversation_id: conv.id, tag_id: tagId,
+  }, { onConflict: "conversation_id,tag_id", ignoreDuplicates: true });
+  if (attached.error) throw attached.error;
+}
+
+/** A fila só é criada quando houver um pedido de suporte. */
+async function ensurePlatformSupportQueue(establishmentId: string): Promise<string> {
+  const found = await supabaseAdmin.from("crm_queues").select("id")
+    .eq("establishment_id", establishmentId).eq("name", "Suporte").eq("active", true)
+    .limit(1).maybeSingle();
+  if (found.error) throw found.error;
+  if (found.data?.id) return found.data.id;
+  const created = await supabaseAdmin.from("crm_queues")
+    .insert({
+      establishment_id: establishmentId, name: "Suporte",
+      active: true, is_default: false, priority: 10,
+      sla_first_response_min: 30, sla_resolution_min: 240,
+    }).select("id").single();
+  if (created.error || !created.data) throw created.error ?? new Error("CRM_QUEUE_CREATE_FAILED");
+  return created.data.id;
+}
+
+async function sendPlatformMenu(conv: any) {
+  await sendAndPersist(conv, SUPPORT_MENU_TEXT, {
+    type: "options", options: PLATFORM_SUPPORT_OPTIONS,
+  }, "platform_bot_menu");
+  await updateState(conv, null, null, { mode: "platform_menu" });
+  return { ok: true, action: "platform_menu" } as const;
+}
+
+async function processPlatformSupportBot(conv: any, inbound: string): Promise<FlowActionResult> {
+  const choice = resolvePlatformSupportChoice(inbound);
+  const state = (conv.metadata as any)?.flow_state;
+
+  // Um texto recebido após "Sugestões" já está gravado em crm_messages pelo webhook.
+  if (state?.mode === "platform_suggestion" && choice === null && inbound.trim()) {
+    await ensurePlatformTag(conv, "Sugestões", "#8b5cf6");
+    await updateState(conv, null, null, {
+      mode: "platform_menu", suggestionReceivedAt: new Date().toISOString(),
+    });
+    await sendAndPersist(conv, SUPPORT_SUGGESTION_RECEIVED, {}, "platform_bot_suggestion");
+    return { ok: true, action: "suggestion_recorded" };
+  }
+
+  switch (choice) {
+    case "support": {
+      const queueId = await ensurePlatformSupportQueue(conv.establishment_id);
+      await ensurePlatformTag(conv, "Suporte", "#6366f1");
+      await ensurePlatformTag(conv, "Aguardando atendimento", "#f59e0b");
+      return handoff(conv, SUPPORT_QUEUE_TEXT, { queueId, category: "suporte" });
+    }
+    case "plans": {
+      const result = await supabaseAdmin.from("plans")
+        .select("name, description, price_monthly, price_yearly, currency")
+        .eq("is_active", true).is("archived_at", null)
+        .order("display_order", { ascending: true }).limit(8);
+      if (result.error) throw result.error;
+      await sendAndPersist(conv, formatPlatformPlans(result.data ?? []), {}, "platform_bot_plans");
+      await updateState(conv, null, null, { mode: "platform_menu" });
+      return { ok: true, action: "plans_sent" };
+    }
+    case "suggestions":
+      await updateState(conv, null, null, { mode: "platform_suggestion" });
+      await sendAndPersist(conv, SUPPORT_SUGGESTION_REQUEST, {}, "platform_bot_suggestion");
+      return { ok: true, action: "suggestion_requested" };
+    case "menu":
+      return sendPlatformMenu(conv);
+    default:
+      // Mensagens livres não chamam a IA e não criam ticket automaticamente.
+      if (state?.mode === "platform_menu") {
+        await sendAndPersist(conv, "Escolha Suporte, Planos ou Sugestões nos botões. Se não aparecerem, responda 1, 2 ou 3.", {}, "platform_bot_help");
+        return { ok: true, action: "menu_help" };
+      }
+      return sendPlatformMenu(conv);
+  }
 }
 
 async function closeConversation(conv: any, message?: string) {
@@ -186,8 +292,14 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   if (settingsResult.error) throw settingsResult.error;
   
   if (!(settingsResult.data as any)?.enabled) return { ok: true, action: "ignored" };
-  
+
   const config = ((settingsResult.data as any).config as any) || {};
+  // Bot institucional = menu fixo, fila humana e planos cadastrados.
+  // IA permanece uma escolha explícita do superadministrador.
+  if (await isPlatformSupportWorkspace(conv.establishment_id) &&
+      platformSupportMode(config.supportMode) === "bot") {
+    return processPlatformSupportBot(conv, messageBody);
+  }
   const behavior = config.behavior || {};
   if (behavior.autoReply === false) return { ok: true, action: "ignored" };
   const customKeywords = Array.isArray(config.handoff?.keywords) ? config.handoff.keywords : [];
