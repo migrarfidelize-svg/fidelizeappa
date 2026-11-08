@@ -538,6 +538,25 @@ export const verifyOTP = createServerFn({ method: "POST" })
     }
 
 
+    // A identidade do telefone foi comprovada acima pelo OTP consumido.
+    // Vinculamos somente os registros orfaos do MESMO telefone verificado.
+    // Esta RPC requer a migration 20261108024000 antes de ir para producao.
+    // Falha de vinculacao nao bloqueia o login ou redefine cartoes existentes.
+    const { data: attachedCount, error: claimError } = await (supabaseAdmin as any)
+      .rpc("claim_verified_wallet_customers", {
+        p_user_id: user.id,
+        p_phone: phone,
+      });
+    if (claimError) {
+      console.error("[OTP] Nao foi possivel vincular carteiras orfas", {
+        code: claimError.code,
+      });
+    } else if (Number(attachedCount) > 0) {
+      console.info("[OTP] Vinculo seguro de carteiras concluido", {
+        count: Number(attachedCount),
+      });
+    }
+
     // 4. Generate Magic Link session
     const { data: link, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
       type: "magiclink",
