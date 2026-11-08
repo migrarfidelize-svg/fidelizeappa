@@ -53,5 +53,7 @@ jobs:
           bun-version: latest
       - name: Instalar dependências fixadas
         run: bun install --frozen-lockfile
+      - name: Gerar tipagem de rotas TanStack (sem deploy)
+        run: bun run build
       - name: Verificar tipos sem gerar arquivos
         run: bunx tsc --noEmit --pretty false
