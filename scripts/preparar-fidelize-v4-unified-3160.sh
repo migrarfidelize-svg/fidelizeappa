@@ -124,7 +124,7 @@ else
 fi
 test -f "$RELEASE/src/lib/wallet-proximity.ts" || die "Smart Wallet proximidade ausente."
 test -f "$RELEASE/src/lib/crm/platform-support-bot.core.ts" || die "Bot 3 botoes ausente."
-test -f "$RELEASE/supabase/migrations/20261108024000_claim_verified_wallet_customers.sql" || die "Migration de carteira ausente."
+test -f "$RELEASE/supabase/migrations/20261108053213_claim_verified_wallet_customers_20261108.sql" || die "Migration de carteira ausente."
 
 echo "[4/6] Instalando dependencias e compilando isoladamente..."
 (
