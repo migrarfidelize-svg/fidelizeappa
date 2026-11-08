@@ -9,16 +9,19 @@ describe("Atendimento institucional de baixo custo", () => {
   });
 
   it.each([
-    ["fidelize_support","support"],["Suporte","support"],["1","support"],
-    ["fidelize_plans","plans"],["Planos","plans"],["2","plans"],
-    ["fidelize_suggestions","suggestions"],["Sugestões","suggestions"],["3","suggestions"],
-    ["menu","menu"],["0","menu"],["voltar","menu"],
+    ["fidelize_support","support"],["Suporte","support"],
+    ["fidelize_plans","plans"],["Planos","plans"],
+    ["fidelize_suggestions","suggestions"],["Sugestões","suggestions"],
+    ["menu","menu"],["voltar","menu"],
   ] as const)("normaliza botão e fallback %s", (input, expected) => {
     expect(resolvePlatformSupportChoice(input)).toBe(expected);
   });
 
   it("não trata toda mensagem livre como acionamento do suporte", () => {
     expect(resolvePlatformSupportChoice("Bom dia, queria ajuda")).toBeNull();
+    expect(resolvePlatformSupportChoice("1")).toBeNull();
+    expect(resolvePlatformSupportChoice("2")).toBeNull();
+    expect(resolvePlatformSupportChoice("3")).toBeNull();
   });
 
   it("modo econômico é padrão; IA só é ativada explicitamente", () => {
