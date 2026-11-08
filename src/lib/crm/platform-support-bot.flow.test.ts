@@ -99,8 +99,33 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     });
     expect(send.mock.calls).toHaveLength(1);
     const count = data.crm_messages.length;
-    expect((await executeFlow("conv", "oi")).action).toBe("ignored");
-    expect(data.crm_messages).toHaveLength(count);
+    expect((await executeFlow("conv", "oi")).action).toBe("waiting_controls");
+    expect(data.crm_messages).toHaveLength(count + 1);
+    expect(send.mock.calls.at(-1)?.[4]).toMatchObject({
+      type: "options", nativeButtonsOnly: true,
+      options: [
+        { label: "Voltar ao menu", value: "fidelize_menu" },
+        { label: "Encerrar atendimento", value: "fidelize_end_support" },
+      ],
+    });
+    expect(data.crm_conversations[0].status).toBe("waiting");
+    expect(data.crm_support_tickets[0].status).toBe("open");
+  });
+
+  it("Conversa herdada da 3170 em waiting recebe botões sem destravar ticket", async () => {
+    data.crm_conversations[0].status = "waiting";
+    data.crm_conversations[0].bot_paused = true;
+    data.crm_conversations[0].metadata = { support: { active: true } };
+    const result = await executeFlow("conv", "teste");
+    expect(result.action).toBe("waiting_controls");
+    expect(send.mock.calls[0][4].options.map((o: any) => o.label))
+      .toEqual(["Voltar ao menu", "Encerrar atendimento"]);
+    expect(data.crm_conversations[0]).toMatchObject({
+      status: "waiting", bot_paused: true,
+    });
+    const back = await executeFlow("conv", "fidelize_menu");
+    expect(back.action).toBe("platform_menu");
+    expect(data.crm_conversations[0].status).toBe("bot");
   });
 
   it("Voltar ao menu retoma bot quando suporte ainda está na fila sem atendente", async () => {
