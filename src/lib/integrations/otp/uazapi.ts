@@ -206,38 +206,30 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         linkPreview: false
       };
 
-      if (options.type === 'options' && options.options?.length > 0) {
-        if (options.options.length <= 3) {
-          endpoint = "/send/button";
-          payload = {
-            number: cleanPhone,
-            text: message,
-            buttons: options.options.map((o: any) => ({
-              type: "reply",
-              reply: {
-                id: o.value || o.label,
-                title: o.label
-              }
-            }))
-          };
-        } else {
-          endpoint = "/send/list";
-          payload = {
-            number: cleanPhone,
-            text: message,
-            title: "Opções",
-            buttonText: "Ver Opções",
-            sections: [
-              {
-                title: "Selecione uma opção",
-                rows: options.options.map((o: any) => ({
-                  id: o.value || o.label,
-                  title: o.label
-                }))
-              }
-            ]
-          };
-        }
+      const interactiveOptions = options.type === "options" && Array.isArray(options.options)
+        ? options.options.filter((entry: any) => entry && typeof entry.label === "string")
+        : [];
+      let fallbackText = message;
+      if (interactiveOptions.length > 0) {
+        fallbackText = message + "\n\n" + interactiveOptions.map((entry: any, idx: number) =>
+          String(idx + 1) + ". " + entry.label
+        ).join("\n") + "\n\nResponda com o número da opção.";
+        // UAZAPI Go v2: /send/menu com choices; /send/button era incompatível
+        // com o contrato público documentado.
+        endpoint = "/send/menu";
+        payload = interactiveOptions.length <= 3
+          ? {
+              number: cleanPhone, type: "button", text: message,
+              footerText: "Fidelize · Atendimento",
+              choices: interactiveOptions.map((entry: any) =>
+                entry.label + "|reply:" + String(entry.value ?? entry.label)),
+            }
+          : {
+              number: cleanPhone, type: "list", text: message,
+              listButton: "Ver opções",
+              choices: ["[Selecione uma opção]", ...interactiveOptions.map((entry: any) =>
+                entry.label + "|" + String(entry.value ?? entry.label))],
+            };
       }
 
       console.log("[UAZAPI] Sending message", { endpoint });
@@ -261,7 +253,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
           },
           body: JSON.stringify({
             number: cleanPhone,
-            text: message,
+            text: fallbackText,
             linkPreview: false
           })
         });
@@ -317,10 +309,14 @@ export const uazapiOtp: WhatsAppOTPProvider = {
   parseWebhook(body: any) {
     function extractInteractiveValue(msg: any) {
       // v1/v2 Interactive Button Response
-      const buttonId = 
-        msg?.selectedButtonId || 
-        msg?.buttonResponse?.selectedButtonId || 
-        msg?.buttonsResponseMessage?.selectedButtonId;
+      const buttonId =
+        msg?.buttonOrListid ||
+        msg?.interactive?.button_reply?.id ||
+        msg?.selectedButtonId ||
+        msg?.buttonResponse?.selectedButtonId ||
+        msg?.buttonsResponseMessage?.selectedButtonId ||
+        msg?.message?.buttonsResponseMessage?.selectedButtonId ||
+        msg?.message?.templateButtonReplyMessage?.selectedId;
 
       if (buttonId) return String(buttonId);
 
