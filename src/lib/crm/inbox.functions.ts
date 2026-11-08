@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { platformSupportMode } from "./platform-support-bot.core";
 
 /* ------------------------------------------------------------------ */
 /* Autorização / resolução de tenant                                   */
@@ -122,6 +123,16 @@ export const getInboxContext = createServerFn({ method: "GET" })
       .eq("id", auth.establishmentId)
       .maybeSingle();
 
+    const { data: supportSettings, error: settingsError } = await supabaseAdmin
+      .from("crm_agent_settings")
+      .select("config")
+      .eq("establishment_id", auth.establishmentId)
+      .maybeSingle();
+    if (settingsError) throw new Error("Não foi possível consultar o modo de atendimento.");
+    const supportMode = platformSupportMode(
+      (supportSettings?.config as Record<string, unknown> | null)?.supportMode,
+    );
+
     const canManage = auth.isSuper;
     // Nao exibir nem listar empresas clientes no Atendimento da plataforma.
     const establishments: { id: string; name: string }[] = [];
@@ -132,6 +143,7 @@ export const getInboxContext = createServerFn({ method: "GET" })
       userId,
       isSuper: auth.isSuper,
       canManage: !!canManage,
+      supportMode,
       establishments,
     };
   });
