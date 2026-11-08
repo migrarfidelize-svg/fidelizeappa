@@ -150,7 +150,7 @@ export const upsertLinkTree = createServerFn({ method: "POST" })
       description: data.description ?? null,
       logo_url: data.logo_url ?? storedPage?.logo_url ?? null,
       cover_url: data.cover_url ?? storedPage?.cover_url ?? null,
-      theme: nextTheme,
+      theme: nextTheme as Database["public"]["Tables"]["link_tree_pages"]["Insert"]["theme"],
       social: data.social,
     };
     (patch as any).public_slug = publicSlug;
