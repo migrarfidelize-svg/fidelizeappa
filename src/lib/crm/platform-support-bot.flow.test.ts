@@ -95,6 +95,28 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(data.crm_messages).toHaveLength(count);
   });
 
+  it("Voltar ao menu retoma bot quando suporte ainda está na fila sem atendente", async () => {
+    await executeFlow("conv", "fidelize_support");
+    const r = await executeFlow("conv", "fidelize_menu");
+    expect(r.action).toBe("platform_menu");
+    expect(data.crm_conversations[0]).toMatchObject({
+      status: "bot", bot_paused: false, metadata: { support: { active: false } },
+    });
+    expect(data.crm_support_tickets[0].status).toBe("resolved");
+    expect(send.mock.calls.at(-1)?.[4].options.map((x: any) => x.label))
+      .toEqual(["Suporte", "Planos", "Sugestões"]);
+  });
+
+  it("Voltar ao menu não interrompe atendimento já atribuído a humano", async () => {
+    await executeFlow("conv", "fidelize_support");
+    data.crm_conversations[0].assigned_to = "human-1";
+    const sends = send.mock.calls.length;
+    expect((await executeFlow("conv", "fidelize_menu")).action).toBe("ignored");
+    expect(data.crm_conversations[0].status).toBe("waiting");
+    expect(data.crm_support_tickets[0].status).toBe("open");
+    expect(send.mock.calls).toHaveLength(sends);
+  });
+
   it("Planos envia card com link nativo por plano e botão separado para voltar", async () => {
     const r = await executeFlow("conv", "fidelize_plans");
     expect(r.action).toBe("plans_sent");
