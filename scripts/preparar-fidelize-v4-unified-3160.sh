@@ -58,7 +58,7 @@ SHA="$(git -C "$BASE" rev-parse FETCH_HEAD)"
 echo "Release V4 + Smart Wallet: $SHA"
 
 # Nao permitir codigo desconhecido nao rastreado na instalacao atual.
-EXTRAS="$(git -C "$LIVE" ls-files --others --exclude-standard -- src scripts supabase)"
+EXTRAS="$(git -C "$LIVE" ls-files --others --exclude-standard -- src scripts supabase public)"
 test -z "$EXTRAS" || { printf '%s\n' "$EXTRAS"; die "Existem fontes nao rastreadas; revisar."; }
 
 DIFFERENCES="$(git -C "$LIVE" diff --name-only "$SMART_SHA" -- . ':(exclude).env' ':(exclude)src/routeTree.gen.ts' ':(exclude)src/lib/my-wallet.functions.ts')"
