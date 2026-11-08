@@ -448,6 +448,11 @@ export async function processCRMTimeouts(now = Date.now()) {
         if (settingsResult.error || !(settingsResult.data as any)?.enabled) continue;
         const settings = settingsResult.data as any;
         const config = settings.config || {};
+        // O atendimento institucional é guiado por botões e não deve ser
+        // transferido automaticamente por inatividade. A fila humana só é
+        // aberta quando o cliente escolhe explicitamente Suporte.
+        if (platformSupportMode(config.supportMode) === "bot" &&
+            await isPlatformSupportWorkspace(conv.establishment_id)) continue;
         const action = timedOutAction(config.behavior || {}, updatedAt, now);
         if (!action) continue;
         const flowId = state.flowId || settings.flow_id;
