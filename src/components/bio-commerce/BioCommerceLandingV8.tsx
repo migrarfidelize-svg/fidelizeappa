@@ -36,7 +36,7 @@ import {
   X,
   Youtube,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { toast } from "sonner";
 import { createBioCommerceOrder } from "@/lib/bio-commerce-order.functions";
 import { getBioCommerceCatalogPage } from "@/lib/bio-commerce-runtime.functions";
@@ -88,6 +88,15 @@ function rgba(hex: string, alpha: number, fallback = "rgba(255,255,255,.12)") {
   const g = parseInt(raw.slice(2, 4), 16);
   const b = parseInt(raw.slice(4, 6), 16);
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function readableCtaText(hex: string) {
+  const source = String(hex ?? "").replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(source)) return "#ffffff";
+  const channels = [0, 2, 4].map((i) => parseInt(source.slice(i, i + 2), 16) / 255);
+  const linear = channels.map((c) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  return luminance > 0.179 ? "#111318" : "#ffffff";
 }
 
 function money(value: number | null | undefined, currency = "BRL") {
@@ -321,7 +330,7 @@ export function BioCommerceLanding({
   };
 
   return (
-    <div className={`${fontClass} relative min-h-full overflow-x-hidden ${v4Enabled ? "bc-v4-theme" : ""}`} data-bc-v4-layout={v4Enabled ? theme.layout : undefined} style={{ background: theme.background, color: theme.text }}>
+    <div className={`${fontClass} relative min-h-full overflow-x-hidden ${v4Enabled ? "bc-v4-theme" : ""}`} data-bc-v4-layout={v4Enabled ? theme.layout : undefined} data-bc-v4-buttons={v4Enabled ? theme.button_style : undefined} style={{ background: theme.background, color: theme.text, "--bc-v4-cta-fg": readableCtaText(theme.primary), "--bc-v4-border": rgba(theme.primary, 0.68), "--bc-v4-glass": rgba(theme.primary, 0.2) } as CSSProperties}>
       <Ambient theme={theme} motionEnabled={motionEnabled} embedded={embedded} />
       <style>{`.bc-v8-scroll::-webkit-scrollbar{display:none}.bc-v8-scroll{scrollbar-width:none}.bc-v8-grain{background-image:radial-gradient(circle at 1px 1px,currentColor 1px,transparent 0);background-size:24px 24px}
       .bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content{max-width:min(64%,680px);margin-left:0;margin-right:auto;align-items:flex-start;text-align:left}
@@ -347,6 +356,9 @@ export function BioCommerceLanding({
       .bc-v4-theme[data-bc-v4-layout="commerce"] [data-bc-v4-product-style]>article{border-radius:1rem}
       .bc-v4-theme[data-bc-v4-layout="classic"] #bio-commerce-vitrine{max-width:900px;margin-inline:auto}
       .bc-v4-theme[data-bc-v4-layout="classic"] #bio-commerce-vitrine h2{font-weight:600;letter-spacing:-.025em}
+      .bc-v4-theme button[style*="linear-gradient"]{color:var(--bc-v4-cta-fg)!important}
+      .bc-v4-theme[data-bc-v4-buttons="outline"] button[style*="linear-gradient"]{background:transparent!important;color:inherit!important;border:1px solid var(--bc-v4-border)!important;box-shadow:none!important}
+      .bc-v4-theme[data-bc-v4-buttons="glass"] button[style*="linear-gradient"]{background:var(--bc-v4-glass)!important;color:inherit!important;border:1px solid var(--bc-v4-border)!important;backdrop-filter:blur(18px)}
       .bc-v4-theme .bc-v4-link-grid:focus-visible{outline:2px solid currentColor}
       @media(min-width:640px){.bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.bc-v4-theme[data-bc-v4-layout="bento"] .bc-v4-link-grid>button:first-child{grid-column:span 2;grid-row:span 2;min-height:230px}}
       @media(max-width:767px){.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content{max-width:100%;margin:auto;align-items:center;text-align:center}.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content p{margin-left:auto}.bc-v4-theme [data-bc-v4-hero="split"] .bc-v4-hero-content>button{align-self:stretch}.bc-v4-theme [data-bc-v4-hero="split"]>div::before{background:linear-gradient(180deg,transparent,rgba(0,0,0,.6))}}
