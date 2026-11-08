@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - fix/fidelize-cirurgica-crm-bio-20261107
-  pull_request:
-    branches:
-      - fix/affiliate-creatives-link-preview-20261030
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: fidelize-v4-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   testes:
