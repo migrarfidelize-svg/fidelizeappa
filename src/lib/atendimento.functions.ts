@@ -426,7 +426,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
 
     const { data: conv, error: convErr } = await supabase
       .from("crm_conversations")
-      .select("customer_phone, establishment_id")
+      .select("customer_phone, establishment_id, metadata")
       .eq("id", data.conversationId)
       .eq("establishment_id", establishmentId)
       .single();
@@ -459,7 +459,7 @@ export const sendCRMMessage = createServerFn({ method: "POST" })
     const res = await active.provider.sendTestMessage(
       active.runtime,
       providerEnv,
-      conv.customer_phone,
+      (conv.metadata as any)?.whatsapp_reply_jid || conv.customer_phone,
       data.body
     );
 

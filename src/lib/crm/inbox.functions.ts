@@ -549,7 +549,7 @@ export const inboxSendMessage = createServerFn({ method: "POST" })
 
     const { data: conv } = await admin
       .from("crm_conversations")
-      .select("id, customer_phone, status, assigned_to, first_response_at")
+      .select("id, customer_phone, status, assigned_to, first_response_at, metadata")
       .eq("id", data.conversationId)
       .eq("establishment_id", est)
       .maybeSingle();
@@ -573,7 +573,8 @@ export const inboxSendMessage = createServerFn({ method: "POST" })
       if (credential) providerEnv[envName] = credential;
     }
 
-    const res = await active.provider.sendTestMessage(active.runtime, providerEnv, conv.customer_phone, data.body);
+    const recipient = (conv.metadata as any)?.whatsapp_reply_jid || conv.customer_phone;
+    const res = await active.provider.sendTestMessage(active.runtime, providerEnv, recipient, data.body);
     if (!res.ok) throw new Error(res.message || "Falha ao enviar a mensagem pelo WhatsApp.");
 
     const { error: msgErr } = await admin.from("crm_messages").insert({

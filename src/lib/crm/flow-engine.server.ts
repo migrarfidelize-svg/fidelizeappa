@@ -52,7 +52,8 @@ async function sendAndPersist(conv: any, text: string, options: any = {}, source
     const credential = active.runtime.db_credentials?.[field];
     if (credential) providerEnv[envName] = credential;
   }
-  const sent = await active.provider.sendTestMessage(active.runtime, providerEnv, conv.customer_phone, text, options);
+  const recipient = (conv.metadata as any)?.whatsapp_reply_jid || conv.customer_phone;
+  const sent = await active.provider.sendTestMessage(active.runtime, providerEnv, recipient, text, options);
   if (!sent.ok) throw new Error(sent.message || "CRM_WHATSAPP_SEND_FAILED");
   const persisted = await supabaseAdmin.from("crm_messages").insert({
     conversation_id: conv.id, establishment_id: conv.establishment_id, body: text,

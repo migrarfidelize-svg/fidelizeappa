@@ -25,6 +25,8 @@ export async function processWhatsAppWebhook(rawBody: string, requestedEstablish
   const normalized = active.provider.parseWebhook?.(payload, {});
   if (!normalized) return new Response("Ignored", { status: 200 });
   const phone = normalized.fromPhone.replace(/\D/g, "");
+  const replyJid = typeof normalized.replyJid === "string" && /^\d+@(lid|s\.whatsapp\.net)$/.test(normalized.replyJid)
+    ? normalized.replyJid : null;
   if (!phone || !normalized.remoteMessageId) return new Response("Ignored", { status: 200 });
 
   const duplicate = await supabaseAdmin.from("crm_messages").select("id, conversation_id, establishment_id, body, processed_at")
@@ -65,7 +67,7 @@ export async function processWhatsAppWebhook(rawBody: string, requestedEstablish
   if (!conversationResult.data) {
     const inserted = await supabaseAdmin.from("crm_conversations").insert({
       establishment_id: establishmentId, customer_phone: phone, contact_id: contactResult.data.id, status: "bot",
-      metadata: { contact_is_new: !existingContact.data },
+      metadata: { contact_is_new: !existingContact.data, ...(replyJid ? { whatsapp_reply_jid: replyJid } : {}) },
     }).select("id, status, metadata").single();
     if (inserted.error || !inserted.data) return new Response("Failed to persist conversation", { status: 503 });
     conversationResult = inserted;
@@ -97,6 +99,15 @@ export async function processWhatsAppWebhook(rawBody: string, requestedEstablish
 
   const conversation = conversationResult.data;
   if (!conversation) return new Response("Failed to persist conversation", { status: 503 });
+  // Preserve a valid JID for replies, including @lid identities without phone numbers.
+  if (replyJid && (conversation.metadata as any)?.whatsapp_reply_jid !== replyJid) {
+    const nextMetadata = { ...((conversation.metadata as object) || {}), whatsapp_reply_jid: replyJid };
+    const updated = await supabaseAdmin.from("crm_conversations")
+      .update({ metadata: nextMetadata })
+      .eq("id", conversation.id).eq("establishment_id", establishmentId);
+    if (updated.error) return new Response("Failed to save WhatsApp recipient", { status: 503 });
+    conversation.metadata = nextMetadata as any;
+  }
   const messageResult = await supabaseAdmin.from("crm_messages").insert({
     conversation_id: conversation.id,
     establishment_id: establishmentId,

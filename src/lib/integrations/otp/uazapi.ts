@@ -193,8 +193,12 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       return { ok: false, message: "Configuração incompleta (Base URL ou Token ausente)." };
     }
 
-    let cleanPhone = phone.replace(/\D/g, "");
-    if (cleanPhone.length > 0 && !cleanPhone.startsWith("55") && cleanPhone.length <= 11) {
+    // Preserve WhatsApp PN/LID JIDs; a LID is not a phone number.
+    const rawRecipient = phone.trim();
+    let cleanPhone = /^\d+@(lid|s\.whatsapp\.net)$/.test(rawRecipient)
+      ? rawRecipient
+      : rawRecipient.replace(/\D/g, "");
+    if (!cleanPhone.includes("@") && cleanPhone.length > 0 && !cleanPhone.startsWith("55") && cleanPhone.length <= 11) {
       cleanPhone = "55" + cleanPhone;
     }
 
@@ -427,7 +431,20 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       return null;
     }
 
-    const fromPhone = rawChatString
+    // Prefer the phone-number JID when UAZAPI resolves one; retain LID if it does not.
+    const identities = [msg, root, body];
+    const phoneJid = [
+      ...identities.flatMap((item: any) => [item?.sender_pn, item?.chatid, item?.chatId]),
+      key?.remoteJid, rawChatString,
+    ].find((value: unknown): value is string =>
+      typeof value === "string" && /^\d+@s\.whatsapp\.net$/.test(value));
+    const lidJid = [
+      ...identities.flatMap((item: any) => [item?.sender_lid, item?.chatlid, item?.chatLid]),
+      key?.remoteJid, rawChatString,
+    ].find((value: unknown): value is string =>
+      typeof value === "string" && /^\d+@lid$/.test(value));
+    const replyJid = phoneJid || lidJid;
+    const fromPhone = String(phoneJid || rawChatString)
       .split("@")[0]
       .replace(/\D/g, "");
 
@@ -528,6 +545,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
     return {
       remoteMessageId,
       fromPhone,
+      ...(replyJid ? { replyJid } : {}),
       text,
       pushName:
         typeof pushName === "string"
