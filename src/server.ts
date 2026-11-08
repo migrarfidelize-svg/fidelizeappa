@@ -6,7 +6,7 @@ import { renderErrorPage } from "./lib/error-page";
 // Long-running timers are valid only in the explicitly selected VPS process.
 // Preview/Publish runs in a request-scoped worker and must not initialize the
 // CRM scheduler (or its server-only dependency graph) at module load time.
-if (process.env["FIDELIZE_VPS_BUILD"] === "1") {
+if (process.env["FIDELIZE_VPS_BUILD"] === "1" && process.env["FIDELIZE_STAGING_NO_WORKERS"] !== "1") {
   void import("./lib/crm/flow-engine.server").then(({ startCRMTimeoutWorker }) => {
     startCRMTimeoutWorker();
   }).catch((error) => console.error(error));
