@@ -63,8 +63,8 @@ export function formatPlatformPlanCard(plan: PublicPlan): string {
   if (monthly !== null) lines.push("Mensal: " + monthly);
   if (yearly !== null) lines.push("Anual: " + yearly);
   if (monthly === null && yearly === null) lines.push("Valor sob consulta");
-  if (plan.description) lines.push(String(plan.description).replace(/\\s+/g, " ").trim().slice(0, 240));
-  return lines.join("\\n");
+  if (plan.description) lines.push(String(plan.description).replace(/\s+/g, " ").trim().slice(0, 240));
+  return lines.join("\n");
 }
 
 /** Link para o plano selecionado na seção real da landing, nunca checkout direto. */
