@@ -90,6 +90,10 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(data.crm_tags.map((item: any) => item.name)).toEqual(["Suporte", "Aguardando atendimento"]);
     expect(data.crm_conversation_tags).toHaveLength(2);
     expect(data.crm_messages[0].body).toMatch(/na fila de suporte/i);
+    expect(send.mock.calls[1][4]).toMatchObject({
+      type: "options", nativeButtonsOnly: true,
+      options: [{ label: "Voltar ao menu", value: "fidelize_menu" }],
+    });
     const count = data.crm_messages.length;
     expect((await executeFlow("conv", "oi")).action).toBe("ignored");
     expect(data.crm_messages).toHaveLength(count);
