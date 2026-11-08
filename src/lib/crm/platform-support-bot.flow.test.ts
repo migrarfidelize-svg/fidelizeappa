@@ -77,6 +77,7 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(result.action).toBe("platform_menu");
     const opts = send.mock.calls[0][4];
     expect(opts.type).toBe("options");
+    expect(opts.nativeButtonsOnly).toBe(true);
     expect(opts.options.map((item: any) => item.label)).toEqual(["Suporte", "Planos", "Sugestões"]);
     expect(data.crm_messages).toHaveLength(1);
   });
