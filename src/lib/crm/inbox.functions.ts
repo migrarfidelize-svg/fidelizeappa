@@ -26,40 +26,57 @@ export async function authorizeInbox(
 ): Promise<InboxAuth> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const { data: role, error: roleError } = await supabaseAdmin
+  // Permissao interna: papel global super_admin OU owner/manager ativo
+  // somente no workspace institucional. Membership de lojista nao autoriza.
+  const { data: globalRole, error: roleError } = await supabaseAdmin
     .from("app_roles")
     .select("user_id")
     .eq("user_id", userId)
     .eq("role", "super_admin")
     .maybeSingle();
+  if (roleError) throw new Error("Não foi possível validar o acesso administrativo.");
 
-  if (roleError || !role) {
-    throw new Error("Acesso restrito ao atendimento administrativo da Fidelize.");
-  }
-
-  // A plataforma tem seu proprio estabelecimento institucional, com slug reservado.
   const { data: platform, error: platformError } = await supabaseAdmin
     .from("establishments")
     .select("id")
     .eq("slug", "admin")
     .eq("name", "Fidelize")
     .maybeSingle();
-
   if (platformError || !platform?.id) {
-    throw new Error("Workspace de atendimento da Fidelize nao configurado.");
+    throw new Error("Workspace de atendimento da Fidelize não configurado.");
   }
 
-  // Mesmo um superadmin nao pode usar esta rota para ler outro tenant.
   if (establishmentId && establishmentId !== platform.id) {
     throw new Error("Este atendimento aceita somente conversas da Fidelize.");
   }
 
-  return { establishmentId: platform.id, isSuper: true, role: "super" };
+  if (globalRole) {
+    return { establishmentId: platform.id, isSuper: true, role: "super" };
+  }
+
+  const { data: member, error: memberError } = await supabaseAdmin
+    .from("establishment_members")
+    .select("role")
+    .eq("establishment_id", platform.id)
+    .eq("user_id", userId)
+    .eq("active", true)
+    .in("role", ["owner", "manager"])
+    .maybeSingle();
+  if (memberError || !member) {
+    throw new Error("Acesso restrito à equipe de atendimento da Fidelize.");
+  }
+  return {
+    establishmentId: platform.id,
+    isSuper: false,
+    role: member.role === "owner" ? "owner" : "manager",
+  };
 }
 
 async function assertManage(supabase: any, userId: string, establishmentId: string) {
-  // Configuracoes e filas pertencem ao workspace institucional, nao a um lojista.
-  await authorizeInbox(supabase, userId, establishmentId);
+  const auth = await authorizeInbox(supabase, userId, establishmentId);
+  if (!auth.isSuper) {
+    throw new Error("Somente administradores globais podem alterar configurações do atendimento.");
+  }
 }
 
 const tenant = z.object({ establishmentId: z.string().uuid().optional().nullable() });
