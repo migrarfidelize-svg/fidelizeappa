@@ -54,6 +54,20 @@ describe("UAZAPI — menu Fidelize somente com botões", () => {
     expect(requests.mock.calls.some(([url]) => String(url).includes("/send/text"))).toBe(false);
   });
 
+  it("envia CTA de URL por plano e retorno como botões separados", async () => {
+    const url = "https://afidelize.app/?plano=essencial#precos";
+    const first = await uazapiOtp.sendTestMessage(runtime, {}, "5511999999999", "*Essencial*", {
+      type: "options", options: [{ label: "Conhecer plano", value: url }], nativeButtonsOnly: true,
+    });
+    const second = await uazapiOtp.sendTestMessage(runtime, {}, "5511999999999", "Voltar às opções?", {
+      type: "options", options: [{ label: "Voltar ao menu", value: "fidelize_menu" }], nativeButtonsOnly: true,
+    });
+    expect(first.ok && second.ok).toBe(true);
+    expect(requests).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(requests.mock.calls[0][1].body).choices).toEqual(["Conhecer plano|" + url]);
+    expect(JSON.parse(requests.mock.calls[1][1].body).choices).toEqual(["Voltar ao menu|fidelize_menu"]);
+  });
+
   it("não envia listagem ou texto se opções nativas estiverem incompletas", async () => {
     const result = await uazapiOtp.sendTestMessage(runtime, {}, "5511999999999", "Escolha:", {
       ...options,
