@@ -191,7 +191,7 @@ export const BIO_COMMERCE_PRESETS: BioCommercePreset[] = [
     primary: "#ff6500", accent: "#f04424", background: "#100a08", text: "#fff8f3", button_style: "solid", rounded: "lg",
     layout: "editorial", hero_style: "immersive", card_style: "elevated", background_effect: "ambient", font_style: "bold",
     content_width: "comfortable", motion: "smooth", motion_intensity: "low", product_style: "editorial", social_style: "icons",
-  },,
+  },
   // V4: opt-in. Presets antigos e paginas exclusivas nao sofrem migracao automatica.
   {
     preset_id: "v4-food-table", niche_id: "food", label: "Mesa de Autor", niche: "food",
