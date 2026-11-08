@@ -156,7 +156,7 @@ async function ensurePlatformSupportQueue(establishmentId: string): Promise<stri
 
 async function sendPlatformMenu(conv: any) {
   await sendAndPersist(conv, SUPPORT_MENU_TEXT, {
-    type: "options", options: PLATFORM_SUPPORT_OPTIONS,
+    type: "options", options: PLATFORM_SUPPORT_OPTIONS, nativeButtonsOnly: true,
   }, "platform_bot_menu");
   await updateState(conv, null, null, { mode: "platform_menu" });
   return { ok: true, action: "platform_menu" } as const;
@@ -202,9 +202,9 @@ async function processPlatformSupportBot(conv: any, inbound: string): Promise<Fl
     default:
       // Mensagens livres não chamam a IA e não criam ticket automaticamente.
       if (state?.mode === "platform_menu") {
-        await sendAndPersist(conv, "Escolha Suporte, Planos ou Sugestões nos botões. Se não aparecerem, responda 1, 2 ou 3.", {}, "platform_bot_help");
-        return { ok: true, action: "menu_help" };
-      }
+        // Reenviar os botões, sem oferecer alternativas por números.
+        return sendPlatformMenu(conv);
+       }
       return sendPlatformMenu(conv);
   }
 }
