@@ -74,7 +74,15 @@ export async function processWhatsAppWebhook(rawBody: string, requestedEstablish
       .eq("establishment_id", establishmentId).maybeSingle();
     if (settings.error) return new Response("Failed to load agent settings", { status: 503 });
     const { afterHumanTransition } = await import("@/lib/crm/flow-engine.server");
-    const transition = afterHumanTransition((settings.data?.config as any)?.behavior?.afterHuman);
+    const { data: platform } = await supabaseAdmin.from("establishments")
+      .select("id").eq("id", establishmentId).eq("slug", "admin")
+      .eq("name", "Fidelize").maybeSingle();
+    const config = (settings.data?.config ?? {}) as Record<string, any>;
+    // No bot econômico, novo contato após encerramento recebe um menu novo.
+    // Não altera a política de reabertura dos fluxos dos lojistas.
+    const transition = platform && config.supportMode !== "ai"
+      ? { reopen: true, restart: true }
+      : afterHumanTransition(config.behavior?.afterHuman);
     if (!transition.reopen) {
       conversationResult.data = { ...conversationResult.data, metadata: { ...((conversationResult.data.metadata as object) || {}), contact_is_new: false } };
     } else {
