@@ -107,6 +107,15 @@ describe("WhatsApp Fidelize — bot institucional", () => {
       .toEqual(["Suporte", "Planos", "Sugestões"]);
   });
 
+  it("Voltar ao menu em texto desbloqueia fila sem atendente", async () => {
+    await executeFlow("conv", "fidelize_support");
+    const r = await executeFlow("conv", "Voltar ao menu");
+    expect(r.action).toBe("platform_menu");
+    expect(data.crm_conversations[0].status).toBe("bot");
+    expect(data.crm_conversations[0].metadata.support.active).toBe(false);
+    expect(data.crm_support_tickets[0].status).toBe("resolved");
+  });
+
   it("Voltar ao menu não interrompe atendimento já atribuído a humano", async () => {
     await executeFlow("conv", "fidelize_support");
     data.crm_conversations[0].assigned_to = "human-1";
