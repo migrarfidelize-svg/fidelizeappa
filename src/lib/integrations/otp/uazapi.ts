@@ -210,6 +210,10 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         ? options.options.filter((entry: any) => entry && typeof entry.label === "string")
         : [];
       let fallbackText = message;
+      const nativeButtonsOnly = options.nativeButtonsOnly === true;
+      if (nativeButtonsOnly && (interactiveOptions.length === 0 || interactiveOptions.length > 3)) {
+        return { ok: false, message: "O atendimento Fidelize requer exatamente 3 botões nativos." };
+      }
       if (interactiveOptions.length > 0) {
         fallbackText = message + "\n\n" + interactiveOptions.map((entry: any, idx: number) =>
           String(idx + 1) + ". " + entry.label
@@ -243,7 +247,9 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok && endpoint !== "/send/text") {
+      // O suporte institucional exige botões reais, nunca substitui por menu numerado.
+      // Não enviar outra mensagem por texto caso a API rejeite /send/menu.
+      if (!response.ok && endpoint !== "/send/text" && !nativeButtonsOnly) {
         console.warn(`[UAZAPI] Endpoint ${endpoint} failed, falling back to /send/text`);
         const { response: fallbackRes, body: fallbackBody } = await timedFetch(`${baseUrl}/send/text`, {
           method: "POST",
