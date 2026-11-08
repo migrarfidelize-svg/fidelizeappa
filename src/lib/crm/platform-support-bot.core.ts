@@ -3,7 +3,7 @@
  * Lógica pura compartilhada com testes e preview.
  */
 export type SupportMode = "bot" | "ai";
-export type SupportChoice = "support" | "plans" | "suggestions" | "menu" | null;
+export type SupportChoice = "support" | "plans" | "suggestions" | "menu" | "end_support" | null;
 
 export const PLATFORM_SUPPORT_OPTIONS = [
   { label: "Suporte", value: "fidelize_support" },
@@ -12,7 +12,8 @@ export const PLATFORM_SUPPORT_OPTIONS = [
 ] as const;
 
 export const SUPPORT_MENU_TEXT = "Olá! Você está falando com a Fidelize. Como podemos ajudar? Escolha uma das opções:";
-export const SUPPORT_QUEUE_TEXT = "Você está na fila de suporte. Aguarde enquanto alguém da nossa equipe possa atendê-lo.";
+export const SUPPORT_QUEUE_TEXT = "Você está na fila de suporte. Nossa equipe atenderá assim que possível. Se não quiser aguardar, selecione Encerrar atendimento.";
+export const SUPPORT_CLOSED_TEXT = "Atendimento encerrado a seu pedido. Quando precisar, envie menu para iniciar novamente.";
 export const SUPPORT_SUGGESTION_REQUEST = "Queremos ouvir você! Envie sua sugestão em uma única mensagem. Ela será registrada para nossa equipe.";
 export const SUPPORT_SUGGESTION_RECEIVED = "Obrigado! Sua sugestão foi registrada e encaminhada para avaliação da nossa equipe.";
 export const SUPPORT_NO_PLANS_TEXT = "Nossos planos estão sendo atualizados. Para consultar condições, escolha Suporte no menu.";
@@ -20,6 +21,11 @@ export const SUPPORT_NO_PLANS_TEXT = "Nossos planos estão sendo atualizados. Pa
 /** Botão separado dos CTAs de link, compatível também com WhatsApp Web. */
 export const PLATFORM_BACK_TO_MENU_OPTIONS = [
   { label: "Voltar ao menu", value: "fidelize_menu" },
+] as const;
+
+export const PLATFORM_SUPPORT_WAITING_OPTIONS = [
+  { label: "Voltar ao menu", value: "fidelize_menu" },
+  { label: "Encerrar atendimento", value: "fidelize_end_support" },
 ] as const;
 
 function normalize(text: string): string {
@@ -32,6 +38,7 @@ function normalize(text: string): string {
 export function resolvePlatformSupportChoice(text: string): SupportChoice {
   const value = normalize(text);
   if (["menu", "voltar", "inicio", "voltar ao menu", "fidelize_menu"].includes(value)) return "menu";
+  if (["fidelize_end_support", "encerrar atendimento", "cancelar atendimento", "cancelar suporte", "encerrar"].includes(value)) return "end_support";
   if (["fidelize_support", "suporte", "falar com suporte"].includes(value)) return "support";
   if (["fidelize_plans", "planos", "ver planos"].includes(value)) return "plans";
   if (["fidelize_suggestions", "sugestoes", "enviar sugestao"].includes(value)) return "suggestions";
