@@ -115,7 +115,14 @@ describe("WhatsApp Fidelize — bot institucional", () => {
   it("Conversa herdada da 3170 em waiting recebe botões sem destravar ticket", async () => {
     data.crm_conversations[0].status = "waiting";
     data.crm_conversations[0].bot_paused = true;
+    // O banco retorna NULL quando nao existe atendente. O mock precisa reproduzir
+    // esse valor porque a atualizacao segura usa .is("assigned_to", null).
+    data.crm_conversations[0].assigned_to = null;
     data.crm_conversations[0].metadata = { support: { active: true } };
+    data.crm_support_tickets.push({
+      id: "legacy-ticket", conversation_id: "conv",
+      establishment_id: "plat", status: "open",
+    });
     const result = await executeFlow("conv", "teste");
     expect(result.action).toBe("waiting_controls");
     expect(send.mock.calls[0][4].options.map((o: any) => o.label))
@@ -126,6 +133,8 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     const back = await executeFlow("conv", "fidelize_menu");
     expect(back.action).toBe("platform_menu");
     expect(data.crm_conversations[0].status).toBe("bot");
+    expect(data.crm_conversations[0].metadata.support.active).toBe(false);
+    expect(data.crm_support_tickets[0].status).toBe("resolved");
   });
 
   it("Voltar ao menu retoma bot quando suporte ainda está na fila sem atendente", async () => {
