@@ -38,9 +38,9 @@ describe("UAZAPI — menu Fidelize somente com botões", () => {
     const payload = JSON.parse(init.body);
     expect(payload.type).toBe("button");
     expect(payload.choices).toEqual([
-      "Suporte|reply:fidelize_support",
-      "Planos|reply:fidelize_plans",
-      "Sugestões|reply:fidelize_suggestions",
+      "Suporte|fidelize_support",
+      "Planos|fidelize_plans",
+      "Sugestões|fidelize_suggestions",
     ]);
     expect(JSON.stringify(payload)).not.toMatch(/responda com o número|1\\. Suporte/i);
   });
