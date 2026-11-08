@@ -27,7 +27,7 @@ describe("Bio Commerce V4 - biblioteca opt-in", () => {
     const v4 = BIO_COMMERCE_PRESETS.filter((item) => item.preset_id.startsWith("v4-"));
     expect(v4).toHaveLength(17);
     expect(new Set(v4.map((x) => x.hero_style)).size).toBeGreaterThan(1);
-    expect(new Set(v4.map((x) => x.product_style)).toEqual(new Set(["grid", "editorial"]));
+    expect(new Set(v4.map((x) => x.product_style))).toEqual(new Set(["grid", "editorial"]));
     expect(v4.some((theme) => theme.hero_style === "split")).toBe(true);
     expect(v4.some((theme) => theme.hero_style === "minimal")).toBe(true);
     expect(v4.some((theme) => theme.hero_style === "brand")).toBe(true);
