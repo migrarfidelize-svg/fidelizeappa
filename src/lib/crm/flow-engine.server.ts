@@ -314,7 +314,7 @@ export async function executeFlow(conversationId: string, messageBody: string): 
   if (conv.status !== "bot" || (conv as any).bot_paused === true || (conv.metadata as any)?.support?.active) {
     // O clique explícito em "Voltar ao menu" cancela uma espera ainda não assumida
     // por um atendente. Nunca liberar conversas já atribuídas a humanos.
-    const wantsMenu = messageBody.trim() === "fidelize_menu";
+    const wantsMenu = resolvePlatformSupportChoice(messageBody) === "menu";
     if (wantsMenu && conv.status === "waiting" && !conv.assigned_to &&
         (conv.metadata as any)?.support?.active &&
         await isPlatformSupportWorkspace(conv.establishment_id)) {
