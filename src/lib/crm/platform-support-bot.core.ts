@@ -23,13 +23,13 @@ function normalize(text: string): string {
     .toLocaleLowerCase("pt-BR").trim().replace(/\s+/g, " ");
 }
 
-/** Aceita IDs dos botões, rótulos e números quando há fallback texto. */
+/** Aceita os IDs dos botões e os nomes; nunca apresenta fallback numérico. */
 export function resolvePlatformSupportChoice(text: string): SupportChoice {
   const value = normalize(text);
-  if (["menu", "voltar", "inicio", "0"].includes(value)) return "menu";
-  if (["fidelize_support", "suporte", "1", "falar com suporte"].includes(value)) return "support";
-  if (["fidelize_plans", "planos", "2", "ver planos"].includes(value)) return "plans";
-  if (["fidelize_suggestions", "sugestoes", "3", "enviar sugestao"].includes(value)) return "suggestions";
+  if (["menu", "voltar", "inicio"].includes(value)) return "menu";
+  if (["fidelize_support", "suporte", "falar com suporte"].includes(value)) return "support";
+  if (["fidelize_plans", "planos", "ver planos"].includes(value)) return "plans";
+  if (["fidelize_suggestions", "sugestoes", "enviar sugestao"].includes(value)) return "suggestions";
   return null;
 }
 
