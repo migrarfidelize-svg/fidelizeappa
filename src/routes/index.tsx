@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { setPlanIntent } from "@/lib/plan-intent";
+import { getLandingPlanIndex } from "@/lib/landing-plan-deeplink";
 import { trackPlanFunnel, rememberSelectedPlan } from "@/lib/plan-funnel";
 
 import { Logo } from "@/components/Logo";
@@ -1345,6 +1346,17 @@ function Pricing() {
   const [activeIdx, setActiveIdx] = useState(1);
   
   const [prevIdx, setPrevIdx] = useState(1);
+
+  // O botão "Conhecer plano" do WhatsApp usa ?plano=slug#precos.
+  // Em produção a landing iniciava sempre no índice 1 (Profissional).
+  useEffect(() => {
+    const index = getLandingPlanIndex(window.location.search);
+    if (index !== null) {
+      setActiveIdx(index);
+      setPrevIdx(index);
+    }
+  }, []);
+
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
   const ActiveIcon = active.icon;
