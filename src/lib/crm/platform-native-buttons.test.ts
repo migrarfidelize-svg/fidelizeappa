@@ -68,6 +68,24 @@ describe("UAZAPI — menu Fidelize somente com botões", () => {
     expect(JSON.parse(requests.mock.calls[1][1].body).choices).toEqual(["Voltar ao menu|fidelize_menu"]);
   });
 
+  it("envia duas opções reais ao aguardar suporte, incluindo Encerrar atendimento", async () => {
+    const result = await uazapiOtp.sendTestMessage(runtime, {}, "5511999999999", "Você está na fila de suporte.", {
+      type: "options", nativeButtonsOnly: true,
+      options: [
+        { label: "Voltar ao menu", value: "fidelize_menu" },
+        { label: "Encerrar atendimento", value: "fidelize_end_support" },
+      ],
+    });
+    expect(result.ok).toBe(true);
+    expect(requests).toHaveBeenCalledTimes(1);
+    const [url, init] = requests.mock.calls[0];
+    expect(url).toContain("/send/menu");
+    expect(JSON.parse(init.body).choices).toEqual([
+      "Voltar ao menu|fidelize_menu",
+      "Encerrar atendimento|fidelize_end_support",
+    ]);
+  });
+
   it("não envia listagem ou texto se opções nativas estiverem incompletas", async () => {
     const result = await uazapiOtp.sendTestMessage(runtime, {}, "5511999999999", "Escolha:", {
       ...options,
