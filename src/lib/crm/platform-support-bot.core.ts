@@ -73,9 +73,10 @@ export function platformPlanLandingUrl(plan: PublicPlan): string {
     essencial: "essencial", profissional: "profissional", premium: "ilimitado",
     ilimitado: "ilimitado", empresarial: "empresarial",
   };
-  const source = String(plan.slug || plan.name || "").trim().toLocaleLowerCase("pt-BR");
-  const normalized = source.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const selected = alias[normalized];
+  const normalizeName = (value: string) =>
+    value.trim().toLocaleLowerCase("pt-BR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const selected = alias[normalizeName(String(plan.slug || ""))]
+    || alias[normalizeName(String(plan.name || ""))];
   return selected
     ? "https://afidelize.app/?plano=" + encodeURIComponent(selected) + "#precos"
     : "https://afidelize.app/#precos";
