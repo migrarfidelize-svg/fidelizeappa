@@ -58,11 +58,22 @@ export const createBioCommerceOrder = createServerFn({ method: "POST" })
     const menuKind = new Map(menuRows.map((row: any) => [String(row.id), row.kind as "menu" | "catalog"]));
     const byId = new Map(dbItems.map((item: any) => [String(item.id), item]));
 
+    // Estoque é validado pela soma das variantes do mesmo item,
+    // nunca por linha individual: evita exceder o estoque ao repetir variações.
+    const orderedQuantities = new Map<string, number>();
+    for (const requested of data.items) {
+      orderedQuantities.set(
+        requested.item_id,
+        (orderedQuantities.get(requested.item_id) ?? 0) + requested.qty,
+      );
+    }
+
     const lines = data.items.map((requested) => {
       const item: any = byId.get(requested.item_id);
       if (!item) throw new Error("Um dos produtos não está mais disponível");
       if (item.stock_status === "out_of_stock") throw new Error(`${item.name} está esgotado`);
-      if (item.track_stock && item.stock_qty != null && Number(item.stock_qty) < requested.qty) {
+      if (item.track_stock && item.stock_qty != null &&
+          Number(item.stock_qty) < (orderedQuantities.get(requested.item_id) ?? requested.qty)) {
         throw new Error(`Quantidade indisponível para ${item.name}`);
       }
 
@@ -92,6 +103,10 @@ export const createBioCommerceOrder = createServerFn({ method: "POST" })
     });
 
     const total = Number(lines.reduce((sum, line) => sum + line.line_total, 0).toFixed(2));
+    const currencies = new Set(lines.map((line) => line.currency));
+    if (currencies.size > 1) {
+      throw new Error("Não é possível misturar moedas diferentes no mesmo pedido.");
+    }
     const currency = lines[0]?.currency ?? "BRL";
     const usedMenuIds = [...new Set(lines.map((line) => line.menu_id))];
     const kinds = [...new Set(lines.map((line) => line.source_kind))];
