@@ -359,12 +359,18 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     const fetchItems = async (menu_id: string) => {
       const { data } = await supabaseAdmin
         .from("menu_items")
-        .select("id, name, short_desc, price, promo_price, image_url")
+        .select("id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, variants, stock_status, gallery, brand, sku, position")
         .eq("menu_id", menu_id)
         .eq("active", true)
         .order("position", { ascending: true })
-        .limit(12);
-      return data ?? [];
+        .limit(60);
+      return (data ?? []).map((item) => ({
+        ...item,
+        price: item.price == null ? null : Number(item.price),
+        promo_price: item.promo_price == null ? null : Number(item.promo_price),
+        variants: Array.isArray(item.variants) ? item.variants : [],
+        gallery: Array.isArray(item.gallery) ? item.gallery : [],
+      }));
     };
     const menu = menuRow ? await fetchItems(menuRow.id) : [];
     const catalog = catalogRow ? await fetchItems(catalogRow.id) : [];
