@@ -5,15 +5,16 @@ import { loadPassModelByCustomer } from "@/lib/wallet-pass.server";
 export type WalletSyncResult = {
   customer_id: string;
   google: "updated" | "skipped" | "error" | "unconfigured";
-  apple: "flagged" | "skipped";
+  apple: "notified" | "flagged" | "skipped";
   message?: string;
 };
 
 /**
  * Atualiza o passe do cliente nas carteiras:
  * - Google Wallet: PATCH direto no objeto (reflete no aparelho em segundos).
- * - Apple Wallet: marca o passe como alterado; o iOS busca a versão nova em
- *   `/api/public/wallet/v1/passes/...` (pull-to-refresh e sincronizações do sistema).
+ * - Apple Wallet: marca o passe como alterado e tenta o push silencioso APNs.
+ *   O iOS busca a versão nova em `/api/public/wallet/v1/passes/...`.
+ *   Quando APNs não estiver disponível, o passe continua marcado para refresh.
  */
 export async function syncCustomerWallet(customerId: string, origin: string): Promise<WalletSyncResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -44,7 +45,25 @@ export async function syncCustomerWallet(customerId: string, origin: string): Pr
         result.message = e instanceof Error ? e.message : String(e);
       }
     } else {
+      // Atualizar versão ANTES de enviar APNs: o iOS pode consultar imediatamente.
+      const { error: updateError } = await supabaseAdmin
+        .from("wallet_passes")
+        .update({ last_synced_at: now, updated_at: now })
+        .eq("id", p.id);
+      if (updateError) {
+        result.apple = "flagged";
+        result.message = "Não foi possível registrar a atualização do passe Apple.";
+        continue;
+      }
       result.apple = "flagged";
+      try {
+        const { notifyAppleWalletPass } = await import("@/lib/apple-wallet-push.server");
+        const pushed = await notifyAppleWalletPass(p.id);
+        if (pushed.sent > 0) result.apple = "notified";
+      } catch {
+        // A indisponibilidade da APNs não deve bloquear carimbos ou resgates.
+      }
+      continue;
     }
     await supabaseAdmin.from("wallet_passes").update({ last_synced_at: now }).eq("id", p.id);
   }

@@ -1,6 +1,7 @@
 // Monta o pass.json (storeCard) do Apple Wallet a partir do modelo compartilhado.
 // Server-only.
 import { type WalletPassModel, tierLabel, hexToRgbCss } from "@/lib/wallet-pass.server";
+import { getProximityLocations } from "@/lib/wallet-proximity";
 
 export function buildApplePassJson(args: {
   model: WalletPassModel;
@@ -14,6 +15,7 @@ export function buildApplePassJson(args: {
   const s = model.settings;
   const f = s.fields;
   const cardUrl = `${origin}/c/${model.customer.access_token}`;
+  const places = getProximityLocations(s);
 
   const primaryFields = model.card && f.stamps
     ? [{ key: "stamps", label: "Carimbos", value: `${model.card.stamps}/${model.card.stamps_required}` }]
@@ -62,6 +64,12 @@ export function buildApplePassJson(args: {
     foregroundColor: hexToRgbCss(s.foreground_color, "rgb(255,255,255)"),
     labelColor: hexToRgbCss(s.label_color, "rgb(233,213,255)"),
     logoText: model.establishment.name,
+    ...(places.length ? {
+      locations: places.map((location) => ({
+        ...location,
+        relevantText: s.proximity_message?.trim() || `Seu cartão de ${model.establishment.name} está aqui!`,
+      })),
+    } : {}),
     ...(f.expiry && model.expiresAt ? { expirationDate: new Date(model.expiresAt).toISOString() } : {}),
     ...(barcodes.length ? { barcodes, barcode: barcodes[0] } : {}),
     storeCard: {
