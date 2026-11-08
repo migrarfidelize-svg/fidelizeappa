@@ -95,12 +95,22 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(data.crm_messages).toHaveLength(count);
   });
 
-  it("Planos entrega apenas produtos ativos vindos do banco", async () => {
+  it("Planos envia card com link nativo por plano e botão separado para voltar", async () => {
     const r = await executeFlow("conv", "fidelize_plans");
     expect(r.action).toBe("plans_sent");
     expect(data.crm_messages[0].body).toContain("Essencial");
-    expect(data.crm_messages[0].body).not.toContain("Oculto");
+    expect(data.crm_messages.some((item: any) => item.body.includes("Oculto"))).toBe(false);
+    expect(send.mock.calls).toHaveLength(2);
+    expect(send.mock.calls[0][4]).toMatchObject({
+      type: "options", nativeButtonsOnly: true,
+      options: [{ label: "Conhecer plano", value: "https://afidelize.app/?plano=essencial#precos" }],
+    });
+    expect(send.mock.calls[1][4]).toMatchObject({
+      type: "options", nativeButtonsOnly: true,
+      options: [{ label: "Voltar ao menu", value: "fidelize_menu" }],
+    });
     expect(data.crm_support_tickets).toHaveLength(0);
+    expect((await executeFlow("conv", "fidelize_menu")).action).toBe("platform_menu");
   });
 
   it("Sugestões registra no histórico e etiqueta sem abrir fila", async () => {
