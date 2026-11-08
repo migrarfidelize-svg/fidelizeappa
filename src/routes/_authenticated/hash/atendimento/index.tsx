@@ -32,6 +32,9 @@ import { ContactManager } from "@/components/crm/ContactManager";
 import { FlowsView } from "@/components/crm/FlowsView";
 import { FlowEditor } from "@/components/crm/FlowEditor";
 import { AgentConfig } from "@/components/crm/AgentConfig";
+import { SupportModePanel } from "@/components/crm/inbox/SupportModePanel";
+import { setPlatformSupportMode } from "@/lib/crm/platform-support-bot.functions";
+import type { SupportMode } from "@/lib/crm/platform-support-bot.core";
 import { WhatsAppManager } from "@/components/crm/WhatsAppManager";
 import { TemplateManager } from "@/components/crm/TemplateManager";
 import { QuickRepliesManager } from "@/components/crm/QuickReplies";
@@ -149,6 +152,7 @@ function Workspace({ ctx }: { ctx: any }) {
   const queueDeleteFn = useServerFn(deleteInboxQueue);
   const reasonSaveFn = useServerFn(saveInboxCloseReason);
   const presenceFn = useServerFn(setMyInboxPresence);
+  const setModeFn = useServerFn(setPlatformSupportMode);
 
   const setup = useQuery({ queryKey: ["inbox-setup", est], queryFn: () => setupFn({ data: { establishmentId: est } }), staleTime: 60_000 });
   const stats = useQuery({ queryKey: ["crm-stats", est], queryFn: () => statsFn({ data: { establishmentId: est } }), refetchInterval: 60_000 });
@@ -207,6 +211,15 @@ function Workspace({ ctx }: { ctx: any }) {
       tagFn({ data: { establishmentId: est, conversationId: selectedId!, ...vars } }),
     onSuccess: invalidate,
     onError: (e: any) => toast.error(e?.message || "Falha ao alterar etiqueta."),
+  });
+
+  const modeMutation = useMutation({
+    mutationFn: (mode: SupportMode) => setModeFn({ data: { mode } }),
+    onSuccess: (_, mode) => {
+      qc.invalidateQueries({ queryKey: ["inbox-context", "fidelize-platform"] });
+      toast.success(mode === "bot" ? "Bot econômico ativado." : "Atendimento com IA ativado.");
+    },
+    onError: (error: Error) => toast.error(error?.message || "Não foi possível alterar o atendimento."),
   });
 
   const setupMutation = useMutation({
@@ -412,10 +425,19 @@ function Workspace({ ctx }: { ctx: any }) {
                 <Tabs defaultValue="operacao">
                   <TabsList>
                     <TabsTrigger value="operacao" className="text-xs">Operação</TabsTrigger>
+                    <TabsTrigger value="bot" className="text-xs">Bot / IA</TabsTrigger>
                     <TabsTrigger value="respostas" className="text-xs">Respostas</TabsTrigger>
                     <TabsTrigger value="equipe" className="text-xs">Equipe</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="operacao" className="mt-3">
+                  <TabsContent value="bot" className="mt-3">
+                     <SupportModePanel
+                       mode={ctx.supportMode as SupportMode}
+                       canManage={Boolean(ctx.canManage)}
+                       saving={modeMutation.isPending}
+                       onChange={(mode) => modeMutation.mutate(mode)}
+                     />
+                   </TabsContent>
+                   <TabsContent value="operacao" className="mt-3">
                     <InboxOperationSettings
                       queues={setup.data?.queues ?? []}
                       closeReasons={setup.data?.closeReasons ?? []}
