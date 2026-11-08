@@ -26,7 +26,7 @@ jobs:
       - name: Instalar dependências fixadas
         run: bun install --frozen-lockfile
       - name: Validar isolamento CRM, cache wallet e biblioteca V4
-        run: bunx vitest run src/lib/crm/platform-inbox-authorization.test.ts src/lib/offline-wallet-cache.test.ts src/lib/bio-commerce-v4-themes.test.ts
+        run: bunx vitest run src/lib/crm/platform-inbox-authorization.test.ts src/lib/offline-wallet-cache.test.ts src/lib/bio-commerce-v4-themes.test.ts src/lib/redeem-token.server.test.ts
 
   build:
     name: Build sem publicação
