@@ -1,8 +1,8 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
-  PLATFORM_SUPPORT_OPTIONS, SUPPORT_MENU_TEXT, SUPPORT_QUEUE_TEXT,
-  SUPPORT_SUGGESTION_REQUEST, SUPPORT_SUGGESTION_RECEIVED,
-  resolvePlatformSupportChoice, formatPlatformPlans, platformSupportMode,
+  PLATFORM_SUPPORT_OPTIONS, PLATFORM_BACK_TO_MENU_OPTIONS, SUPPORT_MENU_TEXT, SUPPORT_QUEUE_TEXT,
+  SUPPORT_SUGGESTION_REQUEST, SUPPORT_SUGGESTION_RECEIVED, SUPPORT_NO_PLANS_TEXT,
+  resolvePlatformSupportChoice, formatPlatformPlanCard, platformPlanLandingUrl, platformSupportMode,
 } from "./platform-support-bot.core";
 
 const DEFAULT_SUPPORT_TERMS = ["5", "suporte", "atendente", "falar com atendente", "falar com suporte", "humano", "ajuda humana"];
@@ -163,6 +163,14 @@ async function sendPlatformMenu(conv: any) {
   return { ok: true, action: "platform_menu" } as const;
 }
 
+async function sendPlatformBackToMenu(conv: any) {
+  // Não misturar CTA de URL com botão de resposta na mesma mensagem:
+  // a UAZAPI avisa que essa combinação não é exibida no WhatsApp Web.
+  await sendAndPersist(conv, "Deseja voltar às opções de atendimento?", {
+    type: "options", options: PLATFORM_BACK_TO_MENU_OPTIONS, nativeButtonsOnly: true,
+  }, "platform_bot_back_to_menu");
+}
+
 async function processPlatformSupportBot(conv: any, inbound: string): Promise<FlowActionResult> {
   const choice = resolvePlatformSupportChoice(inbound);
   const state = (conv.metadata as any)?.flow_state;
@@ -174,6 +182,7 @@ async function processPlatformSupportBot(conv: any, inbound: string): Promise<Fl
       mode: "platform_menu", suggestionReceivedAt: new Date().toISOString(),
     });
     await sendAndPersist(conv, SUPPORT_SUGGESTION_RECEIVED, {}, "platform_bot_suggestion");
+    await sendPlatformBackToMenu(conv);
     return { ok: true, action: "suggestion_recorded" };
   }
 
@@ -186,17 +195,32 @@ async function processPlatformSupportBot(conv: any, inbound: string): Promise<Fl
     }
     case "plans": {
       const result = await supabaseAdmin.from("plans")
-        .select("name, description, price_monthly, price_yearly, currency")
+        .select("slug, name, description, price_monthly, price_yearly, currency")
         .eq("is_active", true).is("archived_at", null)
         .order("display_order", { ascending: true }).limit(8);
       if (result.error) throw result.error;
-      await sendAndPersist(conv, formatPlatformPlans(result.data ?? []), {}, "platform_bot_plans");
+      const plans = result.data ?? [];
+      if (!plans.length) {
+        await sendAndPersist(conv, SUPPORT_NO_PLANS_TEXT, {}, "platform_bot_no_plans");
+      } else {
+        // Cada plano tem seu próprio CTA de URL, em mensagem separada.
+        // Valores e descrição são consultados diretamente dos planos ativos.
+        for (const plan of plans) {
+          await sendAndPersist(conv, formatPlatformPlanCard(plan), {
+            type: "options",
+            options: [{ label: "Conhecer plano", value: platformPlanLandingUrl(plan) }],
+            nativeButtonsOnly: true,
+          }, "platform_bot_plan_card");
+        }
+      }
+      await sendPlatformBackToMenu(conv);
       await updateState(conv, null, null, { mode: "platform_menu" });
       return { ok: true, action: "plans_sent" };
     }
     case "suggestions":
       await updateState(conv, null, null, { mode: "platform_suggestion" });
       await sendAndPersist(conv, SUPPORT_SUGGESTION_REQUEST, {}, "platform_bot_suggestion");
+      await sendPlatformBackToMenu(conv);
       return { ok: true, action: "suggestion_requested" };
     case "menu":
       return sendPlatformMenu(conv);
