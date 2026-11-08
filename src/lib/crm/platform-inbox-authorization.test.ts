@@ -41,14 +41,40 @@ describe("Central de Atendimento Fidelize - isolamento institucional", () => {
       .rejects.toThrow(/somente conversas da Fidelize/i);
   });
 
-  it("rejeita usuarios sem papel administrativo", async () => {
+  it("permite apenas gerentes ativos do workspace institucional", async () => {
     mocks.from.mockImplementation((table: string) => {
       if (table === "app_roles") return query(null);
-      throw new Error("Nao deveria consultar: " + table);
+      if (table === "establishments") return query({ id: PLATFORM_ID });
+      if (table === "establishment_members") return query({ role: "manager" });
+      throw new Error("Tabela inesperada: " + table);
+    });
+    await expect(authorizeInbox({}, "gestor-1")).resolves.toEqual({
+      establishmentId: PLATFORM_ID,
+      isSuper: false,
+      role: "manager",
+    });
+    expect(mocks.from).toHaveBeenCalledWith("establishment_members");
+  });
+
+  it("rejeita lojistas mesmo que possuam membership de outra empresa", async () => {
+    mocks.from.mockImplementation((table: string) => {
+      if (table === "app_roles") return query(null);
+      if (table === "establishments") return query({ id: PLATFORM_ID });
+      if (table === "establishment_members") return query(null);
+      throw new Error("Tabela inesperada: " + table);
     });
     await expect(authorizeInbox({}, "lojista-1"))
       .rejects.toThrow(/acesso restrito/i);
-    expect(mocks.from).not.toHaveBeenCalledWith("establishments");
+  });
+
+  it("não permite seleção externa nem para gestor institucional", async () => {
+    mocks.from.mockImplementation((table: string) =>
+      table === "app_roles" ? query(null) :
+      table === "establishments" ? query({ id: PLATFORM_ID }) :
+      query({ role: "manager" }),
+    );
+    await expect(authorizeInbox({}, "gestor-1", FOREIGN_ID))
+      .rejects.toThrow(/somente conversas da Fidelize/i);
   });
 
   it("falha de forma segura se o workspace institucional nao existir", async () => {
