@@ -44,9 +44,15 @@ echo "[1/6] Comparando a Smart Wallet real com o GitHub, sem alterar arquivos...
 git -C "$LIVE" fetch origin "$SMART_BRANCH" >/dev/null
 FOUND_SHA="$(git -C "$LIVE" rev-parse FETCH_HEAD)"
 test "$FOUND_SHA" = "$SMART_SHA" || die "Branch Smart Wallet mudou. Exige nova comparacao."
-# Inclui alteracoes no index e na arvore de trabalho, excluindo apenas o .env
-# privado e os tipos de rota autogerados. Nunca apagar/modificar o live.
-DIFFERENCES="$(git -C "$LIVE" diff --name-only "$SMART_SHA" -- . ':(exclude).env' ':(exclude)src/routeTree.gen.ts')"
+LIVE_HEAD="$(git -C "$LIVE" rev-parse HEAD)"
+test "$LIVE_HEAD" = "364ab1f16fce603d724aaf09379f77a51c9c0bb0" || die "Commit base da producao mudou; exige nova auditoria."
+# A branch remota inclui tambem o hotfix de leitura PGRST303, ausente no
+# commit base ativo. Exclui somente esse delta conhecido, exigindo que o
+# arquivo local esteja INALTERADO em relacao ao commit base.
+test -z "$(git -C "$LIVE" status --porcelain -- src/lib/my-wallet.functions.ts)" || die "my-wallet.functions.ts possui mudancas locais nao revisadas."
+# Compara todo o codigo Smart Wallet staged/unstaged com GitHub;
+# exclui apenas .env, rotas geradas e o hotfix historico acima.
+DIFFERENCES="$(git -C "$LIVE" diff --name-only "$SMART_SHA" -- . ':(exclude).env' ':(exclude)src/routeTree.gen.ts' ':(exclude)src/lib/my-wallet.functions.ts')"
 if test -n "$DIFFERENCES"; then
   echo "[BLOQUEADO] Codigo live contem diferencas em relacao a Smart Wallet do GitHub:"
   printf '%s\n' "$DIFFERENCES"
