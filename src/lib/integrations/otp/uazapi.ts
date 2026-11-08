@@ -320,6 +320,7 @@ export const uazapiOtp: WhatsAppOTPProvider = {
       // v1/v2 Interactive Button Response
       const buttonId =
         msg?.buttonOrListid ||
+        msg?.buttonOrListId ||
         msg?.interactive?.button_reply?.id ||
         msg?.selectedButtonId ||
         msg?.buttonResponse?.selectedButtonId ||
@@ -457,12 +458,18 @@ export const uazapiOtp: WhatsAppOTPProvider = {
         : undefined,
     ];
 
+    // Priorizar o identificador do botão: o webhook pode trazer também
+    // o texto da mensagem original, que não é a escolha do cliente.
     const text =
+      extractInteractiveValue(msg) ||
+      extractInteractiveValue(root) ||
+      extractInteractiveValue(body) ||
+      extractInteractiveValue(baileysMessage) ||
       possibleTexts.find(
         (value) =>
           typeof value === "string" &&
           value.trim().length > 0
-      )?.trim() || extractInteractiveValue(msg) || extractInteractiveValue(root) || extractInteractiveValue(body) || extractInteractiveValue(baileysMessage) || "";
+      )?.trim() || "";
 
     const remoteMessageId = String(
       msg?.messageid ||
