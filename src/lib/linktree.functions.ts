@@ -305,10 +305,14 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
 
     const { data: customPage } = await (supabaseAdmin as any)
       .from("link_tree_pages")
-      .select("establishment_id")
+      .select("establishment_id, published")
       .eq("public_slug", normalizedSlug)
       .maybeSingle();
 
+    // Respeita a publicação mesmo quando o endpoint público é chamado diretamente.
+    if (customPage && !customPage.published) {
+      return { menu: [], catalog: [], reviews: [], stats: null };
+    }
     let establishmentId = customPage?.establishment_id ?? null;
 
     if (!establishmentId) {
@@ -322,6 +326,17 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
     }
 
     if (!establishmentId) {
+      return { menu: [], catalog: [], reviews: [], stats: null };
+    }
+
+    // Um slug customizado não contorna o bloqueio de loja desativada.
+    const { data: activeEstablishment } = await supabaseAdmin
+      .from("establishments")
+      .select("id")
+      .eq("id", establishmentId)
+      .eq("active", true)
+      .maybeSingle();
+    if (!activeEstablishment) {
       return { menu: [], catalog: [], reviews: [], stats: null };
     }
 
@@ -346,6 +361,8 @@ export const getLinkTreeBlockData = createServerFn({ method: "GET" })
         .from("menu_items")
         .select("id, name, short_desc, price, promo_price, image_url")
         .eq("menu_id", menu_id)
+        .eq("active", true)
+        .order("position", { ascending: true })
         .limit(12);
       return data ?? [];
     };
