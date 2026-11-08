@@ -375,8 +375,148 @@ function BusinessStage(props: any) {
 }
 
 function ThemeStage({ niche, preset, applyPreset, logoUrl, onPalette }: any) {
+  // Os presets V4 são opcionais. Nenhum tema existente é substituído ao navegar.
   const themes = BIO_COMMERCE_PRESETS.filter((item) => item.niche_id === niche);
-  return <div className="space-y-5"><Card><CardHeader><CardTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5 text-primary" />Temas do seu nicho</CardTitle><p className="text-sm text-muted-foreground">Cada tema é uma landing completa, não apenas uma paleta de cores.</p></CardHeader><CardContent><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{themes.map((item) => <button key={item.preset_id} onClick={() => applyPreset(item.preset_id)} className={`relative overflow-hidden rounded-2xl border-2 p-3 text-left transition hover:-translate-y-0.5 ${preset === item.preset_id ? "border-primary ring-2 ring-primary/10" : "border-border"}`} style={{ background: item.background, color: item.text }}><div className="relative h-32 overflow-hidden rounded-xl" style={{ background: `radial-gradient(circle at 20% 0%,${item.primary}aa,transparent 52%),linear-gradient(160deg,${item.background},${item.accent}44)` }}><div className="absolute inset-x-3 bottom-3 rounded-xl border border-white/15 bg-black/30 p-3 backdrop-blur"><div className="h-2 w-1/2 rounded bg-white/75" /><div className="mt-2 flex gap-1.5"><span className="h-7 flex-1 rounded-lg" style={{ background: item.primary }} /><span className="h-7 w-12 rounded-lg bg-white/10" /></div></div></div><p className="mt-3 text-[10px] font-bold uppercase tracking-wider opacity-60">{item.niche}</p><p className="text-sm font-black">{item.label}</p><p className="mt-1 line-clamp-2 text-[10px] opacity-65">{item.description}</p>{preset === item.preset_id && <span className="absolute right-2 top-2 rounded-full px-2 py-1 text-[9px] font-black text-white" style={{ background: item.primary }}>EM USO</span>}</button>)}</div></CardContent></Card><LogoPaletteSync logoUrl={logoUrl || null} onApply={onPalette} hint="Use as cores da sua marca sem perder a composição premium do tema." /></div>;
+  return (
+    <div className="space-y-5">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wand2 className="h-5 w-5 text-primary" />
+            Experiências do seu nicho
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Escolha a composição, não apenas as cores. Os temas V4 mudam a hero,
+            a vitrine e a linguagem visual. Os dados de produtos e serviços são preservados.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {themes.map((item) => {
+              const active = preset === item.preset_id;
+              const isV4 = item.preset_id.startsWith("v4-");
+              return (
+                <button
+                  key={item.preset_id}
+                  type="button"
+                  onClick={() => applyPreset(item.preset_id)}
+                  aria-pressed={active}
+                  aria-label={`Selecionar tema ${item.label}`}
+                  className={`group min-w-0 overflow-hidden rounded-[1.35rem] border-2 p-2 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                    active ? "border-primary bg-primary/5 shadow-lg ring-2 ring-primary/10" : "border-border bg-card hover:border-primary/40"
+                  }`}
+                >
+                  <TemplateThumbnail item={item} />
+                  <div className="space-y-1.5 px-2 pb-2 pt-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-bold">{item.label}</span>
+                      {active ? (
+                        <span className="shrink-0 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-primary-foreground">EM USO</span>
+                      ) : isV4 ? (
+                        <span className="shrink-0 rounded-full border border-primary/30 px-2 py-0.5 text-[9px] font-bold text-primary">V4</span>
+                      ) : null}
+                    </div>
+                    <p className="line-clamp-2 min-h-9 text-[11px] leading-relaxed text-muted-foreground">
+                      {item.description}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-medium capitalize">
+                        Hero {item.hero_style}
+                      </span>
+                      <span className="rounded-full bg-muted px-2 py-1 text-[9px] font-medium capitalize">
+                        Vitrine {item.product_style}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+            Miniaturas ilustram a composição. A prévia interativa ao lado utiliza
+            o renderizador real. A troca só é publicada quando você salvar e publicar.
+          </p>
+        </CardContent>
+      </Card>
+      <LogoPaletteSync
+        logoUrl={logoUrl || null}
+        onApply={onPalette}
+        hint="Aplique as cores da sua marca sem perder a composição e o ritmo visual do tema."
+      />
+    </div>
+  );
+}
+
+function TemplateThumbnail({ item }: { item: (typeof BIO_COMMERCE_PRESETS)[number] }) {
+  const split = item.hero_style === "split";
+  const minimal = item.hero_style === "minimal";
+  const brand = item.hero_style === "brand";
+  const editorial = item.font_style === "editorial";
+  const grid = item.product_style === "grid";
+  const accentStyle = { background: item.primary };
+  const highlights = [item.primary, item.accent, item.primary];
+
+  return (
+    <div
+      aria-hidden="true"
+      className="relative h-44 overflow-hidden rounded-xl border border-black/10"
+      style={{
+        color: item.text,
+        background: item.background,
+        fontFamily: editorial ? "Georgia,serif" : "system-ui,sans-serif",
+      }}
+    >
+      <div
+        className="absolute inset-0 opacity-70"
+        style={{
+          background: minimal
+            ? `linear-gradient(145deg,${item.background},${item.accent}1f)`
+            : `radial-gradient(circle at 80% 25%,${item.accent}66,transparent 58%),linear-gradient(145deg,${item.background},${item.primary}25)`,
+        }}
+      />
+      <div className="absolute inset-x-3 top-3 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px]" style={accentStyle} />
+          <span className="h-1 w-14 rounded-full opacity-70" style={{ background: item.text }} />
+        </div>
+        <span className="h-1 w-9 rounded-full opacity-30" style={{ background: item.text }} />
+      </div>
+      <div
+        className={`absolute inset-x-4 top-9 flex items-center gap-3 ${
+          minimal || brand ? "flex-col justify-center text-center" : "justify-between text-left"
+        }`}
+      >
+        <div className={`${split ? "w-[57%]" : minimal || brand ? "w-full" : "w-[60%]"} min-w-0`}>
+          {brand && <div className="mx-auto mb-2 grid h-8 w-8 place-items-center rounded-lg text-sm font-bold" style={{ background: item.primary, color: item.background }}>F</div>}
+          <p className="text-[8px] font-semibold uppercase tracking-[0.12em] opacity-70">
+            {item.niche}
+          </p>
+          <p className={`mt-1 max-w-36 font-bold leading-tight ${editorial ? "text-base" : "text-sm"}`}>
+            Sua marca, sua experiência.
+          </p>
+          {!minimal && <div className="mt-2 h-1.5 w-2/3 rounded-full opacity-25" style={{ background: item.text }} />}
+          <div className={`mt-3 h-5 w-20 rounded-full ${minimal || brand ? "mx-auto" : ""}`} style={accentStyle} />
+        </div>
+        {!minimal && !brand && (
+          <div
+            className={`h-20 shrink-0 overflow-hidden border border-white/10 ${split ? "w-[40%] rounded-2xl" : "w-[36%] rounded-full"}`}
+            style={{ background: `linear-gradient(150deg,${item.accent},${item.primary}77,${item.background})` }}
+          >
+            <div className="ml-auto mt-2 h-16 w-10 rotate-12 rounded-t-full opacity-40" style={{ background: item.text }} />
+          </div>
+        )}
+      </div>
+      <div className={`absolute inset-x-3 bottom-3 grid gap-1.5 ${grid ? "grid-cols-3" : "grid-cols-2"}`}>
+        {highlights.slice(0, grid ? 3 : 2).map((color, index) => (
+          <div
+            key={index}
+            className={`h-7 border border-white/10 ${item.card_style === "outline" ? "bg-transparent" : "bg-black/15"} ${item.rounded === "sm" ? "rounded-sm" : "rounded-lg"}`}
+            style={{ borderColor: color + "88", boxShadow: `inset 0 -10px 20px ${color}22` }}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function ContentStage({ establishmentId, links, editing, setEditing, addLink, updateLink, removeLink, moveLink }: any) {
