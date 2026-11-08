@@ -100,7 +100,7 @@ echo "[4/6] Instalando dependencias e compilando isoladamente..."
 echo "[5/6] Subindo somente staging local na porta 3160..."
 (
  cd "$RELEASE"
- HOST=127.0.0.1 PORT="$PORT" NODE_ENV=production \
+ HOST=127.0.0.1 PORT="$PORT" NODE_ENV=production FIDELIZE_STAGING_NO_WORKERS=1 \
   pm2 start .output/server/index.mjs --name "$NAME" \
   --interpreter node --node-args='--env-file=.env'
 ) || die "PM2 staging falhou; producao 3150 intacta."
