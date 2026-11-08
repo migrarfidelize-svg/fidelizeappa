@@ -25,7 +25,7 @@ export const Route = createFileRoute("/indicar/$code")({
         if (!/^[a-z0-9][a-z0-9-]{3,39}$/.test(code)) return missing();
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const { data: account, error } = await supabaseAdmin
+        const { data: account, error } = await (supabaseAdmin as any)
           .from("affiliate_accounts")
           .select("establishment_id,code,enabled,custom_title,featured_asset_id")
           .eq("code", code)
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/indicar/$code")({
             .eq("id", account.establishment_id)
             .single(),
           account.featured_asset_id
-            ? supabaseAdmin.from("affiliate_assets")
+            ? (supabaseAdmin as any).from("affiliate_assets")
               .select("media_type,media_url,preview_url")
               .eq("id", account.featured_asset_id)
               .eq("establishment_id", account.establishment_id)
