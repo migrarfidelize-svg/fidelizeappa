@@ -27,6 +27,8 @@ export interface WhatsAppOTPProvider extends IntegrationProvider {
   ): {
     remoteMessageId: string;
     fromPhone: string;
+    /** WhatsApp PN or LID JID used for replies. */
+    replyJid?: string;
     text: string;
     messageType?: string;
     mediaUrl?: string;
