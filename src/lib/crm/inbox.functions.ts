@@ -13,47 +13,53 @@ export type InboxAuth = {
 };
 
 /**
- * Resolve o estabelecimento a partir da sessão (painel do lojista).
- * Superadmin pode informar explicitamente outro estabelecimento (context switcher).
+ * Atendimento exclusivo da plataforma Fidelize.
+ *
+ * Nunca deriva o tenant a partir de memberships nem da primeira empresa:
+ * um fallback desses mistura conversas de lojistas com a caixa institucional.
+ * A autorizacao e feita no servidor, sobre app_roles, e repetida em cada acao.
  */
 export async function authorizeInbox(
-  supabase: any,
+  _supabase: any,
   userId: string,
   establishmentId?: string | null,
 ): Promise<InboxAuth> {
-  const { data: isSuper } = await supabase.rpc("is_super_admin", { _user: userId });
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  if (isSuper) {
-    if (establishmentId) {
-      const { data: est } = await supabase.from("establishments").select("id").eq("id", establishmentId).maybeSingle();
-      if (!est) throw new Error("Estabelecimento não encontrado.");
-      return { establishmentId, isSuper: true, role: "super" };
-    }
-    const { data: membership } = await supabase
-      .from("establishment_members")
-      .select("establishment_id, role")
-      .eq("user_id", userId)
-      .eq("active", true)
-      .limit(1)
-      .maybeSingle();
-    if (membership?.establishment_id) {
-      return { establishmentId: membership.establishment_id, isSuper: true, role: "super" };
-    }
-    const { data: first } = await supabase.from("establishments").select("id").eq("active", true).order("name").limit(1).maybeSingle();
-    if (!first) throw new Error("Nenhum estabelecimento disponível.");
-    return { establishmentId: first.id, isSuper: true, role: "super" };
+  const { data: role, error: roleError } = await supabaseAdmin
+    .from("app_roles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("role", "super_admin")
+    .maybeSingle();
+
+  if (roleError || !role) {
+    throw new Error("Acesso restrito ao atendimento administrativo da Fidelize.");
   }
 
-  throw new Error("Acesso restrito: apenas administradores da plataforma podem usar o Atendimento.");
+  // A plataforma tem seu proprio estabelecimento institucional, com slug reservado.
+  const { data: platform, error: platformError } = await supabaseAdmin
+    .from("establishments")
+    .select("id")
+    .eq("slug", "admin")
+    .eq("name", "Fidelize")
+    .maybeSingle();
+
+  if (platformError || !platform?.id) {
+    throw new Error("Workspace de atendimento da Fidelize nao configurado.");
+  }
+
+  // Mesmo um superadmin nao pode usar esta rota para ler outro tenant.
+  if (establishmentId && establishmentId !== platform.id) {
+    throw new Error("Este atendimento aceita somente conversas da Fidelize.");
+  }
+
+  return { establishmentId: platform.id, isSuper: true, role: "super" };
 }
 
 async function assertManage(supabase: any, userId: string, establishmentId: string) {
-  const { data: allowed } = await supabase.rpc("member_can", {
-    _user: userId,
-    _est: establishmentId,
-    _action: "settings.integrations",
-  });
-  if (!allowed) throw new Error("Apenas gerentes ou proprietários podem alterar esta configuração.");
+  // Configuracoes e filas pertencem ao workspace institucional, nao a um lojista.
+  await authorizeInbox(supabase, userId, establishmentId);
 }
 
 const tenant = z.object({ establishmentId: z.string().uuid().optional().nullable() });
@@ -99,22 +105,9 @@ export const getInboxContext = createServerFn({ method: "GET" })
       .eq("id", auth.establishmentId)
       .maybeSingle();
 
-    const { data: canManage } = await supabase.rpc("member_can", {
-      _user: userId,
-      _est: auth.establishmentId,
-      _action: "settings.integrations",
-    });
-
-    let establishments: { id: string; name: string }[] = [];
-    if (auth.isSuper) {
-      const { data: list } = await supabaseAdmin
-        .from("establishments")
-        .select("id, name")
-        .eq("active", true)
-        .order("name")
-        .limit(300);
-      establishments = list ?? [];
-    }
+    const canManage = auth.isSuper;
+    // Nao exibir nem listar empresas clientes no Atendimento da plataforma.
+    const establishments: { id: string; name: string }[] = [];
 
     return {
       establishmentId: auth.establishmentId,
