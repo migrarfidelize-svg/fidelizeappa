@@ -35,29 +35,64 @@ if ss -H -ltn "( sport = :$PORT )" | grep -q .; then
 fi
 FREE_KB="$(df -Pk /var/www | awk 'NR==2 {print $4}')"
 test "$FREE_KB" -gt 6291456 || die "Menos de 6 GB livres: nao criar staging."
+AVAILABLE_MB="$(free -m | awk '/^Mem:/ {print $7}')"
+echo "Memoria disponivel: $AVAILABLE_MB MB"
+test "$AVAILABLE_MB" -ge 1700 || die "Memoria disponivel muito baixa para build; producao preservada."
 
 BUN="$(command -v bun || true)"
 if test -z "$BUN" && test -x /root/.bun/bin/bun; then BUN="/root/.bun/bin/bun"; fi
 test -n "$BUN" && test -x "$BUN" || die "Bun nao instalado."
 
-echo "[1/6] Comparando a Smart Wallet real com o GitHub, sem alterar arquivos..."
+echo "[1/6] Conciliando Smart Wallet em producao com a Fidelize V4..."
 git -C "$LIVE" fetch origin "$SMART_BRANCH" >/dev/null
 FOUND_SHA="$(git -C "$LIVE" rev-parse FETCH_HEAD)"
-test "$FOUND_SHA" = "$SMART_SHA" || die "Branch Smart Wallet mudou. Exige nova comparacao."
+test "$FOUND_SHA" = "$SMART_SHA" || die "Branch Smart Wallet mudou: nova comparacao obrigatoria."
 LIVE_HEAD="$(git -C "$LIVE" rev-parse HEAD)"
-test "$LIVE_HEAD" = "364ab1f16fce603d724aaf09379f77a51c9c0bb0" || die "Commit base da producao mudou; exige nova auditoria."
-# A branch remota inclui tambem o hotfix de leitura PGRST303, ausente no
-# commit base ativo. Exclui somente esse delta conhecido, exigindo que o
-# arquivo local esteja INALTERADO em relacao ao commit base.
-test -z "$(git -C "$LIVE" status --porcelain -- src/lib/my-wallet.functions.ts)" || die "my-wallet.functions.ts possui mudancas locais nao revisadas."
-# Compara todo o codigo Smart Wallet staged/unstaged com GitHub;
-# exclui apenas .env, rotas geradas e o hotfix historico acima.
+test "$LIVE_HEAD" = "364ab1f16fce603d724aaf09379f77a51c9c0bb0" || die "Commit base mudou: nova auditoria obrigatoria."
+
+# A leitura PGRST303 foi adicionada pelo GitHub depois do HEAD desta
+# instalacao: o arquivo local de producao precisa permanecer sem edicoes.
+test -z "$(git -C "$LIVE" status --porcelain -- src/lib/my-wallet.functions.ts)" || die "Arquivo da carteira alterado localmente."
+git -C "$BASE" fetch origin "$BRANCH" >/dev/null
+SHA="$(git -C "$BASE" rev-parse FETCH_HEAD)"
+echo "Release V4 + Smart Wallet: $SHA"
+
+# Nao permitir codigo desconhecido nao rastreado na instalacao atual.
+EXTRAS="$(git -C "$LIVE" ls-files --others --exclude-standard -- src scripts supabase)"
+test -z "$EXTRAS" || { printf '%s\n' "$EXTRAS"; die "Existem fontes nao rastreadas; revisar."; }
+
 DIFFERENCES="$(git -C "$LIVE" diff --name-only "$SMART_SHA" -- . ':(exclude).env' ':(exclude)src/routeTree.gen.ts' ':(exclude)src/lib/my-wallet.functions.ts')"
-if test -n "$DIFFERENCES"; then
-  echo "[BLOQUEADO] Codigo live contem diferencas em relacao a Smart Wallet do GitHub:"
-  printf '%s\n' "$DIFFERENCES"
-  die "Manter producao intacta ate reconciliar os arquivos."
-fi
+found_admin=0
+found_linktree=0
+found_hash=0
+found_indicar=0
+while IFS= read -r file; do
+  test -n "$file" || continue
+  test -f "$LIVE/$file" || die "Arquivo local ausente: $file"
+  git -C "$BASE" cat-file -e "$SHA:$file" 2>/dev/null || die "Arquivo ausente na V4: $file"
+  local_blob="$(git -C "$LIVE" hash-object "$LIVE/$file")"
+  v4_blob="$(git -C "$BASE" rev-parse "$SHA:$file")"
+  if test "$local_blob" = "$v4_blob"; then
+    echo "[PRESERVADO] $file"
+    continue
+  fi
+  case "$file" in
+    "src/lib/admin.functions.ts") found_admin=1 ;;
+    "src/lib/linktree.functions.ts") found_linktree=1 ;;
+    "src/routes/_authenticated/hash.tsx") found_hash=1 ;;
+    'src/routes/indicar.$code.ts') found_indicar=1 ;;
+    *) die "Diferenca desconhecida: $file" ;;
+  esac
+  # Impedir alteracoes manuais nos quatro arquivos: devem ser a versao
+  # intacta do HEAD da instalacao anterior, atualizada apenas no V4.
+  head_blob="$(git -C "$LIVE" rev-parse "HEAD:$file")"
+  test "$local_blob" = "$head_blob" || die "Modificacao local nao conciliada: $file"
+  echo "[MELHORIA V4 CONFERIDA] $file"
+done <<< "$DIFFERENCES"
+test "$found_admin" -eq 1 && test "$found_linktree" -eq 1 && \
+  test "$found_hash" -eq 1 && test "$found_indicar" -eq 1 || \
+  die "O conjunto das quatro melhorias V4 mudou; nao prosseguir."
+echo "[OK] 14 arquivos preservados e quatro melhorias V4 reconhecidas."
 
 echo "[2/6] Criando backup privado de configuracao e snapshot PM2..."
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -72,9 +107,7 @@ echo "$SMART_SHA" > "$BACKUP/live-smart-wallet-sha.txt"
 # Backups contem credenciais privadas; somente root tem acesso.
 chmod 600 "$BACKUP"/*
 
-echo "[3/6] Baixando release consolidada V4 + Smart Wallet..."
-git -C "$BASE" fetch origin "$BRANCH" >/dev/null
-SHA="$(git -C "$BASE" rev-parse FETCH_HEAD)"
+echo "[3/6] Preparando release consolidada V4 + Smart Wallet..."
 RELEASE="/var/www/fidelize-v4-unified-$STAMP"
 test ! -e "$RELEASE" || die "Diretorio staging ja existe."
 git -C "$BASE" worktree add --detach "$RELEASE" "$SHA"
