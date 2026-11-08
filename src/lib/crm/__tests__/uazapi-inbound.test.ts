@@ -25,6 +25,14 @@ describe("UAZAPI inbound safety", () => {
     };
     expect(uazapiOtp.parseWebhook?.(payload, {})?.text).toBe("fidelize_plans");
   });
+  it("prioriza o ID nativo do botão mesmo se webhook contiver texto", () => {
+    const payload = {
+      key: { id: "button-3", remoteJid: "5511999999999@s.whatsapp.net" },
+      text: "Mensagem de interface genérica",
+      buttonOrListid: "fidelize_suggestions",
+    };
+    expect(uazapiOtp.parseWebhook?.(payload, {})?.text).toBe("fidelize_suggestions");
+  });
   it("26. rejeita grupo", () => {
     expect(uazapiOtp.parseWebhook?.({ key: { id: "m3", remoteJid: "123@g.us" }, text: "oi" }, {})).toBeNull();
   });
