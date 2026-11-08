@@ -17,6 +17,11 @@ export const SUPPORT_SUGGESTION_REQUEST = "Queremos ouvir você! Envie sua suges
 export const SUPPORT_SUGGESTION_RECEIVED = "Obrigado! Sua sugestão foi registrada e encaminhada para avaliação da nossa equipe.";
 export const SUPPORT_NO_PLANS_TEXT = "Nossos planos estão sendo atualizados. Para consultar condições, escolha Suporte no menu.";
 
+/** Botão separado dos CTAs de link, compatível também com WhatsApp Web. */
+export const PLATFORM_BACK_TO_MENU_OPTIONS = [
+  { label: "Voltar ao menu", value: "fidelize_menu" },
+] as const;
+
 function normalize(text: string): string {
   return String(text ?? "").normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -26,7 +31,7 @@ function normalize(text: string): string {
 /** Aceita os IDs dos botões e os nomes; nunca apresenta fallback numérico. */
 export function resolvePlatformSupportChoice(text: string): SupportChoice {
   const value = normalize(text);
-  if (["menu", "voltar", "inicio"].includes(value)) return "menu";
+  if (["menu", "voltar", "inicio", "voltar ao menu", "fidelize_menu"].includes(value)) return "menu";
   if (["fidelize_support", "suporte", "falar com suporte"].includes(value)) return "support";
   if (["fidelize_plans", "planos", "ver planos"].includes(value)) return "plans";
   if (["fidelize_suggestions", "sugestoes", "enviar sugestao"].includes(value)) return "suggestions";
@@ -35,6 +40,7 @@ export function resolvePlatformSupportChoice(text: string): SupportChoice {
 
 export type PublicPlan = {
   name: string;
+  slug?: string | null;
   description?: string | null;
   price_monthly?: number | string | null;
   price_yearly?: number | string | null;
@@ -46,6 +52,33 @@ function money(value: number | string | null | undefined, currency: string) {
     style: "currency", currency,
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   }).format(Number(value));
+}
+
+/** Card curto para o WhatsApp; preços e descrição sempre vêm da base ativa. */
+export function formatPlatformPlanCard(plan: PublicPlan): string {
+  const currency = plan.currency || "BRL";
+  const monthly = money(plan.price_monthly, currency);
+  const yearly = money(plan.price_yearly, currency);
+  const lines = ["*" + String(plan.name).trim() + "*"];
+  if (monthly !== null) lines.push("Mensal: " + monthly);
+  if (yearly !== null) lines.push("Anual: " + yearly);
+  if (monthly === null && yearly === null) lines.push("Valor sob consulta");
+  if (plan.description) lines.push(String(plan.description).replace(/\\s+/g, " ").trim().slice(0, 240));
+  return lines.join("\\n");
+}
+
+/** Link para o plano selecionado na seção real da landing, nunca checkout direto. */
+export function platformPlanLandingUrl(plan: PublicPlan): string {
+  const alias: Record<string, string> = {
+    essencial: "essencial", profissional: "profissional", premium: "ilimitado",
+    ilimitado: "ilimitado", empresarial: "empresarial",
+  };
+  const source = String(plan.slug || plan.name || "").trim().toLocaleLowerCase("pt-BR");
+  const normalized = source.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+  const selected = alias[normalized];
+  return selected
+    ? "https://afidelize.app/?plano=" + encodeURIComponent(selected) + "#precos"
+    : "https://afidelize.app/#precos";
 }
 
 /** Apenas dados vindos de planos ativos e não arquivados do banco. */
