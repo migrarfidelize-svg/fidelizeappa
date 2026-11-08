@@ -10,7 +10,7 @@ describe("Landing Fidelize — seleção de plano via WhatsApp", () => {
     ["empresarial", 3],
   ])("seleciona ?plano=%s no card correto", (slug, index) => {
     expect(getLandingPlanIndex(`?plano=${slug}`)).toBe(index);
-    expect(LANDING_PLAN_SLUGS[index]).toBe(LANDING_PLAN_SLUGS[index]);
+    expect(LANDING_PLAN_SLUGS[index]).toBe(slug === "premium" ? "ilimitado" : slug);
   });
 
   it("aceita parâmetros adicionais da campanha sem perder o plano", () => {
