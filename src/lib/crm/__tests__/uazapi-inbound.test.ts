@@ -11,6 +11,20 @@ describe("UAZAPI inbound safety", () => {
   it("25. aceita resposta interativa numerada", () => {
     expect(uazapiOtp.parseWebhook?.({ key: { id: "m2", remoteJid: "5511999999999@s.whatsapp.net" }, selectedRowId: "5" }, {})?.text).toBe("5");
   });
+  it("recebe o ID de botão da UAZAPI sem depender do texto", () => {
+    const payload = {
+      key: { id: "button-1", remoteJid: "5511999999999@s.whatsapp.net" },
+      buttonOrListid: "fidelize_support",
+    };
+    expect(uazapiOtp.parseWebhook?.(payload, {})?.text).toBe("fidelize_support");
+  });
+  it("recebe botão interativo da Cloud API", () => {
+    const payload = {
+      key: { id: "button-2", remoteJid: "5511999999999@s.whatsapp.net" },
+      interactive: { button_reply: { id: "fidelize_plans", title: "Planos" } },
+    };
+    expect(uazapiOtp.parseWebhook?.(payload, {})?.text).toBe("fidelize_plans");
+  });
   it("26. rejeita grupo", () => {
     expect(uazapiOtp.parseWebhook?.({ key: { id: "m3", remoteJid: "123@g.us" }, text: "oi" }, {})).toBeNull();
   });
