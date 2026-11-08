@@ -13,6 +13,42 @@ function emptyBioCommerceRuntime() {
 }
 
 /**
+ * Um slug público só permite leitura de conteúdo se a página estiver publicada
+ * e o estabelecimento ativo. A mesma regra deve proteger toda a vitrine e as
+ * consultas paginadas do catálogo, inclusive quando chamadas diretamente.
+ */
+async function resolveVisibleEstablishment(admin: any, slug: string): Promise<string | null> {
+  const normalized = slug.trim().toLowerCase();
+  const { data: page, error: pageError } = await admin
+    .from("link_tree_pages")
+    .select("establishment_id, published")
+    .eq("public_slug", normalized)
+    .maybeSingle();
+  if (pageError) throw new Error("Falha ao validar a página pública.");
+  if (page && !page.published) return null;
+  let establishmentId: string | null = page?.establishment_id ?? null;
+  if (!establishmentId) {
+    const { data: legacy, error: legacyError } = await admin
+      .from("establishments")
+      .select("id")
+      .eq("slug", normalized)
+      .eq("active", true)
+      .maybeSingle();
+    if (legacyError) throw new Error("Falha ao localizar a loja.");
+    establishmentId = legacy?.id ?? null;
+  }
+  if (!establishmentId) return null;
+  const { data: owner, error: ownerError } = await admin
+    .from("establishments")
+    .select("id")
+    .eq("id", establishmentId)
+    .eq("active", true)
+    .maybeSingle();
+  if (ownerError) throw new Error("Falha ao validar a loja.");
+  return owner?.id ?? null;
+}
+
+/**
  * Dados públicos ricos usados pela Bio Commerce.
  *
  * Além dos produtos, entregamos as categorias publicadas de Cardápio/Catálogo.
@@ -23,39 +59,8 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ slug: z.string().trim().min(1).max(80) }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const normalized = data.slug.toLowerCase();
-
-    const { data: page } = await (supabaseAdmin as any)
-      .from("link_tree_pages")
-      .select("establishment_id, published")
-      .eq("public_slug", normalized)
-      .maybeSingle();
-
-    // Uma Bio Commerce despublicada nunca pode expor produtos via RPC público.
-    if (page && !page.published) return emptyBioCommerceRuntime();
-
-    let establishmentId = page?.establishment_id as string | null | undefined;
-
-    if (!establishmentId) {
-      const { data: est } = await supabaseAdmin
-        .from("establishments")
-        .select("id")
-        .eq("slug", normalized)
-        .eq("active", true)
-        .maybeSingle();
-      establishmentId = est?.id ?? null;
-    }
-
+    const establishmentId = await resolveVisibleEstablishment(supabaseAdmin, data.slug);
     if (!establishmentId) return emptyBioCommerceRuntime();
-
-    const { data: owner, error: ownerError } = await supabaseAdmin
-      .from("establishments")
-      .select("id")
-      .eq("id", establishmentId)
-      .eq("active", true)
-      .maybeSingle();
-    if (ownerError) throw new Error("Falha ao validar a loja.");
-    if (!owner) return emptyBioCommerceRuntime();
 
     const { data: menus } = await supabaseAdmin
       .from("restaurant_menus")
@@ -145,4 +150,52 @@ export const getBioCommerceRuntimeData = createServerFn({ method: "GET" })
       reviews,
       stats,
     };
+  });
+
+
+/**
+ * Fonte única da Bio Commerce: itens ativos e publicados do Cardápio/Catálogo.
+ * Paginação sob demanda para "Ver tudo" sem aumentar o payload da hero.
+ * Nenhuma alteração em categorias, posição ou cadastro dos produtos.
+ */
+export const getBioCommerceCatalogPage = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({
+    slug: z.string().trim().min(1).max(80),
+    kind: z.enum(["menu", "catalog"]),
+    offset: z.number().int().min(0).max(20000).default(0),
+    limit: z.number().int().min(1).max(100).default(60),
+  }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const establishmentId = await resolveVisibleEstablishment(supabaseAdmin, data.slug);
+    if (!establishmentId) return { items: [], hasMore: false };
+
+    const { data: published, error: menuError } = await supabaseAdmin
+      .from("restaurant_menus")
+      .select("id")
+      .eq("establishment_id", establishmentId)
+      .eq("kind", data.kind)
+      .eq("status", "published")
+      .maybeSingle();
+    if (menuError) throw new Error("Falha ao verificar a vitrine publicada.");
+    if (!published) return { items: [], hasMore: false };
+
+    const columns = "id, menu_id, category_id, name, short_desc, long_desc, price, promo_price, currency, image_url, video_url, video_poster_url, variants, stock_status, gallery, brand, sku, position";
+    const { data: rows, error } = await supabaseAdmin
+      .from("menu_items")
+      .select(columns)
+      .eq("menu_id", published.id)
+      .eq("active", true)
+      .order("position", { ascending: true })
+      .order("id", { ascending: true })
+      .range(data.offset, data.offset + data.limit);
+    if (error) throw new Error("Não foi possível carregar os produtos.");
+    const items = (rows ?? []).slice(0, data.limit).map((item: any) => ({
+      ...item,
+      price: item.price == null ? null : Number(item.price),
+      promo_price: item.promo_price == null ? null : Number(item.promo_price),
+      variants: Array.isArray(item.variants) ? item.variants : [],
+      gallery: Array.isArray(item.gallery) ? item.gallery : [],
+    }));
+    return { items, hasMore: (rows ?? []).length > data.limit };
   });
