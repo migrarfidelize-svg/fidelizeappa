@@ -13,7 +13,7 @@ Olá! Você está falando com a Fidelize. Como podemos ajudar? Escolha uma das o
 
 **Suporte** · **Planos** · **Sugestões** (exatamente três botões clicáveis, sem números).
 
-UAZAPI usa mensagem interativa `/send/menu` com `type=button` e três `choices` estáveis. **Não há fallback numerado no suporte Fidelize**: caso a UAZAPI rejeite o envio interativo, a API retorna falha, registrada pelo webhook para reprocessamento ou investigação. Não envia menu textual por números. A apresentação visual final é controlada pelo aplicativo WhatsApp e pela compatibilidade do dispositivo/provedor.
+A documentação oficial da uazapiGO v2.6.4 confirma o endpoint `POST /send/menu` com `type: "button"`, `footerText` opcional e três `choices` no formato `"Suporte|fidelize_support"`, `"Planos|fidelize_plans"`, `"Sugestões|fidelize_suggestions"`. Não usar prefixo `reply:` no formato moderno, reservado às variantes legadas. Referência: https://docs.uazapi.com/endpoint/post/send~menu. **Não há fallback numerado no suporte Fidelize**: caso a UAZAPI rejeite o envio interativo, a API retorna falha, registrada pelo webhook para reprocessamento ou investigação. Não envia menu textual por números. A apresentação visual final é controlada pelo aplicativo WhatsApp e pela compatibilidade do dispositivo/provedor.
 
 ## Comportamento
 - **Suporte:** resposta de fila; cria/reutiliza ticket institucional, fila **Suporte**, tags **Suporte** e **Aguardando atendimento**; estado `waiting`, `bot_paused=true`. Não faz perguntas livres nem chama IA. Um membro autorizado assume a conversa manualmente na Inbox.
