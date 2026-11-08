@@ -74,7 +74,7 @@ export function platformPlanLandingUrl(plan: PublicPlan): string {
     ilimitado: "ilimitado", empresarial: "empresarial",
   };
   const source = String(plan.slug || plan.name || "").trim().toLocaleLowerCase("pt-BR");
-  const normalized = source.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "");
+  const normalized = source.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const selected = alias[normalized];
   return selected
     ? "https://afidelize.app/?plano=" + encodeURIComponent(selected) + "#precos"
