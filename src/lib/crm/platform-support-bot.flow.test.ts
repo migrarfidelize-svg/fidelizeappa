@@ -90,10 +90,14 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(data.crm_tags.map((item: any) => item.name)).toEqual(["Suporte", "Aguardando atendimento"]);
     expect(data.crm_conversation_tags).toHaveLength(2);
     expect(data.crm_messages[0].body).toMatch(/na fila de suporte/i);
-    expect(send.mock.calls[1][4]).toMatchObject({
+    expect(send.mock.calls[0][4]).toMatchObject({
       type: "options", nativeButtonsOnly: true,
-      options: [{ label: "Voltar ao menu", value: "fidelize_menu" }],
+      options: [
+        { label: "Voltar ao menu", value: "fidelize_menu" },
+        { label: "Encerrar atendimento", value: "fidelize_end_support" },
+      ],
     });
+    expect(send.mock.calls).toHaveLength(1);
     const count = data.crm_messages.length;
     expect((await executeFlow("conv", "oi")).action).toBe("ignored");
     expect(data.crm_messages).toHaveLength(count);
@@ -128,6 +132,35 @@ describe("WhatsApp Fidelize — bot institucional", () => {
     expect(data.crm_conversations[0].status).toBe("waiting");
     expect(data.crm_support_tickets[0].status).toBe("open");
     expect(send.mock.calls).toHaveLength(sends);
+  });
+
+  it("Encerrar atendimento cancela somente fila sem atendente e resolve ticket", async () => {
+    await executeFlow("conv", "fidelize_support");
+    const result = await executeFlow("conv", "fidelize_end_support");
+    expect(result.action).toBe("platform_closed");
+    expect(data.crm_conversations[0]).toMatchObject({
+      status: "closed", bot_paused: false, queue_id: null, waiting_since: null,
+      metadata: { support: { active: false } },
+    });
+    expect(data.crm_support_tickets[0].status).toBe("resolved");
+    expect(data.crm_messages.at(-1)?.body).toMatch(/Atendimento encerrado/i);
+  });
+
+  it("Texto Encerrar atendimento também cancela a fila", async () => {
+    await executeFlow("conv", "fidelize_support");
+    const result = await executeFlow("conv", "Encerrar atendimento");
+    expect(result.action).toBe("platform_closed");
+    expect(data.crm_conversations[0].status).toBe("closed");
+  });
+
+  it("Encerrar não remove atendimento humano já assumido", async () => {
+    await executeFlow("conv", "fidelize_support");
+    data.crm_conversations[0].assigned_to = "human-1";
+    const sentCount = send.mock.calls.length;
+    expect((await executeFlow("conv", "fidelize_end_support")).action).toBe("ignored");
+    expect(data.crm_support_tickets[0].status).toBe("open");
+    expect(data.crm_conversations[0].status).toBe("waiting");
+    expect(send.mock.calls).toHaveLength(sentCount);
   });
 
   it("Planos envia card com link nativo por plano e botão separado para voltar", async () => {
