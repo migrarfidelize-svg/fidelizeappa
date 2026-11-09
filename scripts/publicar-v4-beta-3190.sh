@@ -114,6 +114,7 @@ cp -a "$BACKUP" "$CONF"
 nginx -t
 systemctl reload nginx
 pm2 delete "$WORKER" >/dev/null 2>&1 || true
+systemctl stop "$UNIT.timer" >/dev/null 2>&1 || true
 echo "Fidelize: rollback automatico para 3150/3180, worker desativado."
 EOF
 chmod 700 "$ROLLBACK"
