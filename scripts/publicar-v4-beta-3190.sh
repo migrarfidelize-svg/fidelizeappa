@@ -163,7 +163,8 @@ PY
 
 nginx -t
 systemctl reload nginx
-# CRM/WhatsApp existente permanece sem alteracao; nao iniciar outra porta/processo.for path in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
+# CRM/WhatsApp existente permanece sem alteracao; nao iniciar outra porta/processo.
+for path in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
   curl --noproxy '*' -kfsS --max-time 20 --http1.1 \
     --resolve afidelize.app:443:127.0.0.1 \
     "https://afidelize.app$path" -o /dev/null
