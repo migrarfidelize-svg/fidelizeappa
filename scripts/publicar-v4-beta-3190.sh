@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Troca controlada BETA da Fidelize para 3190, preservando webhook WhatsApp na 3180.
+# Troca controlada WEB BETA da Fidelize para 3190, mantendo TODOS os webhooks nas rotas existentes (3150/3180).
 # O bug PGRST303 persiste no Supabase; a beta nao representa release GA.
 # Tem rollback automatico em 30 minutos e confirmacao explicita.
 set -Eeuo pipefail
 umask 077
 APP="fidelize-v4-rc-3190"
 PORT="3190"
-WORKER="fidelize-crm-worker-3192"
-WORKER_PORT="3192"
 LIVE="/var/www/fidelize-smart-wallet-20261107-3150"
 RC="/var/www/fidelize-v4-jwtfix-20261109-055123"
 ID="f406351f-487b-47db-b0d3-bd5cb918b6c3"
@@ -27,7 +25,6 @@ cleanup() {
     echo "=== PUBLICACAO NAO VALIDADA: ROLLBACK IMEDIATO ==="
     cp -a "$BACKUP" "$CONF"
     nginx -t && systemctl reload nginx || true
-    pm2 delete "$WORKER" >/dev/null 2>&1 || true
     systemctl stop "$UNIT.timer" >/dev/null 2>&1 || true
   fi
   exit "$code"
@@ -47,8 +44,6 @@ test -f "$CONF"
 test -f "$LIVE/.env" && test -f "$RC/.env"
 test -f "$RC/.output/server/index.mjs"
 command -v systemd-run >/dev/null
-if pm2 describe "$WORKER" >/dev/null 2>&1; then echo "BLOQUEADO: worker 3192 ja existe."; exit 1; fi
-if ss -H -ltn "( sport = :$WORKER_PORT )" | grep -q .; then echo "BLOQUEADO: porta 3192 ocupada."; exit 1; fi
 # A verificacao deve usar o ambiente REAL carregado pelo processo 3190.
 test "$(git -C "$RC" rev-parse HEAD)" = "552b79ed0c406219c5bb1169abfdb8ca3cb91d88" || {
   echo "BLOQUEADO: preview 3190 nao corresponde a release homologada"; exit 1;
@@ -71,6 +66,8 @@ pm2 jlist | node -e '
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/auth?mode=signin" -o /dev/null
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/?plano=essencial" -o /dev/null
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/links/gynrace" -o /dev/null
+curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:3150/auth?mode=signin" -o /dev/null
+curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:3180/auth?mode=signin" -o /dev/null
 
 # Interrompe se a candidata apontar para um projeto/banco diferente.
 python3 - "$LIVE/.env" "$RC/.env" <<'PY'
@@ -113,9 +110,8 @@ fi
 cp -a "$BACKUP" "$CONF"
 nginx -t
 systemctl reload nginx
-pm2 delete "$WORKER" >/dev/null 2>&1 || true
 systemctl stop "$UNIT.timer" >/dev/null 2>&1 || true
-echo "Fidelize: rollback automatico para 3150/3180, worker desativado."
+echo "Fidelize: rollback do site para 3150. Webhooks mantidos sem alteracao."
 EOF
 chmod 700 "$ROLLBACK"
 
@@ -128,13 +124,14 @@ fi
 if ! grep -qF 'f406351f-487b-47db-b0d3-bd5cb918b6c3 http://127.0.0.1:3180;' "$CONF"; then
   echo "BLOQUEADO: o webhook institucional nao esta preservado na 3180"; exit 1
 fi
+if ! grep -qF 'default http://127.0.0.1:3150;' "$CONF"; then
+  echo "BLOQUEADO: a rota default de webhooks foi alterada"; exit 1
+fi
 if ! curl --noproxy '*' -fsS --max-time 15 \
   --resolve afidelize.app:443:127.0.0.1 \
   'https://afidelize.app/auth?mode=signin' -o /dev/null; then
   echo "BLOQUEADO: HTTPS nao saudavel"; exit 1
 fi
-pm2 describe "$WORKER" >/dev/null
-curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$WORKER_PORT/auth?mode=signin" -o /dev/null
 touch "$MARK"
 systemctl stop "$UNIT.timer" >/dev/null 2>&1 || true
 pm2 save
@@ -156,12 +153,8 @@ b=m.group(0)
 old_default="default http://127.0.0.1:3150;"
 old_whatsapp=institution+" http://127.0.0.1:3180;"
 if b.count(old_default)!=1 or b.count(old_whatsapp)!=1: raise SystemExit("BLOQUEADO: mapa inesperado")
-b=b.replace(old_default,"default http://127.0.0.1:3190;")
-# Preservar bot institucional provado na 3180 durante a beta.
-# A V4 3190 tem webhook novo com autenticacao ainda nao homologada; NAO redirecionar.
-# Protege recepcao do WhatsApp ate a integracao V4 ser testada end-to-end.
-assert old_whatsapp in b, "BLOQUEADO: rota especial WhatsApp 3180 ausente"
-s=s[:m.start()]+b+s[m.end():]
+# Nao modificar o bloco "map": webhook institucional continua 3180 e demais 3150.
+# O webhook V4 ainda nao foi homologado com as mensagens reais da UAZAPI.
 old_main="proxy_pass http://127.0.0.1:3150;"
 if s.count(old_main)!=1: raise SystemExit("BLOQUEADO: proxy principal 3150 inesperado")
 s=s.replace(old_main,"proxy_pass http://127.0.0.1:3190;")
@@ -170,30 +163,14 @@ PY
 
 nginx -t
 systemctl reload nginx
-# O frontend 3190 segue sem timers. Iniciamos apenas UM worker isolado,
-# nunca em staging, e o rollback sempre o desliga.
-(
-  cd "$RC"
-  FIDELIZE_VPS_BUILD=1 FIDELIZE_STAGING_NO_WORKERS=0 HOST=127.0.0.1 PORT="$WORKER_PORT" NODE_ENV=production \
-    pm2 start .output/server/index.mjs --name "$WORKER" \
-    --interpreter node --node-args='--env-file=.env'
-)
-READY=0
-for attempt in 1 2 3 4 5 6 7 8 9 10; do
-  if curl --noproxy '*' -fsS --max-time 10 "http://127.0.0.1:$WORKER_PORT/auth?mode=signin" -o /dev/null; then
-    READY=1; break
-  fi
-  sleep 2
-done
-test "$READY" = 1 || { echo "BLOQUEADO: worker CRM nao respondeu."; exit 1; }
-for path in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
+# CRM/WhatsApp existente permanece sem alteracao; nao iniciar outra porta/processo.for path in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
   curl --noproxy '*' -kfsS --max-time 20 --http1.1 \
     --resolve afidelize.app:443:127.0.0.1 \
     "https://afidelize.app$path" -o /dev/null
 done
 DONE=1
 echo "=== FIDELIZE V4 BETA ATIVADA TEMPORARIAMENTE ==="
-echo "Producao web: 3190; webhook institucional PRESERVADO: 3180; worker CRM: 3192"
+echo "Producao WEB: 3190; webhooks PRESERVADOS: 3150/3180; nenhum processo novo."
 echo "Backup: $BACKUP"
 echo "Rollback automatico em 30 minutos: $UNIT.timer"
 echo "TESTAR AGORA HOME, OTP, CATALOGO, CARTEIRA E MENU WHATSAPP."
