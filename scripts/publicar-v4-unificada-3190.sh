@@ -31,6 +31,11 @@ cleanup() {
 trap cleanup EXIT
 
 test "$(id -u)" -eq 0
+if [[ "${FIDELIZE_RELEASE_APPROVED:-}" != "SIM" ]]; then
+  echo "BLOQUEADO: testes funcionais devem ser aprovados antes da troca."
+  echo "Apos homologar, execute: FIDELIZE_RELEASE_APPROVED=SIM bash este-script.sh"
+  exit 1
+fi
 test -f "$CONF"
 test -f "$LIVE/.env" && test -f "$RC/.env"
 nginx -t >/dev/null
