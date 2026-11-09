@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Troca controlada BETA da Fidelize para 3190. Usuarios e dados sao de testes.
+# Troca controlada BETA da Fidelize para 3190, preservando webhook WhatsApp na 3180.
 # O bug PGRST303 persiste no Supabase; a beta nao representa release GA.
 # Tem rollback automatico em 30 minutos e confirmacao explicita.
 set -Eeuo pipefail
@@ -124,6 +124,9 @@ set -Eeuo pipefail
 if ! grep -qF 'proxy_pass http://127.0.0.1:3190;' "$CONF"; then
   echo "BLOQUEADO: producao nao aponta para 3190"; exit 1
 fi
+if ! grep -qF 'f406351f-487b-47db-b0d3-bd5cb918b6c3 http://127.0.0.1:3180;' "$CONF"; then
+  echo "BLOQUEADO: o webhook institucional nao esta preservado na 3180"; exit 1
+fi
 if ! curl --noproxy '*' -fsS --max-time 15 \
   --resolve afidelize.app:443:127.0.0.1 \
   'https://afidelize.app/auth?mode=signin' -o /dev/null; then
@@ -153,7 +156,10 @@ old_default="default http://127.0.0.1:3150;"
 old_whatsapp=institution+" http://127.0.0.1:3180;"
 if b.count(old_default)!=1 or b.count(old_whatsapp)!=1: raise SystemExit("BLOQUEADO: mapa inesperado")
 b=b.replace(old_default,"default http://127.0.0.1:3190;")
-b=b.replace(old_whatsapp,institution+" http://127.0.0.1:3190;")
+# Preservar bot institucional provado na 3180 durante a beta.
+# A V4 3190 tem webhook novo com autenticacao ainda nao homologada; NAO redirecionar.
+# Protege recepcao do WhatsApp ate a integracao V4 ser testada end-to-end.
+assert old_whatsapp in b, "BLOQUEADO: rota especial WhatsApp 3180 ausente"
 s=s[:m.start()]+b+s[m.end():]
 old_main="proxy_pass http://127.0.0.1:3150;"
 if s.count(old_main)!=1: raise SystemExit("BLOQUEADO: proxy principal 3150 inesperado")
@@ -186,7 +192,7 @@ for path in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
 done
 DONE=1
 echo "=== FIDELIZE V4 BETA ATIVADA TEMPORARIAMENTE ==="
-echo "Producao web: 3190; webhook institucional: 3190; worker CRM unico: 3192"
+echo "Producao web: 3190; webhook institucional PRESERVADO: 3180; worker CRM: 3192"
 echo "Backup: $BACKUP"
 echo "Rollback automatico em 30 minutos: $UNIT.timer"
 echo "TESTAR AGORA HOME, OTP, CATALOGO, CARTEIRA E MENU WHATSAPP."
