@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Bash syntax do staging e do cutover
-        run: bash -n scripts/preparar-v4-midnight-3190.sh scripts/publicar-v4-unificada-3190.sh scripts/reparar-credencial-otp-3190.sh scripts/atualizar-preview-3190-carteira.sh scripts/atualizar-preview-3190-jwt.sh
+        run: bash -n scripts/preparar-v4-midnight-3190.sh scripts/publicar-v4-unificada-3190.sh scripts/reparar-credencial-otp-3190.sh scripts/atualizar-preview-3190-carteira.sh scripts/atualizar-preview-3190-jwt.sh scripts/publicar-v4-beta-3190.sh
   testes:
     name: Testes unitários de segurança e temas
     runs-on: ubuntu-latest
