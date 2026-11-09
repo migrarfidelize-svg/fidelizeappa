@@ -6,7 +6,7 @@ umask 077
 APP="fidelize-v4-rc-3190"
 PORT="3190"
 LIVE="/var/www/fidelize-smart-wallet-20261107-3150"
-RC="/var/www/fidelize-plans-feature-20261108"
+RC="/var/www/fidelize-v4-planfix-20261109-034745"
 ID="f406351f-487b-47db-b0d3-bd5cb918b6c3"
 CONF="$(readlink -f /etc/nginx/sites-enabled/afidelize)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -38,6 +38,10 @@ if [[ "${FIDELIZE_RELEASE_APPROVED:-}" != "SIM" ]]; then
 fi
 test -f "$CONF"
 test -f "$LIVE/.env" && test -f "$RC/.env"
+# A verificacao deve usar o ambiente REAL carregado pelo processo 3190.
+test "$(git -C "$RC" rev-parse HEAD)" = "078850d43387b31916102b1d4ea1a75fd4c66527" || {
+  echo "BLOQUEADO: preview 3190 nao corresponde a release homologada"; exit 1;
+}
 nginx -t >/dev/null
 pm2 describe "$APP" >/dev/null
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/auth?mode=signin" -o /dev/null
@@ -47,18 +51,24 @@ curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/links/gynrace" -o 
 # Interrompe se a candidata apontar para um projeto/banco diferente.
 python3 - "$LIVE/.env" "$RC/.env" <<'PY'
 import sys
-def parse(p):
-    data={}
-    for line in open(p,encoding="utf-8"):
+def parse(path):
+    result={}
+    for line in open(path,encoding="utf-8"):
         if "=" in line and not line.lstrip().startswith("#"):
-            k,v=line.strip().split("=",1)
-            data[k.strip()]=v.strip()
-    return data
-a,b=map(parse,sys.argv[1:])
-for name in ["SUPABASE_URL","VITE_SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY","VITE_SUPABASE_ANON_KEY","VITE_SUPABASE_PUBLISHABLE_KEY"]:
-    if name in a and name in b and a[name]!=b[name]:
-        raise SystemExit("BLOQUEADO: divergencia de ambiente em "+name)
-print("Configuracao Supabase compartilhada: sem divergencias identificadas")
+            key,value=line.strip().split("=",1)
+            result[key.strip()]=value.strip().strip('"').strip("'")
+    return result
+live,rc=map(parse,sys.argv[1:])
+must_have=("AUTH_OTP_HMAC_SECRET","SUPABASE_SERVICE_ROLE_KEY","REDEEM_HMAC_SECRET")
+for name in must_have:
+    if len(rc.get(name,"").encode("utf-8")) < 32:
+        raise SystemExit("BLOQUEADO: variavel obrigatoria ausente ou curta na 3190: "+name)
+for name in ("SUPABASE_URL","VITE_SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY",
+             "VITE_SUPABASE_ANON_KEY","VITE_SUPABASE_PUBLISHABLE_KEY",
+             "AUTH_OTP_HMAC_SECRET","REDEEM_HMAC_SECRET"):
+    if name in live and live[name] and live[name]!=rc.get(name):
+        raise SystemExit("BLOQUEADO: divergencia/ausencia de configuracao na 3190: "+name)
+print("Configuracao critica da 3190 validada sem expor segredos.")
 PY
 
 test "$(grep -Fc 'proxy_pass http://127.0.0.1:3150;' "$CONF")" -eq 2 || {
