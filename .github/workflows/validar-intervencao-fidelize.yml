@@ -16,6 +16,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scripts-publicacao:
+    name: Validar sintaxe dos scripts da release
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax do staging e do cutover
+        run: bash -n scripts/preparar-v4-midnight-3190.sh scripts/publicar-v4-unificada-3190.sh
   testes:
     name: Testes unitários de segurança e temas
     runs-on: ubuntu-latest
