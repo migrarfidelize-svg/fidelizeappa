@@ -3,6 +3,7 @@ import { createMiddleware } from '@tanstack/react-start'
 import { getRequest } from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types'
+import { retryPostgrestJwtFuture } from './retry-pgrst303.server'
 
 
 
@@ -26,7 +27,18 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     headers.set('apikey', supabaseKey);
-    return fetch(input, { ...init, headers });
+    // Retry only Supabase's documented PGRST303 auth rejection.
+    // It happens BEFORE PostgREST runs the query; never retry other failures.
+    const url = typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url;
+    const request = () => fetch(input instanceof Request ? input.clone() : input, { ...init, headers });
+    if (!url.includes('/rest/v1/')) return request();
+    return retryPostgrestJwtFuture(request, {
+      log: (attempt) => console.warn('[Supabase] PGRST303 JWT future; bounded retry', attempt),
+    });
   };
 }
 
