@@ -5,7 +5,7 @@ ALTER TABLE public.wallet_settings
   ADD COLUMN IF NOT EXISTS proximity_longitude double precision,
   ADD COLUMN IF NOT EXISTS proximity_message varchar(120);
 
-DO $
+DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint
@@ -22,4 +22,4 @@ BEGIN
       );
   END IF;
 END;
-$;
+$$;
