@@ -59,10 +59,14 @@ def parse(path):
             result[key.strip()]=value.strip().strip('"').strip("'")
     return result
 live,rc=map(parse,sys.argv[1:])
-must_have=("AUTH_OTP_HMAC_SECRET","SUPABASE_SERVICE_ROLE_KEY","REDEEM_HMAC_SECRET")
-for name in must_have:
-    if len(rc.get(name,"").encode("utf-8")) < 32:
-        raise SystemExit("BLOQUEADO: variavel obrigatoria ausente ou curta na 3190: "+name)
+# A implementacao OTP exige a chave existente, mas nao impõe 32 bytes;
+# nao rotacionar durante a troca porque codigos OTP pendentes usam esta chave.
+for name in ("AUTH_OTP_HMAC_SECRET","SUPABASE_SERVICE_ROLE_KEY"):
+    if not rc.get(name):
+        raise SystemExit("BLOQUEADO: variavel obrigatoria ausente na 3190: "+name)
+# O novo fluxo de QR RDM1 exige explicitamente no minimo 32 bytes.
+if len(rc.get("REDEEM_HMAC_SECRET","").encode("utf-8")) < 32:
+    raise SystemExit("BLOQUEADO: REDEEM_HMAC_SECRET ausente ou com menos de 32 bytes na 3190")
 for name in ("SUPABASE_URL","VITE_SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY",
              "VITE_SUPABASE_ANON_KEY","VITE_SUPABASE_PUBLISHABLE_KEY",
              "AUTH_OTP_HMAC_SECRET","REDEEM_HMAC_SECRET"):
