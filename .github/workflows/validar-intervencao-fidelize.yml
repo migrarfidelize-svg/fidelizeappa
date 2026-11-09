@@ -5,6 +5,7 @@ on:
     branches:
       - fix/fidelize-cirurgica-crm-bio-20261107
       - release/fidelize-v4-candidate-20261108
+      - release/fidelize-v4-unificada-midnight-20261108
   workflow_dispatch:
 
 permissions:
