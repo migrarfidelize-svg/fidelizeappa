@@ -8,7 +8,7 @@ PORT="3190"
 WORKER="fidelize-crm-worker-3192"
 WORKER_PORT="3192"
 LIVE="/var/www/fidelize-smart-wallet-20261107-3150"
-RC="/var/www/fidelize-v4-planfix-20261109-034745"
+RC="/var/www/fidelize-v4-jwtfix-20261109-055123"
 ID="f406351f-487b-47db-b0d3-bd5cb918b6c3"
 CONF="$(readlink -f /etc/nginx/sites-enabled/afidelize)"
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -39,6 +39,13 @@ if [[ "${FIDELIZE_RELEASE_APPROVED:-}" != "SIM" ]]; then
   echo "Apos homologar, execute: FIDELIZE_RELEASE_APPROVED=SIM bash este-script.sh"
   exit 1
 fi
+# O bug de JWT no PostgREST 14.5 bloqueia carimbo/resgate e toda a plataforma.
+# Exigir validacao explicita da infraestrutura antes de qualquer cutover.
+if [[ "${FIDELIZE_POSTGREST_VERIFIED:-}" != "SIM" ]]; then
+  echo "BLOQUEADO: primeiro corrigir e homologar PGRST303/JWT no Supabase."
+  echo "Apos validacao real, incluir FIDELIZE_POSTGREST_VERIFIED=SIM na chamada de release."
+  exit 1
+fi
 test -f "$CONF"
 test -f "$LIVE/.env" && test -f "$RC/.env"
 test -f "$RC/.output/server/index.mjs"
@@ -46,11 +53,24 @@ command -v systemd-run >/dev/null
 if pm2 describe "$WORKER" >/dev/null 2>&1; then echo "BLOQUEADO: worker 3192 ja existe."; exit 1; fi
 if ss -H -ltn "( sport = :$WORKER_PORT )" | grep -q .; then echo "BLOQUEADO: porta 3192 ocupada."; exit 1; fi
 # A verificacao deve usar o ambiente REAL carregado pelo processo 3190.
-test "$(git -C "$RC" rev-parse HEAD)" = "078850d43387b31916102b1d4ea1a75fd4c66527" || {
+test "$(git -C "$RC" rev-parse HEAD)" = "552b79ed0c406219c5bb1169abfdb8ca3cb91d88" || {
   echo "BLOQUEADO: preview 3190 nao corresponde a release homologada"; exit 1;
 }
 nginx -t >/dev/null
 pm2 describe "$APP" >/dev/null
+# Confirma que 3190 realmente executa o candidato homologado.
+pm2 jlist | node -e '
+  let src = "";
+  process.stdin.on("data", chunk => src += chunk);
+  process.stdin.on("end", () => {
+    const app = JSON.parse(src).find(x => x.name === "fidelize-v4-rc-3190");
+    if (!app || app.pm2_env?.pm_cwd !== process.argv[1] ||
+        app.pm2_env?.status !== "online") {
+      process.stderr.write("BLOQUEADO: PM2 3190 nao executa a release esperada.\n");
+      process.exit(1);
+    }
+  });
+' "$RC"
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/auth?mode=signin" -o /dev/null
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/?plano=essencial" -o /dev/null
 curl --noproxy '*' -fsS --max-time 15 "http://127.0.0.1:$PORT/links/gynrace" -o /dev/null
