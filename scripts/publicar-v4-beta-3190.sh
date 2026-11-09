@@ -99,7 +99,7 @@ for name in ("SUPABASE_URL","VITE_SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY",
 print("Configuracao critica da 3190 validada sem expor segredos.")
 PY
 
-test "$(grep -Fc 'proxy_pass http://127.0.0.1:3150;' "$CONF")" -eq 2 || {
+test "$(grep -Fc 'proxy_pass http://127.0.0.1:3150;' "$CONF")" -eq 1 || {
  echo "BLOQUEADO: topologia Nginx mudou"; exit 1;
 }
 
@@ -156,7 +156,7 @@ b=b.replace(old_default,"default http://127.0.0.1:3190;")
 b=b.replace(old_whatsapp,institution+" http://127.0.0.1:3190;")
 s=s[:m.start()]+b+s[m.end():]
 old_main="proxy_pass http://127.0.0.1:3150;"
-if s.count(old_main)!=2: raise SystemExit("BLOQUEADO: proxies 3150 inesperados")
+if s.count(old_main)!=1: raise SystemExit("BLOQUEADO: proxy principal 3150 inesperado")
 s=s.replace(old_main,"proxy_pass http://127.0.0.1:3190;")
 p.write_text(s)
 PY
