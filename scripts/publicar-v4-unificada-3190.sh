@@ -19,7 +19,7 @@ PENDING=0
 DONE=0
 cleanup() {
   code=$?
-  trap cleanup - EXIT
+  trap - EXIT
   if [[ "$DONE" != 1 && "$PENDING" == 1 ]]; then
     echo "=== PUBLICACAO NAO VALIDADA: ROLLBACK IMEDIATO ==="
     cp -a "$BACKUP" "$CONF"
