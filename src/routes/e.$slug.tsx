@@ -1,7 +1,9 @@
-import { createFileRoute, Link, notFound, useParams } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound, useNavigate, useParams } from "@tanstack/react-router";
+import { queryOptions, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { attachEstablishmentBySlug, getMyEstablishmentCard } from "@/lib/my-wallet.functions";
+import { toast } from "sonner";
 
 import { listPublicPromotionsBySlug } from "@/lib/promotions.functions";
 import {
@@ -198,7 +200,7 @@ export function DiscoveryProfilePage() {
         </div>
 
         <div className="relative mt-4 flex flex-wrap gap-2">
-          <VisitorCta slug={slug} brand={brand} />
+          <VisitorCta slug={slug} brand={brand} hasActiveCampaign={data.campaigns.length > 0} />
           {contactLinks.map((c, i) => {
 
             const Icon = c.icon;
@@ -391,20 +393,94 @@ function useSessionStatus() {
   return state;
 }
 
-function VisitorCta({ slug, brand }: { slug: string; brand: string }) {
+function VisitorCta({
+  slug,
+  brand,
+  hasActiveCampaign,
+}: {
+  slug: string;
+  brand: string;
+  hasActiveCampaign: boolean;
+}) {
   const status = useSessionStatus();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [joining, setJoining] = useState(false);
+  // Login na Fidelize e inscricao em uma loja sao coisas distintas.
+  // So mostrar "Abrir meu cartao" se existir vinculo desta conta com a loja.
+  const membership = useQuery({
+    queryKey: ["discovery-wallet-membership", slug],
+    queryFn: () => getMyEstablishmentCard({ data: { slug } }),
+    enabled: status === "authed",
+    staleTime: 15_000,
+    retry: 1,
+  });
+
+  async function joinProgram() {
+    if (joining || status !== "authed" || !hasActiveCampaign || membership.data) return;
+    setJoining(true);
+    try {
+      // Acao intencional do titular autenticado; nunca cria cartao na visita.
+      await attachEstablishmentBySlug({ data: { slug } });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["my-wallet"] }),
+        queryClient.invalidateQueries({ queryKey: ["discovery-wallet-membership", slug] }),
+      ]);
+      await navigate({ to: "/carteira/$slug", params: { slug } });
+    } catch (error) {
+      console.error("[discovery] wallet enrollment failed", error);
+      toast.error("Não foi possível ativar seu cartão. Tente novamente.");
+    } finally {
+      setJoining(false);
+    }
+  }
 
   if (status === "authed") {
     return (
       <>
-        <Link
-          to="/carteira/$slug"
-          params={{ slug }}
-          className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
-          style={{ background: brand }}
-        >
-          <CreditCard className="h-3.5 w-3.5" /> Abrir meu cartão aqui
-        </Link>
+        {membership.isPending ? (
+          <span
+            role="status"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold"
+          >
+            <CreditCard className="h-3.5 w-3.5" /> Verificando seu cartão…
+          </span>
+        ) : membership.isError ? (
+          <button
+            type="button"
+            onClick={() => void membership.refetch()}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold"
+          >
+            <CreditCard className="h-3.5 w-3.5" /> Tentar verificar meu cartão
+          </button>
+        ) : membership.data ? (
+          <Link
+            to="/carteira/$slug"
+            params={{ slug }}
+            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95"
+            style={{ background: brand }}
+          >
+            <CreditCard className="h-3.5 w-3.5" /> Abrir meu cartão aqui
+          </Link>
+        ) : hasActiveCampaign ? (
+          <button
+            type="button"
+            onClick={() => void joinProgram()}
+            disabled={joining}
+            className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-white shadow-sm transition-transform active:scale-95 disabled:cursor-wait disabled:opacity-60"
+            style={{ background: brand }}
+          >
+            <CreditCard className="h-3.5 w-3.5" />
+            {joining ? "Criando seu cartão…" : "Participar e criar meu cartão"}
+          </button>
+        ) : (
+          <span
+            role="status"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold text-muted-foreground"
+          >
+            <CreditCard className="h-3.5 w-3.5" /> Programa de fidelidade ainda não disponível
+          </span>
+        )}
         <Link
           to="/carteira"
           className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
@@ -412,13 +488,12 @@ function VisitorCta({ slug, brand }: { slug: string; brand: string }) {
           <Wallet className="h-3.5 w-3.5" /> Minha carteira
         </Link>
         <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-          <UserCircle2 className="h-3 w-3" /> Você está conectado
+          <UserCircle2 className="h-3 w-3" /> Logado na Fidelize
         </span>
       </>
     );
   }
 
-  // guest (and loading — same UI, avoids flicker of auth button before session resolves)
   return (
     <>
       <Link
@@ -428,13 +503,19 @@ function VisitorCta({ slug, brand }: { slug: string; brand: string }) {
       >
         <LogIn className="h-3.5 w-3.5" /> Entrar ou criar minha carteira
       </Link>
-      <Link
-        to="/carteira/$slug"
-        params={{ slug }}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
-      >
-        <CreditCard className="h-3.5 w-3.5" /> Já sou cliente
-      </Link>
+      {hasActiveCampaign ? (
+        <Link
+          to="/carteira/$slug"
+          params={{ slug }}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold transition hover:border-primary/40 hover:text-primary"
+        >
+          <CreditCard className="h-3.5 w-3.5" /> Já sou cliente
+        </Link>
+      ) : (
+        <span className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 bg-background/60 px-3 py-2 text-xs font-semibold text-muted-foreground">
+          <CreditCard className="h-3.5 w-3.5" /> Programa de fidelidade ainda não disponível
+        </span>
+      )}
       <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/40 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
         Visitando como convidado
       </span>
