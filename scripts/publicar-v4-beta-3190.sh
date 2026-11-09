@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Troca controlada BETA da Fidelize para 3190. Usuarios e dados sao de testes.
 # O bug PGRST303 persiste no Supabase; a beta nao representa release GA.
-# Tem rollback automatico em 15 minutos e confirmacao explicita.
+# Tem rollback automatico em 30 minutos e confirmacao explicita.
 set -Eeuo pipefail
 umask 077
 APP="fidelize-v4-rc-3190"
@@ -42,7 +42,7 @@ if [[ "${FIDELIZE_BETA_RISK_ACK:-}" != "SIM" ]]; then
   exit 1
 fi
 echo "=== BETA AUTORIZADA: JWT AINDA NAO CORRIGIDO ==="
-echo "Rollback automatico se o cutover falhar ou nao for confirmado em 15 min."
+echo "Rollback automatico se o cutover falhar ou nao for confirmado em 30 min."
 test -f "$CONF"
 test -f "$LIVE/.env" && test -f "$RC/.env"
 test -f "$RC/.output/server/index.mjs"
@@ -140,7 +140,7 @@ EOF
 chmod 700 "$CONFIRM"
 
 # Agendar rollback ANTES da troca de backend.
-systemd-run --unit="$UNIT" --on-active=900s /bin/bash "$ROLLBACK"
+systemd-run --unit="$UNIT" --on-active=1800s /bin/bash "$ROLLBACK"
 PENDING=1
 
 python3 - "$CONF" "$ID" <<'PY'
@@ -188,7 +188,7 @@ DONE=1
 echo "=== FIDELIZE V4 BETA ATIVADA TEMPORARIAMENTE ==="
 echo "Producao web: 3190; webhook institucional: 3190; worker CRM unico: 3192"
 echo "Backup: $BACKUP"
-echo "Rollback automatico em 15 minutos: $UNIT.timer"
+echo "Rollback automatico em 30 minutos: $UNIT.timer"
 echo "TESTAR AGORA HOME, OTP, CATALOGO, CARTEIRA E MENU WHATSAPP."
 echo "CARIMBO/RECOMPENSA PERMANECEM BLOQUEADOS PELO POSTGREST: NAO RECONTAR COMO APROVADOS."
 echo "SE HOME/LOGIN/WHATSAPP FUNCIONAREM E QUISER MANTER A BETA: bash $CONFIRM"
