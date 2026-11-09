@@ -130,6 +130,11 @@ try {
   const pm2Apps = JSON.parse(execFileSync("pm2", ["jlist"], {
     encoding: "utf8", maxBuffer: 32 * 1024 * 1024,
   }));
+const currentApp = pm2Apps.find(p => p.name === "fidelize-v4-rc-3190");
+  if (!currentApp || currentApp.pm2_env?.pm_cwd !== path.dirname(targetPath) ||
+      currentApp.pm2_env?.status !== "online") {
+    abort("PM2 3190 não está no diretório de preview esperado.");
+  }
   for (const name of ["fidelize-smart-wallet-3150", "fidelize-planos-3180", "fidelize-v4-rc-3190"]) {
     const app = pm2Apps.find(p => p.name === name);
     const value = app?.pm2_env?.[variable] || app?.pm2_env?.env?.[variable];
@@ -201,7 +206,9 @@ console.log("Backup privado: " + backup);
 console.log("Nenhuma credencial foi exibida, e nenhuma foi alterada no banco.");
 try {
   execFileSync("pm2", ["restart", "fidelize-v4-rc-3190", "--update-env"], {
-    stdio: "ignore", timeout: 30000,
+    stdio: "ignore",
+    timeout: 30000,
+    env: { ...process.env, INTEGRATIONS_ENCRYPTION_KEY: correctKey.value },
   });
 } catch {
   console.error("RESTART_FALHOU: configuração corrigida, mas PM2 precisa de verificação.");
