@@ -1353,14 +1353,23 @@ function Pricing() {
   const [activeIdx, setActiveIdx] = useState(1);
   
   const [prevIdx, setPrevIdx] = useState(1);
-  // Links do WhatsApp destacam o plano correspondente na landing.
+  // Os links compartilhados do WhatsApp devem abrir diretamente o plano,
+  // nao apenas selecionar o card enquanto a landing permanece no hero.
   useEffect(() => {
-    const slug = new URLSearchParams(window.location.search).get("plano");
+    const slug = new URLSearchParams(window.location.search).get("plano")?.toLowerCase();
     const target = ["essencial", "profissional", "ilimitado", "empresarial"].indexOf(slug || "");
-    if (target >= 0) {
-      setActiveIdx(target);
-      setPrevIdx(target);
-    }
+    if (target < 0) return;
+
+    setActiveIdx(target);
+    setPrevIdx(target);
+    // Aguardar o primeiro paint para respeitar hidratacao e scroll restoration.
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("precos")?.scrollIntoView({
+        behavior: "auto",
+        block: "start",
+      });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
   const [shockKey, setShockKey] = useState(0);
   const active = plans[activeIdx];
