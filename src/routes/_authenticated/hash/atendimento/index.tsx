@@ -347,13 +347,25 @@ function Workspace({ ctx }: { ctx: any }) {
                   )}
                 </div>
                 <div className="min-h-0 flex-1">
-                  <ConversationList
-                    conversations={list}
-                    selectedId={selectedId}
-                    onSelect={setSelectedId}
-                    isLoading={conversations.isLoading}
-                    agentNames={agentNames}
-                  />
+                  {conversations.isError ? (
+                    <div className="space-y-3 p-4" role="alert">
+                      <p className="text-sm font-semibold text-destructive">Falha ao carregar conversas</p>
+                      <p className="text-xs text-muted-foreground">
+                        A conexão com a caixa de entrada falhou. Isso não significa que não existam mensagens.
+                      </p>
+                      <Button size="sm" variant="outline" onClick={() => void conversations.refetch()} disabled={conversations.isFetching}>
+                        {conversations.isFetching ? "Recarregando…" : "Tentar novamente"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <ConversationList
+                      conversations={list}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      isLoading={conversations.isLoading}
+                      agentNames={agentNames}
+                    />
+                  )}
                 </div>
               </aside>
 
