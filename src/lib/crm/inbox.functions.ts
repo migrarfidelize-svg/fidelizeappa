@@ -227,16 +227,19 @@ export const listInboxConversations = createServerFn({ method: "GET" })
 
     if (data.tagId) list = list.filter((c: any) => c.tags.some((t: any) => t?.id === data.tagId));
 
-    // Ordenação operacional: SLA vencido → espera → prioridade → atividade
+    // Caixa "Abertas": atividade recente primeiro, para não esconder
+    // mensagens que acabaram de entrar atrás de filas/SLA antigos.
+    // Filtros operacionais preservam a ordenação por SLA e prioridade.
     const rank = (c: any) => {
       const overdue = c.sla_due_at && new Date(c.sla_due_at).getTime() < Date.now() && c.status !== "closed";
       const prio = { urgent: 0, high: 1, medium: 2, low: 3 }[c.priority as string] ?? 2;
       return (overdue ? 0 : 1) * 1000 + (c.status === "waiting" ? 0 : 100) + prio;
     };
     list.sort((a: any, b: any) => {
+      const recent = new Date(b.last_message_at ?? b.created_at).getTime() - new Date(a.last_message_at ?? a.created_at).getTime();
+      if (status === "all" && recent !== 0) return recent;
       const d = rank(a) - rank(b);
-      if (d !== 0) return d;
-      return new Date(b.last_message_at ?? b.created_at).getTime() - new Date(a.last_message_at ?? a.created_at).getTime();
+      return d !== 0 ? d : recent;
     });
 
     return list;
