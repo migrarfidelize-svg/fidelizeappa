@@ -56,7 +56,7 @@ if [[ "$(printenv FIDELIZE_WEB_BETA_APPROVED || true)" != "SIM" ]]; then
   exit 1
 fi
 test -f "$CONF" && test -f "$OLD/.env" && test -f "$OLD/.output/server/index.mjs"
-test -d "$OLD/node_modules" && test -d "$BASE/.git"
+test -d "$OLD/node_modules" && test -e "$BASE/.git"
 nginx -t >/dev/null
 test "$(grep -Fc 'proxy_pass http://127.0.0.1:3150;' "$CONF")" -eq 1 || {
   echo "BLOQUEADO: dominio nao esta na producao anterior 3150."; exit 1;
@@ -160,6 +160,7 @@ chmod 700 "$CONFIRM"
 # Armamos o rollback ANTES de mudar o Nginx.
 systemd-run --unit="$UNIT" --on-active=1800s /bin/bash "$ROLLBACK"
 TIMER_SCHEDULED=1
+NGINX_CHANGED=1
 python3 - "$CONF" <<'PY'
 from pathlib import Path
 import re,sys
@@ -173,7 +174,6 @@ s=s.replace(old,"proxy_pass http://127.0.0.1:3190;")
 if webhook_map not in s: raise SystemExit("BLOQUEADO: webhooks sofreriam alteracao")
 p.write_text(s)
 PY
-NGINX_CHANGED=1
 nginx -t
 systemctl reload nginx
 for PATH_TEST in '/auth?mode=signin' '/' '/links/gynrace' '/?plano=essencial'; do
