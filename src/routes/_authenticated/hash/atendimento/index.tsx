@@ -159,12 +159,17 @@ function Workspace({ ctx }: { ctx: any }) {
   const conversations = useQuery({
     queryKey: ["crm-conversations", est, status, search, queueId, priority],
     queryFn: () => listFn({ data: { establishmentId: est, status: status as any, search: search || undefined, queueId, priority: priority as any } }),
-    refetchInterval: 30_000,
+    // Polling moderado de contingência quando o Realtime não entrega o evento.
+    refetchInterval: 12_000,
+    refetchOnWindowFocus: "always",
   });
   const detail = useQuery({
     queryKey: ["crm-messages", selectedId],
     queryFn: () => detailFn({ data: { establishmentId: est, conversationId: selectedId! } }),
     enabled: !!selectedId,
+    // Conversa aberta também precisa atualizar; antes dependia só do Realtime.
+    refetchInterval: 8_000,
+    refetchOnWindowFocus: "always",
   });
   const reports = useQuery({
     queryKey: ["inbox-reports", est],
